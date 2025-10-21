@@ -6,24 +6,25 @@ type JSONViewProps = {
     value: any;
     path?: string[];
     name?: string;
-    expandRoot: Record<string, boolean>;
-    setExpandRoot: Dispatch<SetStateAction<Record<string, boolean>>>;
     expandLevel: number | boolean;
     currentType?: any;
     isGrouped?: boolean;
+    context: JSONViewCtx
 };
 
-const useExpandState = ({ path, expandLevel, expandRoot, setExpandRoot }: JSONViewProps) => {
+type JSONViewCtx = {
+    expandRoot: Record<string, boolean>;
+    setExpandRoot: Dispatch<SetStateAction<Record<string, boolean>>>;
+}
+
+const useExpandState = ({ path, expandLevel, context: { expandRoot, setExpandRoot } }: JSONViewProps) => {
     const expandKeys = path?.join("/") ?? "";
 
     const defaultExpand = typeof expandLevel == "boolean"
         ? expandLevel
         : (typeof expandLevel == 'number' && expandLevel > 0);
 
-    const isExpand = useMemo(
-        () => expandRoot?.[expandKeys] ?? defaultExpand,
-        [expandRoot?.[expandKeys], expandKeys]
-    );
+    const isExpand = expandRoot?.[expandKeys] ?? defaultExpand
 
     const setExpand = useCallback(
         (value: boolean) => setExpandRoot((r: object) => ({ ...r, [expandKeys]: value })),
@@ -37,7 +38,9 @@ const useExpandState = ({ path, expandLevel, expandRoot, setExpandRoot }: JSONVi
 const JSONViewObj: React.FC<JSONViewProps> = (props) => {
 
     const {
-        value, path = [], name, expandRoot, setExpandRoot, expandLevel,
+        value, path = [], name,
+        expandLevel,
+        context
     } = props;
 
     const { isExpand, setExpand, expandKeys } = useExpandState(props);
@@ -110,7 +113,7 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
                             name,
                             value,
                             path,
-                            expandRoot, setExpandRoot,
+                            context,
                             expandLevel: childExpandLevel,
                             isGrouped: shouldGroup,
                         }}
@@ -225,13 +228,20 @@ const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField'>> = (props) => {
     }
 };
 
-export const ObjectView: React.FC<{ value: any; name?: string; style?: any; expandLevel?: number | boolean; }> = ({ value, name, style, expandLevel = false }) => {
+export const ObjectView: React.FC<{
+    value: any;
+    name?: string; style?: any;
+    expandLevel?: number | boolean;
+}> = ({ value, name, style, expandLevel = false }) => {
 
     const [expandRoot, setExpandRoot] = useState<Record<string, boolean>>({});
+    const context: JSONViewCtx = useMemo(() => ({
+        expandRoot, setExpandRoot
+    }), [expandRoot, setExpandRoot])
 
     return <div className="jv-root" style={style}>
         <JSONViewCurr
             path={[]}
-            {...{ name, value, expandRoot, setExpandRoot, expandLevel }} />
+            {...{ name, value, context, expandLevel }} />
     </div>;
 };
