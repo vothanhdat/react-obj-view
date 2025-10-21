@@ -1,17 +1,17 @@
 {
-  "name": "react-state-custom",
-  "version": "1.0.23",
+  "name": "react-obj-view",
+  "version": "1.0.0",
   "description": "The `react-state-custom` library provides a powerful set of tools for managing shared state in React applications",
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "bugs": {
-    "url": "https://github.com/vothanhdat/react-state-custom/issues"
+    "url": "https://github.com/vothanhdat/react-obj-view/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vothanhdat/react-state-custom.git"
+    "url": "https://github.com/vothanhdat/react-obj-view.git"
   },
   "scripts": {
     "build": "vite build",
