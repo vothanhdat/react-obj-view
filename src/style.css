@@ -27,10 +27,10 @@
         opacity: 0.8;
     }
 
-    .jv-type {
+    .jv-type, .jv-meta {
         opacity: 0.5;
         font-size: smaller;
-        padding-inline: 0.4em;
+        margin-inline: 0.5em;
     }
 
     .jv-value {
@@ -143,6 +143,17 @@
 
     .jv-field-function> :is(.jv-type, .jv-value) {
         color: #08f;
+    }
+
+    .jv-field-Date> :is(.jv-type, .jv-value) {
+        color: #08f;
+    }
+
+    .jv-field-RegExp> :is(.jv-type, .jv-value) {
+        color: #f0f;
+    }
+    .jv-field[class*="Error"]>:is(.jv-type, .jv-value){
+        color: #f00;
     }
 
     .jv-preview {

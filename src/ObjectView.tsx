@@ -9,12 +9,15 @@ type JSONViewProps = {
     expandLevel: number | boolean;
     currentType?: any;
     isGrouped?: boolean;
+    displayName?: boolean;
     context: JSONViewCtx
 };
 
 type JSONViewCtx = {
     expandRoot: Record<string, boolean>;
     setExpandRoot: Dispatch<SetStateAction<Record<string, boolean>>>;
+    objectGrouped: number,
+    arrayGrouped: number,
 }
 
 const useExpandState = ({ path, expandLevel, context: { expandRoot, setExpandRoot } }: JSONViewProps) => {
@@ -40,10 +43,14 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
     const {
         value, path = [], name,
         expandLevel,
-        context
+        context,
+        currentType,
+        displayName = true
     } = props;
 
     const { isExpand, setExpand, expandKeys } = useExpandState(props);
+
+    const { objectGrouped, arrayGrouped } = context
 
     const childExpandLevel = typeof expandLevel == "number" ? expandLevel - 1 : expandLevel;
 
@@ -53,7 +60,7 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
             if (value instanceof GroupedObject) {
                 const isArray = value.obj instanceof Array;
                 const size = value.getSize();
-                const groupdSize = isArray ? 10 : 25;
+                const groupdSize = isArray ? arrayGrouped : objectGrouped;
                 const shouldGroup = size > groupdSize;
                 const ableToExpand = size > 0;
 
@@ -68,7 +75,7 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
             } else if (value) {
                 const isArray = value instanceof Array;
                 const size = isArray ? value.length : Object.keys(value).length;
-                const groupdSize = isArray ? 10 : 25;
+                const groupdSize = isArray ? arrayGrouped : objectGrouped;
                 const shouldGroup = size > groupdSize;
 
                 const ableToExpand = size > 0;
@@ -86,7 +93,7 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
 
             }
         },
-        [value]
+        [value, objectGrouped, arrayGrouped]
     );
 
 
@@ -94,11 +101,12 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
         {isExpand && ableToExpand ? <>
             {name && <div>
                 <div onClick={() => setExpand(false)}>
-                    <span className="jv-name">{name}</span>
-                    <span>:</span>
+                    {displayName && <span className="jv-name">{name}</span>}
+                    {displayName && <span>:</span>}
                     <span>[-]</span>
-                    <span className="jv-type">{size} items </span>
-                    <span> {isArray ? "[" : "{"} </span>
+                    {currentType && <span className="jv-type">{currentType}</span>}
+                    <span className="jv-meta">{size} items</span>
+                    <span>{isArray ? "[" : "{"} </span>
                 </div>
             </div>}
             <div className="jv-value">
@@ -125,13 +133,14 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
         </> : <>
             <div>
                 <div onClick={() => ableToExpand && setExpand(true)}>
-                    <span className="jv-name">{name}</span>
-                    {name && <span>:</span>}
+                    {displayName && <span className="jv-name">{name}</span>}
+                    {displayName && name && <span>:</span>}
                     {name && ableToExpand && <span>[+]</span>}
-                    <span className="jv-type">{size} items </span>
-                    <span> {isArray ? "[" : "{"} </span>
+                    {currentType && <span className="jv-type">{currentType}</span>}
+                    <span className="jv-meta">{size} items</span>
+                    <span>{isArray ? "[" : "{"}</span>
                     {ableToExpand && <PreviewObj {...{ value, size, }} />}
-                    <span> {isArray ? "]" : "}"} </span>
+                    <span>{isArray ? "]" : "}"}</span>
                 </div>
             </div>
         </>}
@@ -160,7 +169,7 @@ const StringViewObj: React.FC<JSONViewProps> = (props) => {
         onClick={() => setExpand(!isExpand)}>
         <span className="jv-name">{name}</span>
         <span>:</span>
-        <span className="jv-type">{currentType}, lng={value?.length}</span>
+        <span className="jv-type">{currentType}{useExpand && <> lng={value?.length}</>}</span>
         <span className="jv-value">"{renderString}"</span>
         <span>,</span>
     </ChangeFlashWrappper>;
@@ -201,7 +210,14 @@ const DefaultValueView: React.FC<JSONViewProps> = (props) => {
     </ChangeFlashWrappper>;
 };
 
-const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField'>> = (props) => {
+const SIMPLE_INSTANCE_RENDER = new Set([
+    Date,
+    RegExp,
+])
+
+
+
+const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField' | 'currentType'>> = (props) => {
 
     const { value, path = [], name, } = props;
 
@@ -209,11 +225,42 @@ const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField'>> = (props) => {
 
     const currentType = typeof value;
 
+    if (!value) {
+        return <DefaultValueView {...props} {...{ currentField, currentType }} />;
+    }
+
     switch (currentType) {
-        case "object":
-            return value != null
-                ? <JSONViewObj {...props} {...{ currentField, currentType }} />
-                : <DefaultValueView {...props} {...{ currentField, currentType }} />
+        case "object": {
+
+            if (SIMPLE_INSTANCE_RENDER.has(value?.constructor)) {
+                return <DefaultValueView
+                    {...props}
+                    {...{ currentField, currentType: value.constructor.name }}
+                />;
+            }
+
+            if (value instanceof GroupedObject) {
+                return <JSONViewObj {...props} {...{ currentField, currentType: undefined }} />;
+            }
+
+            if (value instanceof Map) {
+                return <MapView {...props} {...{ currentField }} />;
+            }
+
+            if (value instanceof Set) {
+                return <SetView {...props} {...{ currentField }} />;
+            }
+
+            if (value instanceof Error) {
+                return <DefaultValueView {...props} {...{ currentField, currentType: value?.constructor.name }} />;
+            }
+
+            if (!(value instanceof Array) && value?.constructor != Object) {
+                return <JSONViewObj {...props} {...{ currentField, currentType: value?.constructor.name }} />
+            }
+
+            return <JSONViewObj {...props} {...{ currentField, currentType: "" }} />
+        }
         case "string":
             return <StringViewObj {...props} {...{ currentField, currentType }} />;
         case "function":
@@ -228,16 +275,51 @@ const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField'>> = (props) => {
     }
 };
 
+
+
+
+export const MapView: React.FC<JSONViewProps> = (props) => {
+    const value = useMemo(
+        () => props.value instanceof Map
+            ? Object.fromEntries([...props.value.entries()])
+            : {},
+        [props.value]
+    )
+
+    return <JSONViewObj
+        {...props}
+        {...{ currentType: "Map", value }}
+    />
+}
+
+export const SetView: React.FC<JSONViewProps> = (props) => {
+    const value = useMemo(
+        () => props.value instanceof Set
+            ? [...props.value.values()]
+            : [],
+        [props.value]
+    )
+
+    return <JSONViewObj
+        {...props}
+        {...{ currentType: "Set", displayName: false, value }}
+    />
+}
+
 export const ObjectView: React.FC<{
     value: any;
     name?: string; style?: any;
     expandLevel?: number | boolean;
-}> = ({ value, name, style, expandLevel = false }) => {
+    objectGrouped?: number,
+    arrayGrouped?: number,
+}> = ({ value, name, style, expandLevel = false, objectGrouped = 25, arrayGrouped = 10 }) => {
 
     const [expandRoot, setExpandRoot] = useState<Record<string, boolean>>({});
     const context: JSONViewCtx = useMemo(() => ({
-        expandRoot, setExpandRoot
-    }), [expandRoot, setExpandRoot])
+        expandRoot, setExpandRoot,
+        objectGrouped,
+        arrayGrouped,
+    }), [expandRoot, setExpandRoot, objectGrouped, arrayGrouped])
 
     return <div className="jv-root" style={style}>
         <JSONViewCurr
