@@ -62,7 +62,7 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
                     : value.getObject();
 
                 return { size, isArray, shouldGroup, ableToExpand, groupedChilds, };
-            } else {
+            } else if (value) {
                 const isArray = value instanceof Array;
                 const size = isArray ? value.length : Object.keys(value).length;
                 const groupdSize = isArray ? 10 : 25;
@@ -78,6 +78,9 @@ const JSONViewObj: React.FC<JSONViewProps> = (props) => {
                     : value;
 
                 return { isArray, size, shouldGroup, ableToExpand, groupedChilds, };
+            } else {
+                return { isArray: false, size: 0, shouldGroup: false, ableToExpand: false, groupedChilds: [], };
+
             }
         },
         [value]
@@ -205,7 +208,9 @@ const JSONViewCurr: React.FC<Omit<JSONViewProps, 'currentField'>> = (props) => {
 
     switch (currentType) {
         case "object":
-            return <JSONViewObj {...props} {...{ currentField, currentType }} />;
+            return value != null
+                ? <JSONViewObj {...props} {...{ currentField, currentType }} />
+                : <DefaultValueView {...props} {...{ currentField, currentType }} />
         case "string":
             return <StringViewObj {...props} {...{ currentField, currentType }} />;
         case "function":
