@@ -1,0 +1,151 @@
+:root {
+    color-scheme: light dark;
+    --jv-color: light-dark(#333b3c, #efefec);
+    --jv-bg-color: light-dark(#f9f9f9, #212121);
+    --jv-change-color: rgb(255, 50, 0);
+}
+
+.react-state-dev-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    transition: opacity 0.3s;
+
+    &[data-active="true"] {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+.jv-root {
+
+    font-family: monospace;
+    user-select: none;
+    background-color: var(--jv-bg-color);
+
+    .jv-name {
+        opacity: 0.8;
+    }
+
+    .jv-type {
+        opacity: 0.5;
+        font-size: smaller;
+        padding-inline: 0.4em;
+    }
+
+    .jv-value {
+        word-wrap: break-word;
+    }
+
+    .jv-cursor {
+        cursor: pointer;
+    }
+
+    .jv-field {
+        margin-block: 1px;
+    }
+
+    .jv-field .jv-field {
+
+        >:first-child>:first-child>.jv-name,
+        >.jv-name {
+            transition: background-color 1s;
+            background-color: #0000;
+        }
+
+        &.jv-updated>:first-child>:first-child>.jv-name,
+        &.jv-updated>.jv-name {
+            transition: background-color 0.00s;
+            background-color: var(--jv-change-color);
+        }
+    }
+
+    .jv-field-obj>.jv-value {
+        padding-inline-start: 1.5em;
+        margin-inline-start: 0.2em;
+        border-inline-start: solid 1px #8888;
+        transition: border-color 1s;
+    }
+
+    .jv-field .jv-field-obj.jv-updated>.jv-value {
+        border-color: var(--jv-change-color);
+        transition: border-color 0.00s;
+    }
+
+    .jv-field-obj>:first-child>:first-child>.jv-name {
+        cursor: pointer;
+    }
+
+
+    .jv-field-obj {
+        --lv: 0;
+    }
+
+    .jv-field-obj .jv-field-obj {
+        --lv: 1;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 2;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 3;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 4;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 5;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 6;
+    }
+
+    .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj .jv-field-obj {
+        --lv: 7;
+    }
+
+    .jv-field-obj>:first-child {
+        container-type: scroll-state;
+        position: sticky;
+        top: calc(var(--lv, 0) * 1.5em);
+        line-height: 1.5;
+        z-index: calc(10 - var(--lv, 0));
+
+        @container scroll-state(stuck: top) {
+            >div {
+                background-color: var(--jv-bg-color);
+                border-bottom: solid 1px #8884;
+                font-weight: bold;
+            }
+
+        }
+    }
+
+
+
+
+    .jv-field-string> :is(.jv-type, .jv-value) {
+        color: orange;
+    }
+
+    .jv-field-number> :is(.jv-type, .jv-value) {
+        color: red;
+    }
+
+    .jv-field-boolean> :is(.jv-type, .jv-value) {
+        color: #08f;
+    }
+
+    .jv-field-function> :is(.jv-type, .jv-value) {
+        color: #08f;
+    }
+
+    .jv-preview {
+        opacity: 0.5;
+    }
+}
