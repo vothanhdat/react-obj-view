@@ -27,7 +27,15 @@
         opacity: 0.8;
     }
 
-    .jv-type, .jv-meta {
+    .jv-tag {
+        padding-inline: 0.8em;
+        padding-block: 0.3em;
+        font-size: smaller;
+        background: color-mix(in srgb, currentColor 20%, transparent);
+    }
+
+    .jv-type,
+    .jv-meta {
         opacity: 0.5;
         font-size: smaller;
         margin-inline: 0.5em;
@@ -137,6 +145,10 @@
         color: red;
     }
 
+    .jv-field-bigint> :is(.jv-type, .jv-value) {
+        color: red;
+    }
+
     .jv-field-boolean> :is(.jv-type, .jv-value) {
         color: #08f;
     }
@@ -149,10 +161,19 @@
         color: #08f;
     }
 
+    .jv-field-obj.jv-field-Map>:first-child>:first-child> :is(.jv-type, .jv-value) {
+        color: #080;
+    }
+
+    .jv-field-obj.jv-field-Set>:first-child>:first-child> :is(.jv-type, .jv-value) {
+        color: #080;
+    }
+
     .jv-field-RegExp> :is(.jv-type, .jv-value) {
         color: #f0f;
     }
-    .jv-field[class*="Error"]>:is(.jv-type, .jv-value){
+
+    .jv-field[class*="Error"]>:is(.jv-type, .jv-value) {
         color: #f00;
     }
 
