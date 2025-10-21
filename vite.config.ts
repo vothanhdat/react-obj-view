@@ -9,15 +9,15 @@ export default defineConfig({
     dts({
       include: ['src'],
     }),
-    analyzer({
-      analyzerMode: "server",
-      openAnalyzer: true
-    }),
+    // analyzer({
+    //   analyzerMode: "server",
+    //   openAnalyzer: true
+    // }),
   ],
   build: {
     lib: {
       entry: 'src/index.ts',
-      name: 'RState',
+      name: 'react-obj-view',
       fileName: (format) => `index.${format}.js`,
       formats: ['es', 'umd'],
     },
