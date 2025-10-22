@@ -1,7 +1,7 @@
 {
   "name": "react-obj-view",
   "version": "1.0.1",
-  "description": "The `react-state-custom` library provides a powerful set of tools for managing shared state in React applications",
+  "description": "A powerful React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view",
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
@@ -19,12 +19,14 @@
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
-    "frontend",
-    "hooks",
-    "library",
-    "state",
     "react",
-    "react-hook"
+    "object-viewer",
+    "json-viewer", 
+    "data-visualization",
+    "tree-view",
+    "debug-tool",
+    "object-inspector",
+    "frontend"
   ],
   "author": "Your Name",
   "license": "MIT",
