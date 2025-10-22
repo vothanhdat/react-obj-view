@@ -296,9 +296,117 @@ const FormDebugger = () => {
 };
 ```
 
-### 5. Error Inspector
+### 6. Custom Type Visualization
 
-Detailed error visualization:
+Create custom renderers for your application's specific data types:
+
+```tsx
+import React, { useState } from 'react';
+import { ObjectView, JSONViewProps } from 'react-obj-view';
+
+// Custom class for your application
+class APIEndpoint {
+  constructor(
+    public method: string,
+    public url: string,
+    public status: number,
+    public responseTime: number,
+    public data?: any
+  ) {}
+}
+
+// Custom renderer component
+const APIEndpointRenderer: React.FC<JSONViewProps> = ({ 
+  value, 
+  name, 
+  displayName, 
+  seperator = ":",
+  context,
+  expandLevel,
+  path = []
+}) => {
+  const [showResponse, setShowResponse] = useState(false);
+  
+  const getStatusColor = (status: number) => {
+    if (status < 300) return '#28a745'; // green
+    if (status < 400) return '#ffc107'; // yellow  
+    return '#dc3545'; // red
+  };
+
+  return (
+    <div className="api-endpoint-renderer">
+      {displayName && <span className="jv-name">{name}</span>}
+      {displayName && <span>{seperator}</span>}
+      
+      <div className="api-summary">
+        <span className="api-method" data-method={value.method.toLowerCase()}>
+          {value.method}
+        </span>
+        <span className="api-url">{value.url}</span>
+        <span 
+          className="api-status" 
+          style={{ color: getStatusColor(value.status) }}
+        >
+          {value.status}
+        </span>
+        <span className="api-timing">{value.responseTime}ms</span>
+        
+        {value.data && (
+          <button 
+            className="api-toggle"
+            onClick={() => setShowResponse(!showResponse)}
+          >
+            {showResponse ? 'Hide' : 'Show'} Response
+          </button>
+        )}
+      </div>
+      
+      {showResponse && value.data && (
+        <div className="api-response">
+          <ObjectView 
+            value={value.data}
+            name="response"
+            expandLevel={typeof expandLevel === 'number' ? expandLevel - 1 : expandLevel}
+            objectGrouped={context.objectGrouped}
+            arrayGrouped={context.arrayGrouped}
+            highlightUpdate={context.highlightUpdate}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Usage in component
+const APIMonitor = () => {
+  const apiCalls = {
+    userAPI: new APIEndpoint('GET', '/api/users', 200, 145, {
+      users: [{ id: 1, name: 'John' }, { id: 2, name: 'Jane' }],
+      total: 2
+    }),
+    authAPI: new APIEndpoint('POST', '/api/auth/login', 401, 89, {
+      error: 'Invalid credentials'
+    }),
+    healthCheck: new APIEndpoint('GET', '/health', 200, 23, { status: 'ok' })
+  };
+
+  const customRenderers = new Map([
+    [APIEndpoint, APIEndpointRenderer]
+  ]);
+
+  return (
+    <div>
+      <h2>API Call Monitor</h2>
+      <ObjectView 
+        value={apiCalls}
+        name="apiCalls"
+        customRender={customRenderers}
+        expandLevel={1}
+      />
+    </div>
+  );
+};
+```
 
 ```tsx
 import React, { useState } from 'react';
@@ -424,17 +532,79 @@ const LargeDataViewer = ({ data }) => {
 };
 ```
 
-### 2. Dynamic Data
+### 2. Dynamic Data with Controlled Highlighting
 
 ```tsx
-// For frequently changing data, control expansion carefully
+// For frequently changing data, disable highlighting for better performance
 const RealTimeDataViewer = ({ streamData }) => {
   return (
     <ObjectView 
       value={streamData}
       expandLevel={false}    // Start collapsed
+      highlightUpdate={false} // Disable change highlighting
       name="liveData"
     />
+  );
+};
+
+// For important state changes, keep highlighting enabled
+const StateViewer = ({ appState }) => {
+  return (
+    <ObjectView 
+      value={appState}
+      expandLevel={1}
+      highlightUpdate={true}  // Enable highlighting (default)
+      name="applicationState"
+    />
+  );
+};
+```
+
+### 3. Custom Renderers for Performance
+
+```tsx
+// Optimize rendering of large collections with custom renderers
+class LargeDataSet {
+  constructor(public items: any[], public metadata: any) {}
+}
+
+const OptimizedDataSetRenderer: React.FC<JSONViewProps> = ({ 
+  value, 
+  name, 
+  displayName, 
+  seperator,
+  context 
+}) => {
+  const [showItems, setShowItems] = useState(false);
+  
+  return (
+    <div>
+      {displayName && <span className="jv-name">{name}</span>}
+      {displayName && <span>{seperator}</span>}
+      
+      <div className="dataset-summary">
+        <span>📊 Dataset ({value.items.length} items)</span>
+        <button onClick={() => setShowItems(!showItems)}>
+          {showItems ? 'Hide' : 'Show'} Items
+        </button>
+      </div>
+      
+      {showItems && (
+        <ObjectView 
+          value={value.items.slice(0, 100)} // Only show first 100 items
+          name="items (first 100)"
+          expandLevel={false}
+          arrayGrouped={25}
+          highlightUpdate={false}
+        />
+      )}
+      
+      <ObjectView 
+        value={value.metadata}
+        name="metadata"
+        expandLevel={1}
+      />
+    </div>
   );
 };
 ```
@@ -491,6 +661,40 @@ const RealTimeDataViewer = ({ streamData }) => {
 
 .compact .jv-field {
   margin: 2px 0;
+}
+```
+
+### Keyword Styling Customization
+
+The new keyword badges (for `null`, `undefined`, `true`, `false`) can be customized:
+
+```css
+/* Customize keyword badges */
+.jv-keyword {
+  font-size: 0.8em;
+  padding: 0.2em 0.5em;
+  border-radius: 0.3em;
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 0 0.2em;
+}
+
+/* Different colors for different keywords */
+.jv-field-boolean .jv-keyword {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.jv-field-undefined .jv-keyword,
+.jv-field-null .jv-keyword {
+  background-color: #fce4ec;
+  color: #c2185b;
+}
+
+/* Dark theme keywords */
+.dark-theme .jv-keyword {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: inherit;
 }
 ```
 
@@ -582,3 +786,7 @@ class ErrorBoundaryWithInspector extends React.Component {
 4. **Development Only**: Consider hiding in production builds
 5. **Naming**: Use descriptive names for better debugging experience
 6. **Styling**: Customize CSS to match your application's theme
+7. **Custom Renderers**: Use custom renderers for domain-specific data types
+8. **Change Highlighting**: Disable `highlightUpdate` for frequently changing data
+9. **Memory Management**: Custom renderers should avoid memory leaks in cleanup
+10. **Accessibility**: Ensure custom renderers maintain keyboard navigation and screen reader support

@@ -10,8 +10,11 @@ A powerful and flexible React component for visualizing JavaScript objects and d
 - 🔄 **Circular Reference Safe**: Safely handles circular references without infinite loops
 - ⚡ **Performance Optimized**: Efficient rendering with lazy loading and change detection
 - 🎨 **Customizable Styling**: Built-in CSS with full customization support
-- 📱 **TypeScript Ready**: Complete TypeScript support with proper type definitions
+- � **Custom Renderers**: Register custom components for specific data types or constructor functions
+- 💡 **Keyword Highlighting**: Special styling for boolean values, null, undefined with keyword badges
+- �📱 **TypeScript Ready**: Complete TypeScript support with proper type definitions
 - 🔍 **Developer Friendly**: Perfect for debugging, logging, and data inspection
+- ⚙️ **Configurable Highlighting**: Control change detection and flash highlighting behavior
 
 ## 🚀 Quick Start
 
@@ -174,6 +177,8 @@ const [appState, setAppState] = useState({
 | `expandLevel` | `number \| boolean` | `false` | Initial expansion: `true` (all), `false` (none), or depth number |
 | `objectGrouped` | `number` | `25` | Group objects with more than N properties |
 | `arrayGrouped` | `number` | `10` | Group arrays with more than N elements |
+| `customRender` | `Map<Constructor, React.FC>` | `undefined` | Custom renderers for specific types |
+| `highlightUpdate` | `boolean` | `true` | Enable/disable change detection highlighting |
 
 ### Supported Data Types
 
@@ -205,6 +210,18 @@ The component comes with sensible defaults but is fully customizable:
 .jv-field-string .jv-value { color: #c41a16; }
 .jv-field-number .jv-value { color: #1c00cf; }
 .jv-field-boolean .jv-value { color: #aa0d91; }
+
+/* Keyword badges (null, undefined, true, false) */
+.jv-keyword {
+  font-size: 0.85em;
+  padding-inline: 0.6em;
+  margin-inline: 0.3em;
+  padding-block: 0.05em;
+  border-radius: 0.2em;
+  text-transform: uppercase;
+  font-weight: bold;
+  background-color: color-mix(in srgb, currentColor 20%, var(--jv-bg-color));
+}
 
 /* Interactive elements */
 .jv-cursor { cursor: pointer; }
@@ -260,6 +277,63 @@ const largeDataset = {
   arrayGrouped={50}    // Show 50 items before grouping
   objectGrouped={100}  // Show 100 properties before grouping
   expandLevel={1}      // Only expand first level initially
+/>
+```
+
+### Custom Renderers
+
+Register custom components for specific data types:
+
+```tsx
+import React from 'react';
+import { ObjectView } from 'react-obj-view';
+
+// Custom renderer for User class instances
+class User {
+  constructor(public name: string, public email: string) {}
+}
+
+const UserRenderer = ({ value, name, displayName, separator = ":" }) => (
+  <div className="custom-user-view">
+    {displayName && <span className="jv-name">{name}</span>}
+    {displayName && <span>{separator}</span>}
+    <span className="user-badge">👤 {value.name}</span>
+    <span className="user-email">({value.email})</span>
+  </div>
+);
+
+// Create custom render map
+const customRenderers = new Map([
+  [User, UserRenderer]
+]);
+
+const data = {
+  currentUser: new User("John Doe", "john@example.com"),
+  admin: new User("Admin", "admin@example.com")
+};
+
+<ObjectView 
+  value={data} 
+  customRender={customRenderers}
+  expandLevel={2}
+/>
+```
+
+### Controlling Change Highlighting
+
+```tsx
+// Disable change highlighting for performance
+<ObjectView 
+  value={frequentlyChangingData}
+  highlightUpdate={false}
+  expandLevel={1}
+/>
+
+// Enable highlighting (default behavior)
+<ObjectView 
+  value={data}
+  highlightUpdate={true}
+  expandLevel={1}
 />
 ```
 
