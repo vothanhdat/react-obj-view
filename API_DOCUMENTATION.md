@@ -1,5 +1,25 @@
 # API Documentation
 
+## Setup
+
+### Installation
+
+```bash
+npm install react-obj-view
+# or
+yarn add react-obj-view
+```
+
+### Import
+
+```tsx
+import { ObjectView } from 'react-obj-view';
+// ⚠️ IMPORTANT: Import CSS styles separately
+import 'react-obj-view/dist/react-obj-view.css';
+```
+
+> **Note**: The CSS file must be imported separately as it's not bundled with the JavaScript. This gives you control over when and how the styles are loaded.
+
 ## Components
 
 ### ObjectView
@@ -473,6 +493,42 @@ The component gracefully handles various error conditions:
 - **Undefined Properties**: Clearly marked and typed
 - **Prototype Chain**: Only own properties are displayed by default
 - **Getters/Setters**: Property descriptors are not evaluated to avoid side effects
+
+## Troubleshooting
+
+### Styles Not Applied
+
+**Problem**: Component renders but has no styling.
+
+**Solution**: Import the CSS file separately:
+```tsx
+import 'react-obj-view/dist/react-obj-view.css';
+```
+
+**Alternative**: If using a CSS-in-JS solution, you can copy the styles from the CSS file.
+
+### TypeScript Errors
+
+**Problem**: TypeScript errors with custom renderers.
+
+**Solution**: Ensure proper typing:
+```tsx
+import { JSONViewProps, Constructor } from 'react-obj-view';
+
+const customRenderers = new Map<Constructor, React.FC<JSONViewProps>>([
+  [MyClass as Constructor, MyRenderer]
+]);
+```
+
+### Performance Issues
+
+**Problem**: Slow rendering with large objects.
+
+**Solutions**:
+- Use appropriate `expandLevel` (start with `1` or `2`)
+- Increase `objectGrouped` and `arrayGrouped` thresholds
+- Disable `highlightUpdate` for frequently changing data
+- Use custom renderers for complex objects
 
 ## Accessibility
 

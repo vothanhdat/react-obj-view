@@ -39,6 +39,8 @@ yarn add react-obj-view
 ```tsx
 import React from 'react';
 import { ObjectView } from 'react-obj-view';
+// Import the CSS styles
+import 'react-obj-view/dist/react-obj-view.css';
 
 const App = () => {
   const data = {

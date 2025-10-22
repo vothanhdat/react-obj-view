@@ -10,11 +10,16 @@ This guide provides practical examples and best practices for using React Object
 npm install react-obj-view
 ```
 
+**Important: Import both the component and CSS:**
+
 ```tsx
 import React from 'react';
 import { ObjectView } from 'react-obj-view';
-// The component automatically imports its CSS styles
+// ⚠️ REQUIRED: Import CSS styles separately
+import 'react-obj-view/dist/react-obj-view.css';
 ```
+
+> **Why separate CSS import?** This gives you control over when styles are loaded and allows for better optimization in your build process.
 
 ## Common Use Cases
 
