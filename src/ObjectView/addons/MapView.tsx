@@ -13,5 +13,10 @@ export const MapView: React.FC<JSONViewProps> = (props) => {
 
     return <ObjectDetailView
         {...props}
-        {...{ currentType: "Map", value, childSeperator: " => " }} />;
+        {...{
+            currentType: "Map",
+            displayType: `Map(${(props.value as any as Map<any, any>).size})`,
+            value,
+            childSeperator: " => "
+        }} />;
 };

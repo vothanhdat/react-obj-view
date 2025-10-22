@@ -14,5 +14,10 @@ export const SetView: React.FC<JSONViewProps> = (props) => {
 
     return <ObjectDetailView
         {...props}
-        {...{ currentType: "Set", value, childDisplayName: false }} />;
+        {...{
+            currentType: "Set",
+            displayType: `Set(${(props.value as any as Set<any>)?.size})`,
+            value,
+            childDisplayName: false
+        }} />;
 };

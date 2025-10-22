@@ -44,6 +44,16 @@
     .jv-value {
         word-wrap: break-word;
     }
+    .jv-keyword {
+        font-size: 0.85em;
+        padding-inline: 0.6em;
+        margin-inline: 0.3em;
+        padding-block: 0.05em;
+        border-radius: 0.2em;
+        text-transform: uppercase;
+        font-weight: bold;
+        background-color: color-mix(in srgb, currentColor 20%, var(--jv-bg-color));
+    }
 
     .jv-cursor {
         cursor: pointer;

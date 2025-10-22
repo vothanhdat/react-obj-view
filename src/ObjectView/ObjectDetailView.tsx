@@ -6,16 +6,28 @@ import { PreviewValue } from "./PreviewValue";
 import { useExpandState } from "./hooks/useExpandState";
 import { ObjectRouter } from "./ObjectRouter";
 import { createMemorizeMap } from "../utils/createMemorizeMap";
+import { EMPTY_ARR } from "./hooks/defaultValue";
 
-export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boolean; childSeperator?: string; }> = (props) => {
+export const ObjectDetailView: React.FC<JSONViewProps & {
+    childDisplayName?: boolean;
+    childSeperator?: string;
+    displayType?: any;
+}> = (props) => {
 
     const {
-        value, name, expandLevel, context, currentType, displayName = true, childDisplayName = true, seperator = ":", childSeperator = ":", trace = [], path = [],
+        value, name, expandLevel, context, currentType,
+        displayName = true,
+        seperator = ":",
+        childDisplayName = true,
+        childSeperator = ":",
+        trace = EMPTY_ARR,
+        path = EMPTY_ARR,
+        displayType,
     } = props;
 
     const isCircular = useMemo(
         () => {
-            if (value && trace.length) {
+            if (value && trace?.length) {
                 let idx = trace.indexOf(value);
                 return !(idx == -1 || idx == trace.length - 1);
             } else {
@@ -108,8 +120,8 @@ export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boo
                     {displayName && <span className="jv-name">{name}</span>}
                     {displayName && <span>{seperator}</span>}
                     <span>[-]</span>
-                    {currentType && <span className="jv-type">{currentType}</span>}
-                    <span className="jv-meta">{size} items</span>
+                    {currentType && <span className="jv-type">{displayType ?? currentType}</span>}
+                    {/* <span className="jv-meta">{size} items</span> */}
                     <span>{isArray ? "[" : "{"} </span>
                 </div>
             </div>
@@ -134,8 +146,8 @@ export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boo
                     {displayName && <span className="jv-name">{name}</span>}
                     {displayName && name && <span>{seperator}</span>}
                     {name && ableToExpand && <span>[+]</span>}
-                    {currentType && <span className="jv-type">{currentType}</span>}
-                    <span className="jv-meta">{size} items</span>
+                    {currentType && <span className="jv-type">{displayType ?? currentType}</span>}
+                    {/* <span className="jv-meta">{size} items</span> */}
                     <span>{isArray ? "[" : "{"}</span>
                     {ableToExpand && <PreviewValue {...{ value, size, }} />}
                     <span>{isArray ? "]" : "}"}</span>
