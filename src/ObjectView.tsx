@@ -1,4 +1,4 @@
-import React, { type Dispatch, type SetStateAction, useMemo, useCallback, useState, useEffect, useRef } from "react";
+import React, { type Dispatch, type SetStateAction, useMemo, useCallback, useState, useEffect, useRef, Ref } from "react";
 import { ChangeFlashWrappper } from "./utils/ChangeFlashWrappper";
 import { GroupedObject, toGrouped } from "./utils/GroupedObject";
 
@@ -16,24 +16,29 @@ type JSONViewProps = {
 };
 
 type JSONViewCtx = {
-    expandRoot: Record<string, boolean>;
-    setExpandRoot: Dispatch<SetStateAction<Record<string, boolean>>>;
+    expandRootRef: React.RefObject<Record<string, boolean>>;
     objectGrouped: number,
     arrayGrouped: number,
 }
 
-const useExpandState = ({ path, expandLevel, context: { expandRoot, setExpandRoot } }: JSONViewProps, isCircular = false) => {
+const useExpandState = ({ path, expandLevel, context: { expandRootRef } }: JSONViewProps, isCircular = false) => {
+    const [, reload] = useState(0)
     const expandKeys = path?.join("/") ?? "";
 
     const defaultExpand = typeof expandLevel == "boolean"
         ? expandLevel
         : (typeof expandLevel == 'number' && expandLevel > 0);
 
-    const isExpand = expandRoot?.[expandKeys] ?? (defaultExpand && !isCircular)
+    const isExpand = expandRootRef?.current?.[expandKeys] ?? (defaultExpand && !isCircular)
 
     const setExpand = useCallback(
-        (value: boolean) => setExpandRoot((r: object) => ({ ...r, [expandKeys]: value })),
-        [expandRoot, expandKeys]
+        (value: boolean) => {
+            if (expandRootRef.current) {
+                expandRootRef.current[expandKeys] = value;;
+                reload?.(Math.random())
+            }
+        },
+        [expandKeys]
     );
 
     return { isExpand, setExpand, expandKeys };
@@ -374,13 +379,13 @@ export const ObjectView: React.FC<{
     arrayGrouped?: number,
 }> = ({ value, name, style, expandLevel = false, objectGrouped = 25, arrayGrouped = 10 }) => {
 
-    const [expandRoot, setExpandRoot] = useState<Record<string, boolean>>({});
+    const expandRootRef = useRef<Record<string, boolean>>({})
 
     const context: JSONViewCtx = useMemo(() => ({
-        expandRoot, setExpandRoot,
+        expandRootRef,
         objectGrouped,
         arrayGrouped,
-    }), [expandRoot, setExpandRoot, objectGrouped, arrayGrouped])
+    }), [expandRootRef, objectGrouped, arrayGrouped])
 
     const emptyPath = useMemo(() => [], [])
     const emptyTrace = useMemo(() => [], [])
