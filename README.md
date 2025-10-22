@@ -8,6 +8,8 @@ A powerful and flexible React component for visualizing JavaScript objects and d
 
 Experience all features hands-on including custom renderers, keyword styling, and configurable highlighting!
 
+> **Note**: If the demo link shows "404", please wait a few minutes for GitHub Pages to deploy, or check that GitHub Pages is enabled in repository settings.
+
 ## ✨ Features
 
 - 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions
