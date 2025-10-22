@@ -21,7 +21,7 @@ export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'curren
     const currentType = typeof value;
 
 
-    if (!value || value === true) {
+    if ((!value && value !== 0 && value !== "") || value === true) {
         return <KeywordValueView {...props} {...{ currentField, currentType }} />;
     }
 

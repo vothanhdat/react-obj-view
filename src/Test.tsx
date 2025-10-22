@@ -3,7 +3,127 @@
 import React, { useState } from 'react';
 import { ObjectView } from './ObjectView/ObjectView';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
+import { JSONViewProps, Constructor } from './ObjectView/JSONViewProps';
 import './style.css';
+import "./Test.css";
+// Custom classes for demonstration
+class User {
+    constructor(public name: string, public email: string, public role: string = 'user') { }
+}
+
+class APIEndpoint {
+    constructor(
+        public method: string,
+        public url: string,
+        public status: number,
+        public responseTime: number,
+        public data?: any
+    ) { }
+}
+
+// Custom renderer for User class
+const UserRenderer: React.FC<JSONViewProps> = ({ value, name, displayName, seperator = ":" }) => (
+    <div className="custom-user-view" style={{
+        padding: '4px 8px',
+        borderRadius: '4px',
+        backgroundColor: '#f0f8ff',
+        border: '1px solid #e0e8f0'
+    }}>
+        {displayName && <span className="jv-name">{name}</span>}
+        {displayName && <span>{seperator}</span>}
+        <span style={{ marginRight: '8px' }}>👤</span>
+        <strong>{value.name}</strong>
+        <span style={{ color: '#666', marginLeft: '8px' }}>({value.email})</span>
+        {value.role !== 'user' && (
+            <span style={{
+                backgroundColor: '#ffd700',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontSize: '10px',
+                marginLeft: '8px',
+                textTransform: 'uppercase'
+            }}>
+                {value.role}
+            </span>
+        )}
+    </div>
+);
+
+// Custom renderer for API endpoints
+const APIRenderer: React.FC<JSONViewProps> = ({ value, name, displayName, seperator = ":" }) => {
+    const getStatusColor = (status: number) => {
+        if (status < 300) return '#28a745';
+        if (status < 400) return '#ffc107';
+        return '#dc3545';
+    };
+
+    const getMethodColor = (method: string) => {
+        switch (method) {
+            case 'GET': return '#007bff';
+            case 'POST': return '#28a745';
+            case 'PUT': return '#ffc107';
+            case 'DELETE': return '#dc3545';
+            default: return '#6c757d';
+        }
+    };
+
+    return (
+        <div style={{
+            padding: '6px 10px',
+            borderRadius: '4px',
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            fontFamily: 'monospace'
+        }}>
+            {displayName && <span className="jv-name">{name}</span>}
+            {displayName && <span>{seperator}</span>}
+            <span style={{
+                backgroundColor: getMethodColor(value.method),
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                marginRight: '8px'
+            }}>
+                {value.method}
+            </span>
+            <span style={{ marginRight: '8px' }}>{value.url}</span>
+            <span style={{
+                color: getStatusColor(value.status),
+                fontWeight: 'bold',
+                marginRight: '8px'
+            }}>
+                {value.status}
+            </span>
+            <span style={{ color: '#666', fontSize: '12px' }}>
+                {value.responseTime}ms
+            </span>
+        </div>
+    );
+};
+
+// Create custom data with new classes
+const createCustomExampleData = () => ({
+    users: {
+        admin: new User("Admin User", "admin@example.com", "admin"),
+        moderator: new User("Mod User", "mod@example.com", "moderator"),
+        regular: new User("John Doe", "john@example.com")
+    },
+    apiCalls: {
+        getUsersAPI: new APIEndpoint('GET', '/api/users', 200, 145),
+        loginAPI: new APIEndpoint('POST', '/api/auth/login', 401, 89),
+        createUserAPI: new APIEndpoint('POST', '/api/users', 201, 234),
+        deleteUserAPI: new APIEndpoint('DELETE', '/api/users/123', 204, 156)
+    },
+    keywordDemo: {
+        isActive: true,
+        isDisabled: false,
+        data: null,
+        config: undefined,
+        emptyString: "",
+        zeroNumber: 0
+    }
+});
 
 // Create a flat list of all available test data for the dropdown
 const testDataOptions = [
@@ -11,6 +131,16 @@ const testDataOptions = [
     { label: 'Quick - Simple Object', value: quickExamples.simple, category: 'Quick' },
     { label: 'Quick - Moderate Nested', value: quickExamples.moderate, category: 'Quick' },
     { label: 'Quick - Complex Mixed Types', value: quickExamples.complex, category: 'Quick' },
+
+    // NEW: Custom renderer demos
+    { label: 'Demo - Custom Renderers', value: createCustomExampleData(), category: 'Demo' },
+    {
+        label: 'Demo - Keyword Styling', value: {
+            booleans: { isTrue: true, isFalse: false },
+            nullish: { nullValue: null, undefinedValue: undefined },
+            emptyValues: { emptyString: "", zeroNumber: 0, emptyArray: [], emptyObject: {} }
+        }, category: 'Demo'
+    },
 
     // Primitives
     {
@@ -69,6 +199,18 @@ export const Test = () => {
     const [isCustomMode, setIsCustomMode] = useState(false);
     const [customDataParsed, setCustomDataParsed] = useState<any>(null);
     const [parseError, setParseError] = useState<string>('');
+
+    // NEW: State for new features
+    const [enableCustomRenderers, setEnableCustomRenderers] = useState(true);
+    const [enableHighlighting, setEnableHighlighting] = useState(true);
+    const [objectGrouped, setObjectGrouped] = useState(25);
+    const [arrayGrouped, setArrayGrouped] = useState(10);
+
+    // Create custom renderer map
+    const customRenderers = enableCustomRenderers ? new Map<Constructor, React.FC<JSONViewProps>>([
+        [User as Constructor, UserRenderer],
+        [APIEndpoint as Constructor, APIRenderer]
+    ]) : undefined;
 
     const handleDataChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIndex = parseInt(event.target.value);
@@ -143,6 +285,20 @@ export const Test = () => {
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
             <h1>ObjectView Test Interface</h1>
 
+            <div style={{
+                marginBottom: '20px',
+                padding: '15px',
+                backgroundColor: '#e8f4fd',
+                borderRadius: '8px',
+                border: '1px solid #bee5eb'
+            }}>
+                <h3 style={{ margin: '0 0 10px 0', color: '#0c5460' }}>🆕 New Features Demo</h3>
+                <p style={{ margin: '0', fontSize: '14px', color: '#0c5460' }}>
+                    This demo showcases the latest features: Custom Renderers, Keyword Styling, and Configurable Highlighting.
+                    Try selecting "Demo - Custom Renderers" to see custom User and API endpoint visualizations!
+                </p>
+            </div>
+
             <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div>
@@ -206,6 +362,65 @@ export const Test = () => {
                     </div>
                 </div>
 
+                {/* NEW: Additional controls for new features */}
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                            🎨 Features:
+                        </label>
+                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={enableCustomRenderers}
+                                    onChange={(e) => setEnableCustomRenderers(e.target.checked)}
+                                    style={{ marginRight: '6px' }}
+                                />
+                                Custom Renderers
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={enableHighlighting}
+                                    onChange={(e) => setEnableHighlighting(e.target.checked)}
+                                    style={{ marginRight: '6px' }}
+                                />
+                                Change Highlighting
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                            📦 Grouping:
+                        </label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <label style={{ fontSize: '12px' }}>
+                                Objects:
+                                <input
+                                    type="number"
+                                    value={objectGrouped}
+                                    onChange={(e) => setObjectGrouped(parseInt(e.target.value) || 25)}
+                                    style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
+                                    min="1"
+                                    max="100"
+                                />
+                            </label>
+                            <label style={{ fontSize: '12px' }}>
+                                Arrays:
+                                <input
+                                    type="number"
+                                    value={arrayGrouped}
+                                    onChange={(e) => setArrayGrouped(parseInt(e.target.value) || 10)}
+                                    style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
+                                    min="1"
+                                    max="100"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div style={{ minWidth: '300px' }}>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                         <input
@@ -264,7 +479,10 @@ export const Test = () => {
                             Status: {parseError ? 'Invalid' : 'Valid'} |
                         </>
                     )}
-                    Expand Level: {expandLevel === true ? 'Full' : expandLevel === false ? 'None' : expandLevel}
+                    Expand Level: {expandLevel === true ? 'Full' : expandLevel === false ? 'None' : expandLevel} |
+                    Custom Renderers: {enableCustomRenderers ? 'ON' : 'OFF'} |
+                    Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
+                    Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
                 </p>
             </div>
 
@@ -288,6 +506,10 @@ export const Test = () => {
                         value={getCurrentData()}
                         name="testData"
                         expandLevel={expandLevel}
+                        customRender={customRenderers}
+                        highlightUpdate={enableHighlighting}
+                        objectGrouped={objectGrouped}
+                        arrayGrouped={arrayGrouped}
                     />
                 </div>
             </div>

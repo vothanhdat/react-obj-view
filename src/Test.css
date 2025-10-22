@@ -1,0 +1,23 @@
+
+/* Custom demo styles */
+.custom-user-view {
+    display: inline-block;
+    margin: 2px 0;
+}
+
+.custom-user-view:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Demo feature highlight */
+.demo-highlight {
+    position: relative;
+}
+
+.demo-highlight::after {
+    content: "🆕";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 12px;
+}

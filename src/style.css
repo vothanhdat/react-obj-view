@@ -5,18 +5,6 @@
     --jv-change-color: rgb(255, 50, 0);
 }
 
-.react-state-dev-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    transition: opacity 0.3s;
-
-    &[data-active="true"] {
-        opacity: 0;
-        pointer-events: none;
-    }
-}
-
 .jv-root {
 
     font-family: monospace;
