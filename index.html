@@ -4,11 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Object View - Interactive Demo</title>
+    <meta name="description" content="Interactive demo of React Object View - A powerful component for visualizing JavaScript objects and data structures">
+    <meta name="keywords" content="react, object viewer, json viewer, data visualization, tree view, debug tool">
+    <meta name="author" content="Dat Vo">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vothanhdat.github.io/react-obj-view/">
+    <meta property="og:title" content="React Object View - Interactive Demo">
+    <meta property="og:description" content="A powerful React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://vothanhdat.github.io/react-obj-view/">
+    <meta property="twitter:title" content="React Object View - Interactive Demo">
+    <meta property="twitter:description" content="A powerful React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view">
+    
+    <!-- Favicon (you can add this later) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: #666; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 #666, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 #666, .5em 0 0 #666; }
+        }
+    </style>
 </head>
 
 <body>
+    <div id="root">
+        <div class="loading">Loading React Object View Demo</div>
+    </div>
     <script type="module" src="/src/dev.tsx"></script>
-    <div id="root"></div>
 </body>
 
 </html>

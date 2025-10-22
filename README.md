@@ -2,6 +2,12 @@
 
 A powerful and flexible React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view. Perfect for debugging, data inspection, and creating developer tools.
 
+## 🌟 Live Demo
+
+**[Try the Interactive Demo →](https://vothanhdat.github.io/react-obj-view/)**
+
+Experience all features hands-on including custom renderers, keyword styling, and configurable highlighting!
+
 ## ✨ Features
 
 - 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions

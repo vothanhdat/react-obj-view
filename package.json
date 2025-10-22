@@ -15,7 +15,9 @@
   },
   "scripts": {
     "build": "vite build",
+    "build:demo": "vite build --config vite.config.demo.ts",
     "dev": "vite --config vite.config.dev.ts",
+    "preview:demo": "vite preview --config vite.config.demo.ts",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
