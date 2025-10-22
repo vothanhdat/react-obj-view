@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { GroupedObject } from "./GroupedObject";
 
 
-export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; }> = ({ value, ...rest }) => {
+export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; enable?: boolean }> = ({ value, enable = true, ...rest }) => {
 
     const ref = useRef<HTMLElement>(undefined);
     const refValue = useRef(value);
@@ -32,7 +32,7 @@ export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value
             }
         }
 
-    }, [value, ref]);
+    }, [enable && value, ref]);
 
     return <div {...rest} ref={ref as any} />;
 };

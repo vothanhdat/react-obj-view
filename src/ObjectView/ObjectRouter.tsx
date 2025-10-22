@@ -8,15 +8,17 @@ import { StringViewObj } from "./addons/StringViewObj";
 import { ObjectDetailView } from "./ObjectDetailView";
 import { JSONViewProps } from "./JSONViewProps";
 import { PrimitiveView, SIMPLE_INSTANCE_RENDER } from "./PrimitiveView";
+import { InstanceView } from "./addons/InstanceView";
 
 
 export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'currentType'>> = (props) => {
 
-    const { value, path = [], name, } = props;
+    const { value, path = [], name, context: { customView } } = props;
 
     const currentField = path.at(-1) ?? name ?? undefined;
 
     const currentType = typeof value;
+
 
     if (!value) {
         return <PrimitiveView {...props} {...{ currentField, currentType }} />;
@@ -24,6 +26,12 @@ export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'curren
 
     switch (currentType) {
         case "object": {
+
+            const CustomRender = customView.get(value?.constructor)
+
+            if (!!CustomRender) {
+                return <CustomRender {...props} {...{ currentField }} />
+            }
 
             if (SIMPLE_INSTANCE_RENDER.has(value?.constructor)) {
                 return <PrimitiveView
@@ -35,24 +43,12 @@ export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'curren
                 return <ObjectDetailView {...props} {...{ currentField, currentType: undefined }} />;
             }
 
-            if (value instanceof Map) {
-                return <MapView {...props} {...{ currentField }} />;
-            }
-
-            if (value instanceof Set) {
-                return <SetView {...props} {...{ currentField }} />;
-            }
-
-            if (value instanceof Promise) {
-                return <PromiseView {...props} {...{ currentField }} />;
-            }
-
             if (value instanceof Error) {
                 return <PrimitiveView {...props} {...{ currentField, currentType: value?.constructor.name }} />;
             }
 
             if (!(value instanceof Array) && value?.constructor != Object) {
-                return <ObjectDetailView {...props} {...{ currentField, currentType: value?.constructor.name }} />;
+                return <InstanceView {...props} />;
             }
 
             return <ObjectDetailView {...props} {...{ currentField, currentType: "" }} />;

@@ -14,6 +14,7 @@ export const FunctionViewObj: React.FC<JSONViewProps> = (props) => {
         : fnString;
     return <ChangeFlashWrappper
         value={props.value}
+        enable={props.context.highlightUpdate}
         className={`jv-field jv-field-${currentType} ${useExpand ? 'jv-cursor' : ''}`}
         onClick={() => setExpand(!isExpand)}>
         {displayName && <span className="jv-name">{name}</span>}

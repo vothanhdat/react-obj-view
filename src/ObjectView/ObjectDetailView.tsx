@@ -5,6 +5,7 @@ import { JSONViewProps } from "./JSONViewProps";
 import { PreviewValue } from "./PreviewValue";
 import { useExpandState } from "./hooks/useExpandState";
 import { ObjectRouter } from "./ObjectRouter";
+import { createMemorizeMap } from "../utils/createMemorizeMap";
 
 export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boolean; childSeperator?: string; }> = (props) => {
 
@@ -26,7 +27,7 @@ export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boo
 
     const { isExpand, setExpand, expandKeys } = useExpandState(props, isCircular);
 
-    const { objectGrouped, arrayGrouped } = context;
+    const { objectGrouped, arrayGrouped, highlightUpdate } = context;
 
     const childExpandLevel = typeof expandLevel == "number" ? expandLevel - 1 : expandLevel;
 
@@ -72,9 +73,34 @@ export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boo
         [value, objectGrouped, arrayGrouped]
     );
 
+    const childPropsFactory = useMemo(
+        () => createMemorizeMap((name, value, index) => ({
+            name, value,
+            displayName: childDisplayName,
+            seperator: childSeperator,
+            ...value instanceof GroupedObject ? {
+                childDisplayName,
+                childSeperator,
+                trace,
+                path: [...path, String(index)],
+            } : {
+                trace: [...trace, value],
+                path: [...path, name],
+            },
+        })),
+        [childDisplayName, childSeperator, trace, path]
+    )
 
 
-    return <ChangeFlashWrappper className={"jv-field jv-field-obj jv-field-" + currentType} value={value}>
+    const childsProps = useMemo(
+        () => Object
+            .entries(groupedChilds)
+            .map(([name, value], index) => childPropsFactory(name, value, index)),
+        [groupedChilds, childDisplayName, childSeperator, trace, path]
+    )
+
+
+    return <ChangeFlashWrappper className={"jv-field jv-field-obj jv-field-" + currentType} value={value} enable={highlightUpdate}>
         {isExpand && ableToExpand ? <>
             <div>
                 <div onClick={() => setExpand(false)}>
@@ -88,30 +114,15 @@ export const ObjectDetailView: React.FC<JSONViewProps & { childDisplayName?: boo
                 </div>
             </div>
             <div className="jv-value">
-                {Object
-                    .entries(groupedChilds)
-                    .map(([name, value], index) => ({
-                        name, value,
-                        displayName: childDisplayName,
-                        seperator: childSeperator,
-                        ...value instanceof GroupedObject ? {
-                            childDisplayName,
-                            childSeperator,
-                            trace,
-                            path: [...path, String(index)],
-                        } : {
-                            trace: [...trace, value],
-                            path: [...path, name],
-                        },
-                    }))
-                    .map((props) => <ObjectRouter
-                        {...{
-                            ...props,
-                            context,
-                            expandLevel: childExpandLevel,
-                            isGrouped: shouldGroup,
-                        }}
-                        key={props.path.join("/")} />)}
+                {childsProps.map((props) => <ObjectRouter
+                    key={props.path.join("/")}
+                    {...{
+                        ...props,
+                        context,
+                        expandLevel: childExpandLevel,
+                        isGrouped: shouldGroup,
+                    }}
+                />)}
             </div>
             {name && <div>
                 <span> {isArray ? "]" : "}"} </span>

@@ -16,6 +16,7 @@ export const PrimitiveView: React.FC<JSONViewProps> = (props) => {
 
     return <ChangeFlashWrappper
         value={props.value}
+        enable={props.context.highlightUpdate}
         className={`jv-field jv-field-${currentType}`}>
         {displayName && <span className="jv-name">{name}</span>}
         {displayName && <span>{seperator}</span>}
