@@ -1,7 +1,7 @@
 
 
 import React, { useState } from 'react';
-import { ObjectView } from './ObjectView';
+import { ObjectView } from './ObjectView/ObjectView';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
 import './style.css';
 

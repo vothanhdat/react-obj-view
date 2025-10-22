@@ -1,6 +1,6 @@
 import React, { type Dispatch, type SetStateAction, useMemo, useCallback, useState, useEffect, useRef, Ref } from "react";
-import { ChangeFlashWrappper } from "./utils/ChangeFlashWrappper";
-import { GroupedObject, toGrouped } from "./utils/GroupedObject";
+import { ChangeFlashWrappper } from "../utils/ChangeFlashWrappper";
+import { GroupedObject, toGrouped } from "../utils/GroupedObject";
 
 type JSONViewProps = {
     value: any;
