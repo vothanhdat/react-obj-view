@@ -20,6 +20,5 @@ export const StringViewObj: React.FC<JSONViewProps> = (props) => {
         {displayName && <span>{seperator}</span>}
         <span className="jv-type">{currentType}{useExpand && <> lng={value?.length}</>}</span>
         <span className="jv-value">"{renderString}"</span>
-        <span>,</span>
     </ChangeFlashWrappper>;
 };

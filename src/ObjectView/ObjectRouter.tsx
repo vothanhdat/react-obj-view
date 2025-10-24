@@ -10,6 +10,7 @@ import { JSONViewProps } from "./JSONViewProps";
 import { PrimitiveView, SIMPLE_INSTANCE_RENDER } from "./PrimitiveView";
 import { InstanceView } from "./addons/InstanceView";
 import { KeywordValueView } from "./addons/KeywordValueView";
+import { ErrorView } from "./addons/ErrorView";
 
 
 export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'currentType'>> = (props) => {
@@ -45,7 +46,7 @@ export const ObjectRouter: React.FC<Omit<JSONViewProps, 'currentField' | 'curren
             }
 
             if (value instanceof Error) {
-                return <PrimitiveView {...props} {...{ currentField, currentType: value?.constructor.name }} />;
+                return <ErrorView {...props} />;
             }
 
             if (!(value instanceof Array) && value?.constructor != Object) {

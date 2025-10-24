@@ -22,7 +22,6 @@ export const PrimitiveView: React.FC<JSONViewProps> = (props) => {
         {displayName && <span>{seperator}</span>}
         <span className="jv-type">{currentType}</span>
         <span className="jv-value">{String(value)}</span>
-        <span>,</span>
     </ChangeFlashWrappper>;
 };
 

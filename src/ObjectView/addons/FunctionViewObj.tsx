@@ -21,6 +21,5 @@ export const FunctionViewObj: React.FC<JSONViewProps> = (props) => {
         {displayName && <span>{seperator}</span>}
         <span className="jv-type">{currentType}</span>
         <span className="jv-value">"{renderString}"</span>
-        <span>,</span>
     </ChangeFlashWrappper>;
 };

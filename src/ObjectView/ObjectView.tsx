@@ -51,5 +51,5 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             path={emptyPath}
             trace={emptyTrace}
             {...{ name, value, context, expandLevel }} />
-    </div>;
+    </div>
 };
