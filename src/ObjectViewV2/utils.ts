@@ -31,11 +31,15 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
                     yield {
                         name: k,
                         data: v,
+                        isNonenumerable: false,
+
                     };
                 } else {
                     yield {
                         name: i.toString(),
                         data: entry,
+                        isNonenumerable: false,
+
                     };
                 }
                 i++;
@@ -55,6 +59,7 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
                     yield {
                         name: propertyName || `""`,
                         data: propertyValue,
+                        isNonenumerable: false,
                     };
                 } else if (showNonenumerable) {
                     // To work around the error (happens some time when propertyName === 'caller' || propertyName === 'arguments')
@@ -81,6 +86,7 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
             // [[Prototype]] of the object: `Object.getPrototypeOf(data)`
             // the property name is shown as "__proto__"
             if (showNonenumerable && data !== Object.prototype /* already added */) {
+                // if (showNonenumerable && data !== Object.prototype /* already added */) {
                 yield {
                     name: '__proto__',
                     data: Object.getPrototypeOf(data),

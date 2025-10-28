@@ -1,8 +1,10 @@
 export class GroupedProxy { }
 
-export const getObjectGroupProxy = (value: any, keys: string[], maxSize: number = 10) => {
+export const getObjectGroupProxyEntries = (iterators: { name: string, data: any }[], maxSize: number = 10) => {
 
-    const keySize = keys.length;
+    const indexed = new Map(iterators.map(e => [e.name, e.data]))
+
+    const keySize = iterators.length;
 
     const splitChars = " … ";
 
@@ -24,35 +26,33 @@ export const getObjectGroupProxy = (value: any, keys: string[], maxSize: number 
                         ].join(splitChars)),
                     getOwnPropertyDescriptor(_, prop) {
                         const [from, to] = String(prop).split(splitChars);
-                        return {
-                            enumerable: +to - 1 > +from,
-                            configurable: true,
-                        };
+                        return { configurable: true, enumerable: +to - 1 > +from, };
                     },
                     get(_, key) {
                         const [from, to] = String(key).split(splitChars);
                         if (+to - 1 > +from) return getChilds(+from, +to);
-                        return Reflect.get(value, key);
+                        return undefined
                     },
                 }
             ) : new Proxy(
                 new GroupedProxy(),
                 {
-                    ownKeys: () => Array(Math.ceil((size - 1))).fill(0)
+                    ownKeys: () => Array(size).fill(0)
                         .map((_, i) => from + i)
-                        .map(index => keys[index]),
+                        .map(index => String(iterators[index].name)),
+
                     getOwnPropertyDescriptor(_, key) {
                         return {
                             configurable: true,
-                            enumerable: Number(key) >= from && Number(key) <= to,
+                            enumerable: true,
                         };
                     },
                     get(_, key) {
-                        return Reflect.get(value, key);
+                        return indexed.get(key as any);
                     },
                 }
             );
     };
 
-    return getChilds(0, keys.length);
+    return getChilds(0, iterators.length);
 };

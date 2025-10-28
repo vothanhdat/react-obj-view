@@ -1,14 +1,16 @@
 import React, { CSSProperties, Fragment, useCallback, useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import "./style.css";
-import { GroupedProxy, getObjectGroupProxy } from "./GroupedProxy";
+import { GroupedProxy, getObjectGroupProxyEntries } from "./GroupedProxy";
+import { createIterator } from "./utils";
 
 
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
 type JSONViewCtx = {
     expandLevel: number,
+    expandRef: React.RefObject<Record<string, boolean>>,
     preview: boolean,
-    expandRef: React.RefObject<Record<string, boolean>>
+    nonEnumerable: boolean,
 }
 
 
@@ -99,9 +101,7 @@ const ValueInline: React.FC<{ value: any, isPreview: boolean, className?: string
 const AllChildsPreview: React.FC<{ value: any, style?: React.CSSProperties, className?: string }> = ({ value, style, className }) => {
 
     const allIterators = useMemo(
-        () => Object.entries(value)
-            .slice(0, 6)
-            .map(([name, data]) => ({ name, data, isNonenumerable: false })),
+        () => [...createIterator(false, false)(value).take(6)],
         [value]
     )
 
@@ -129,36 +129,54 @@ const AllChildsPreview: React.FC<{ value: any, style?: React.CSSProperties, clas
 
 const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context }) => {
 
-    const allKeys = useMemo(
-        () => Object.keys(value),
+
+    const [enumrables, noneEnumerables] = useMemo(
+        () => {
+            const all = value instanceof GroupedProxy
+                ? []
+                : [...createIterator(true, false)(value)]
+            return [
+                all.filter(e => !e.isNonenumerable),
+                all.filter(e => e.isNonenumerable),
+            ]
+        },
         [value]
     )
+
     const renderObject = useMemo(
         () => value instanceof GroupedProxy ? value
-            : allKeys.length >= 10 ? getObjectGroupProxy(value, allKeys, 10)
-                : value,
-        [value, allKeys]
+            : getObjectGroupProxyEntries(enumrables, 100),
+        [enumrables, value]
     )
 
-    return Object.entries(renderObject)
-        .map(([name, data]) => <ObjectRender
-            key={path + "." + String(name)}
-            {...{
-                name,
-                value: data,
-                isNonenumerable: false,
-                path: path + "." + String(name),
-                level: level + 1,
-                context
-            }}
-        />)
-}
+    const entries = useMemo(
+        () => [
+            ...Object.entries(renderObject)
+                .map(([name, data]) => ({ name, data, isNonenumerable: false })),
+            ...context.nonEnumerable ? noneEnumerables : []
+        ], [renderObject, noneEnumerables, context.nonEnumerable]
+    )
 
+    return <>
+        {entries
+            .map(({ name, data, isNonenumerable }) => <ObjectRender
+                key={path + "." + String(name)}
+                {...{
+                    name,
+                    value: data,
+                    isNonenumerable,
+                    path: path + "." + String(name),
+                    level: level + 1,
+                    context
+                }}
+            />)}
+        { }
+    </>
+}
 
 const NameRender: React.FC<{ name: string }> = ({ name }) => {
     return <span className="name">{String(name)}</span>
 }
-
 
 const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context, isNonenumerable, renderName = true, }) => {
     const { expandChild, setExpandChild, hasChilds, isInGroupping } = useValueInfo(value, path, level, [], isNonenumerable, context)
@@ -208,6 +226,7 @@ export const ObjectViewV2: React.FC<ObjectViewProps> = ({
         expandRef: expandRootRef,
         expandLevel: expandLevel === true ? 9999 : expandLevel,
         preview: true,
+        nonEnumerable: true,
     } as JSONViewCtx), [expandLevel, expandRootRef])
 
     return <div className="objview-root" style={style}>

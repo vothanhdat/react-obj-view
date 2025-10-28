@@ -23,7 +23,7 @@
     }
 
     .node-default.non-enumrable>.name {
-        --opacity: 50%;
+        --opacity: 30%;
     }
 
     .node-default {
@@ -83,7 +83,7 @@
 
         &.value-preview {
             >.name {
-                --opacity: 50%;
+                --opacity: 30%;
             }
 
             overflow: hidden;
