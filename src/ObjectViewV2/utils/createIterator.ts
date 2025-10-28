@@ -14,7 +14,6 @@ export function getPropertyValue(object: any, propertyName: PropertyKey) {
     return object[propertyName];
 }
 
-
 export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
     const objectIterator = function* (data: any) {
         const shouldIterate = (typeof data === 'object' && data !== null) || typeof data === 'function';
@@ -98,3 +97,5 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
 
     return objectIterator;
 };
+
+
