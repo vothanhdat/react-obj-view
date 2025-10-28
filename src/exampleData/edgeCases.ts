@@ -1,4 +1,6 @@
 // Edge cases and special JavaScript constructs
+const preventError = (e) => { (e?.catch?.(() => { }), e) }
+
 export const edgeCases = {
     // Prototype chain examples
     prototypeChain: (() => {
@@ -162,12 +164,12 @@ export const edgeCases = {
     // Promises and async functions
     promises: {
         resolved: Promise.resolve("Resolved value"),
-        rejected: Promise.reject(new Error("Rejected promise")),
+        rejected: preventError(Promise.reject(new Error("Rejected promise"))),
         pending: new Promise(() => { }), // Never resolves
         resolvedComplex: Promise.resolve({
             map: new Map(),
             resolved: Promise.resolve("Resolved value"),
-            rejected: Promise.reject(new Error("Rejected promise")),
+            rejected: preventError(Promise.reject(new Error("Rejected promise"))),
         }),
 
 
