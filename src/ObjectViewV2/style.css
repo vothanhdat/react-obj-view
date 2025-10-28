@@ -1,0 +1,102 @@
+:root {
+    color-scheme: light dark;
+    --objview-color: light-dark(#333b3c, #efefec);
+    --objview-bg-color: light-dark(#f9f9f9, #212121);
+    --objview-change-color: rgb(255, 50, 0);
+}
+
+.objview-root {
+    font-family: monospace;
+    user-select: none;
+    font-size: 12px;
+    --color: #000;
+    --bg-color: var(--objview-bg-color);
+    --opacity: 100%;
+    background-color: var(--bg-color);
+    color: var(--color);
+
+
+    .expand-symbol {
+        width: 1em;
+        display: inline-block;
+        opacity: 0.5;
+    }
+
+    .node-default.non-enumrable>.name {
+        --opacity: 50%;
+    }
+
+    .node-default {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .node-child {
+        padding-left: 1.2em;
+    }
+
+    .value {
+        &.type-boolean {
+            --color: #08f;
+        }
+
+        &.type-number,
+        &.type-bigint {
+            --color: red;
+        }
+
+        &.type-symbol {}
+
+        &.type-undefined {}
+
+        &.type-string {
+            --color: orange;
+        }
+
+
+        &.type-object-array {
+            --color: #0aa;
+        }
+        &.type-object-object {
+            --color: #0aa;
+        }
+
+        &.type-null {}
+
+        &.type-function {
+            --color: #08f;
+        }
+
+        &.type-object-regexp {
+            --color: red;
+        }
+
+        &.type-object-date {
+            --color: #08f;
+        }
+
+        &.type-object-error {
+            --color: red;
+        }
+
+
+        &.value-preview {
+            >.name {
+                --opacity: 50%;
+            }
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .name {}
+
+    .node-default,
+    .name,
+    .value {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+    }
+
+}
