@@ -34,7 +34,7 @@
   "keywords": [
     "react",
     "object-viewer",
-    "json-viewer", 
+    "json-viewer",
     "data-visualization",
     "tree-view",
     "debug-tool",
@@ -48,9 +48,10 @@
     "react-dom": "19"
   },
   "devDependencies": {
-    "@types/react": "19",
-    "@types/react-dom": "19",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.8.3",
