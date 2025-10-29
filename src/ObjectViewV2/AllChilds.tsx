@@ -22,7 +22,7 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
                 all.filter(e => e.isNonenumerable),
             ];
         },
-        [value]
+        [value, resolver]
     );
 
     const groupSize = value instanceof Array ? context.arrayGroupSize : context.objectGroupSize

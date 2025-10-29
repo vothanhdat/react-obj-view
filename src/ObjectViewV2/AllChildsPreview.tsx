@@ -12,7 +12,7 @@ export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSPropertie
 
     const allIterators = useMemo(
         () => [...resolver(value, createIterator(false, false)(value), true).take(6)],
-        [value]
+        [value, resolver]
     );
 
     const renderName = !(value instanceof Array || value instanceof Set);
