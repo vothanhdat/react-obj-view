@@ -236,34 +236,39 @@ Internal component that provides visual feedback when values change, highlightin
 
 ## CSS Classes
 
-The component uses a comprehensive set of CSS classes for styling:
+The component uses the following CSS classes for styling:
 
-### Container Classes
-- `.jv-root`: Root container element
-- `.jv-field`: Generic field container
-- `.jv-value`: Container for field values
+### Root Container
+- `.objview-root`: Root container with base font, color, and background settings
 
-### Type-Specific Classes
-- `.jv-field-object`: Object field containers
-- `.jv-field-string`: String field containers  
-- `.jv-field-number`: Number field containers
-- `.jv-field-boolean`: Boolean field containers
-- `.jv-field-function`: Function field containers
-- `.jv-field-undefined`: Undefined value containers
-- `.jv-field-null`: Null value containers
+### Node Structure
+- `.node-default`: Individual node/property container with text overflow handling
+- `.node-child`: Nested child container with left padding
+- `.node-updated`: Applied to nodes during change detection flash
+- `.non-enumrable`: Modifier for non-enumerable properties (reduces opacity)
 
-### Element Classes
-- `.jv-name`: Property/field names
-- `.jv-type`: Type indicators
-- `.jv-value`: Value containers
-- `.jv-keyword`: NEW: Keyword value badges (null, undefined, true, false)
-- `.jv-meta`: Metadata information (size, length, etc.)
-- `.jv-tag`: Special tags (e.g., "circular")
-- `.jv-preview`: Preview text for collapsed content
-- `.jv-cursor`: Interactive/clickable elements
+### Node Elements
+- `.name`: Property/field names
+- `.value`: Value containers
+- `.expand-symbol`: Expand/collapse indicator (▶/▼)
+- `.tag-circular`: Badge indicating circular reference detection
 
-### State Classes
-- `.change-flash`: Applied to elements when values change
+### Value Type Classes
+- `.type-boolean`: Boolean values
+- `.type-number`, `.type-bigint`: Numeric values
+- `.type-string`: String values
+- `.type-symbol`: Symbol values
+- `.type-undefined`: Undefined values
+- `.type-null`: Null values
+- `.type-function`: Function values
+- `.type-object-array`: Array objects
+- `.type-object-object`: Plain objects
+- `.type-object-regexp`: Regular expressions
+- `.type-object-date`: Date objects
+- `.type-object-error`: Error objects
+
+### Modifiers
+- `.value-preview`: Applied to preview/collapsed value displays
 
 ## Behavior Details
 
