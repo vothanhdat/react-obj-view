@@ -1,12 +1,11 @@
 
 
-import React, { useState } from 'react';
-import { ObjectView } from './ObjectView/ObjectView';
+import React, { useMemo, useState } from 'react';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
-import { JSONViewProps, Constructor } from './ObjectView/JSONViewProps';
 import './style.css';
 import "./Test.css";
 import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
+import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -25,85 +24,91 @@ class APIEndpoint {
     ) { }
 }
 
-// Custom renderer for User class
-const UserRenderer: React.FC<JSONViewProps> = ({ value, name, displayName, seperator = ":" }) => (
-    <div className="custom-user-view" style={{
-        padding: '4px 8px',
-        borderRadius: '4px',
-        backgroundColor: '#f0f8ff',
-        border: '1px solid #e0e8f0'
-    }}>
-        {displayName && <span className="jv-name">{name}</span>}
-        {displayName && <span>{seperator}</span>}
-        <span style={{ marginRight: '8px' }}>👤</span>
-        <strong>{value.name}</strong>
-        <span style={{ color: '#666', marginLeft: '8px' }}>({value.email})</span>
-        {value.role !== 'user' && (
-            <span style={{
-                backgroundColor: '#ffd700',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontSize: '10px',
-                marginLeft: '8px',
-                textTransform: 'uppercase'
-            }}>
-                {value.role}
-            </span>
-        )}
-    </div>
-);
-
-// Custom renderer for API endpoints
-const APIRenderer: React.FC<JSONViewProps> = ({ value, name, displayName, seperator = ":" }) => {
-    const getStatusColor = (status: number) => {
-        if (status < 300) return '#28a745';
-        if (status < 400) return '#ffc107';
-        return '#dc3545';
-    };
-
-    const getMethodColor = (method: string) => {
-        switch (method) {
-            case 'GET': return '#007bff';
-            case 'POST': return '#28a745';
-            case 'PUT': return '#ffc107';
-            case 'DELETE': return '#dc3545';
-            default: return '#6c757d';
+const pickEntries = (entries: Entry[], keys: Array<string>): Entry[] => {
+    const picked: Entry[] = [];
+    for (const key of keys) {
+        const index = entries.findIndex(entry => String(entry.name) === key);
+        if (index !== -1) {
+            const [entry] = entries.splice(index, 1);
+            if (entry) {
+                picked.push(entry);
+            }
         }
+    }
+    return picked;
+};
+
+const userResolver: ResolverFn = function* (user: User, iterator, isPreview) {
+    const entries = [...iterator];
+    if (isPreview) {
+        yield {
+            name: 'summary',
+            data: `${user.name} • ${user.email}`,
+            isNonenumerable: false,
+        };
+        if (user.role !== 'user') {
+            yield {
+                name: 'role',
+                data: user.role,
+                isNonenumerable: false,
+            };
+        }
+        return;
+    }
+
+    const prioritized = pickEntries(entries, ['name', 'email', 'role']);
+    for (const entry of prioritized) {
+        yield entry;
+    }
+
+    if (user.role !== 'user') {
+        yield {
+            name: 'badge',
+            data: `⭐ ${user.role.toUpperCase()}`,
+            isNonenumerable: false,
+        };
+    }
+
+    for (const entry of entries) {
+        yield entry;
+    }
+};
+
+const apiEndpointResolver: ResolverFn = function* (endpoint: APIEndpoint, iterator, isPreview) {
+    const entries = [...iterator];
+    if (isPreview) {
+        yield {
+            name: 'request',
+            data: `${endpoint.method} ${endpoint.url}`,
+            isNonenumerable: false,
+        };
+        yield {
+            name: 'status',
+            data: endpoint.status,
+            isNonenumerable: false,
+        };
+        return;
+    }
+
+    const [methodEntry, urlEntry, statusEntry, responseTimeEntry] = pickEntries(entries, ['method', 'url', 'status', 'responseTime']);
+    if (methodEntry) yield methodEntry;
+    if (urlEntry) yield urlEntry;
+    if (statusEntry) yield statusEntry;
+
+    yield {
+        name: 'responseTimeLabel',
+        data: `${endpoint.responseTime}ms`,
+        isNonenumerable: false,
     };
 
-    return (
-        <div style={{
-            padding: '6px 10px',
-            borderRadius: '4px',
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #dee2e6',
-            fontFamily: 'monospace'
-        }}>
-            {displayName && <span className="jv-name">{name}</span>}
-            {displayName && <span>{seperator}</span>}
-            <span style={{
-                backgroundColor: getMethodColor(value.method),
-                color: 'white',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontSize: '11px',
-                marginRight: '8px'
-            }}>
-                {value.method}
-            </span>
-            <span style={{ marginRight: '8px' }}>{value.url}</span>
-            <span style={{
-                color: getStatusColor(value.status),
-                fontWeight: 'bold',
-                marginRight: '8px'
-            }}>
-                {value.status}
-            </span>
-            <span style={{ color: '#666', fontSize: '12px' }}>
-                {value.responseTime}ms
-            </span>
-        </div>
-    );
+    if (responseTimeEntry) yield responseTimeEntry;
+
+    const [dataEntry] = pickEntries(entries, ['data']);
+    if (dataEntry) yield dataEntry;
+
+    for (const entry of entries) {
+        yield entry;
+    }
 };
 
 // Create custom data with new classes
@@ -136,8 +141,8 @@ const testDataOptions = [
     { label: 'Quick - Moderate Nested', value: quickExamples.moderate, category: 'Quick' },
     { label: 'Quick - Complex Mixed Types', value: quickExamples.complex, category: 'Quick' },
 
-    // NEW: Custom renderer demos
-    { label: 'Demo - Custom Renderers', value: createCustomExampleData(), category: 'Demo' },
+    // NEW: Resolver demos
+    { label: 'Demo - Class Resolvers', value: createCustomExampleData(), category: 'Demo' },
     {
         label: 'Demo - Keyword Styling', value: {
             booleans: { isTrue: true, isFalse: false },
@@ -204,17 +209,24 @@ export const Test = () => {
     const [customDataParsed, setCustomDataParsed] = useState<any>(null);
     const [parseError, setParseError] = useState<string>('');
 
-    // NEW: State for new features
-    const [enableCustomRenderers, setEnableCustomRenderers] = useState(true);
+    // NEW: Toggle state for feature flags
+    const [enableResolvers, setEnableResolvers] = useState(true);
     const [enableHighlighting, setEnableHighlighting] = useState(true);
+    const [enablePreviewMode, setEnablePreviewMode] = useState(true);
+    const [showNonEnumerable, setShowNonEnumerable] = useState(true);
     const [objectGrouped, setObjectGrouped] = useState(25);
     const [arrayGrouped, setArrayGrouped] = useState(10);
 
-    // Create custom renderer map
-    const customRenderers = enableCustomRenderers ? new Map<Constructor, React.FC<JSONViewProps>>([
-        [User as Constructor, UserRenderer],
-        [APIEndpoint as Constructor, APIRenderer]
-    ]) : undefined;
+    // Create resolver overrides when enabled
+    const resolverOverrides = useMemo<Map<Constructor, ResolverFn> | undefined>(() => {
+        if (!enableResolvers) {
+            return undefined;
+        }
+        return new Map<Constructor, ResolverFn>([
+            [User as Constructor, userResolver],
+            [APIEndpoint as Constructor, apiEndpointResolver],
+        ]);
+    }, [enableResolvers]);
 
     const handleDataChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIndex = parseInt(event.target.value);
@@ -369,8 +381,8 @@ export const Test = () => {
                 }}>
                     <h3 style={{ margin: '0 0 10px 0', color: '#0c5460' }}>🆕 New Features Demo</h3>
                     <p style={{ margin: '0', fontSize: '14px', color: '#0c5460' }}>
-                        This demo showcases the latest features: Custom Renderers, Keyword Styling, and Configurable Highlighting.
-                        Try selecting "Demo - Custom Renderers" to see custom User and API endpoint visualizations!
+                        This demo showcases the latest features: Resolver overrides, keyword styling, and configurable highlighting.
+                        Toggle "Class Resolvers" to see custom User and API endpoint insights in action.
                     </p>
                 </div>            <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -445,11 +457,11 @@ export const Test = () => {
                                 <label style={{ display: 'flex', alignItems: 'center' }}>
                                     <input
                                         type="checkbox"
-                                        checked={enableCustomRenderers}
-                                        onChange={(e) => setEnableCustomRenderers(e.target.checked)}
+                                        checked={enableResolvers}
+                                        onChange={(e) => setEnableResolvers(e.target.checked)}
                                         style={{ marginRight: '6px' }}
                                     />
-                                    Custom Renderers
+                                    Class Resolvers
                                 </label>
                                 <label style={{ display: 'flex', alignItems: 'center' }}>
                                     <input
@@ -459,6 +471,24 @@ export const Test = () => {
                                         style={{ marginRight: '6px' }}
                                     />
                                     Change Highlighting
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={enablePreviewMode}
+                                        onChange={(e) => setEnablePreviewMode(e.target.checked)}
+                                        style={{ marginRight: '6px' }}
+                                    />
+                                    Preview Mode
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={showNonEnumerable}
+                                        onChange={(e) => setShowNonEnumerable(e.target.checked)}
+                                        style={{ marginRight: '6px' }}
+                                    />
+                                    Show Non-enumerable
                                 </label>
                             </div>
                         </div>
@@ -553,7 +583,9 @@ export const Test = () => {
                             </>
                         )}
                         Expand Level: {expandLevel === true ? 'Full' : expandLevel === false ? 'None' : expandLevel} |
-                        Custom Renderers: {enableCustomRenderers ? 'ON' : 'OFF'} |
+                        Resolvers: {enableResolvers ? 'ON' : 'OFF'} |
+                        Preview Mode: {enablePreviewMode ? 'ON' : 'OFF'} |
+                        Non-enumerable: {showNonEnumerable ? 'ON' : 'OFF'} |
                         Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
                         Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
                     </p>
@@ -575,16 +607,6 @@ export const Test = () => {
                         }}
                     >
 
-                        {/* <ObjectInspector
-                            data={getCurrentData()}
-                            name="testData"
-                            expandLevel={expandLevel}
-                            customRender={customRenderers}
-                            highlightUpdate={enableHighlighting}
-                            objectGrouped={objectGrouped}
-                            arrayGrouped={arrayGrouped}
-                            showNonenumerable
-                        /> */}
                         <ObjectViewV2
                             value={getCurrentData()}
                             name="testData"
@@ -592,6 +614,9 @@ export const Test = () => {
                             highlightUpdate={enableHighlighting}
                             objectGroupSize={objectGrouped}
                             arrayGroupSize={arrayGrouped}
+                            resolver={resolverOverrides}
+                            preview={enablePreviewMode}
+                            nonEnumerable={showNonEnumerable}
                         />
                     </div>
                 </div>
