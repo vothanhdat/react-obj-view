@@ -589,10 +589,9 @@ export const Test = () => {
                             value={getCurrentData()}
                             name="testData"
                             expandLevel={expandLevel}
-                            customRender={customRenderers}
                             highlightUpdate={enableHighlighting}
-                            objectGrouped={objectGrouped}
-                            arrayGrouped={arrayGrouped}
+                            objectGroupSize={objectGrouped}
+                            arrayGroupSize={arrayGrouped}
                         />
                     </div>
                 </div>
