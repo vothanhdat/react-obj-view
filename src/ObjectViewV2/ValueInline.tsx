@@ -1,10 +1,13 @@
 import React from "react";
 import { AllChildsPreview } from "./AllChildsPreview";
 import { joinClasses } from "./utils/joinClasses";
+import { JSONViewCtx } from "./types";
+import { PromiseWrapper } from "./ResolvePromiseWrapper";
+import { ResolvePromise } from "./ResolvePromiseWrapper";
 
+export type ValueInlineProps = { value: any; isPreview: boolean; className?: string; context: JSONViewCtx }
 
-
-export const ValueInline: React.FC<{ value: any; isPreview: boolean; className?: string; }> = ({ value, className, isPreview = false }) => {
+export const ValueInlinePre: React.FC<ValueInlineProps> = ({ value, className, context, isPreview = false }) => {
     switch (typeof value) {
         case "boolean":
         case "number":
@@ -29,18 +32,24 @@ export const ValueInline: React.FC<{ value: any; isPreview: boolean; className?:
             } else if (value instanceof Array) {
                 return isPreview
                     ? <span className={classes}>{`Array(${value.length})`}</span>
-                    : <AllChildsPreview className={joinClasses('value', className)} value={value} />;
+                    : <AllChildsPreview className={joinClasses('value', className)} value={value} context={context} />;
             } else if (value instanceof Map || value instanceof Set) {
 
                 return isPreview
                     ? <span className={classes}>{`${value.constructor?.name}(${value.size})`}</span>
-                    : <AllChildsPreview className={joinClasses('value', className)} value={value} />;
+                    : <AllChildsPreview className={joinClasses('value', className)} value={value} context={context} />;
             } else if (value instanceof Object) {
                 return isPreview
                     ? <span className={classes}>{(value.constructor?.name ?? `Object`)}</span>
-                    : <AllChildsPreview className={joinClasses('value', className)} value={value} />;
+                    : <AllChildsPreview className={joinClasses('value', className)} value={value} context={context} />;
             }
         }
     }
     return <span>{JSON.stringify(value, null, 2)}</span>;
 };
+
+export const ValueInline: React.FC<ValueInlineProps> = (props) => {
+    return props.value instanceof PromiseWrapper
+        ? <ResolvePromise Component={ValueInlinePre} {...props} />
+        : <ValueInlinePre {...props} />
+}

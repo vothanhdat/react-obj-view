@@ -3,11 +3,15 @@ import { joinClasses } from "./utils/joinClasses";
 import { NameRender } from "./ObjectView";
 import { ValueInline } from "./ValueInline";
 import { createIterator } from "./utils/createIterator";
+import { useResolver } from "./utils/useResolver";
+import { JSONViewCtx } from "./types";
 
-export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSProperties; className?: string; }> = ({ value, style, className }) => {
+export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSProperties; className?: string; context: JSONViewCtx }> = ({ value, style, className, context }) => {
+
+    const resolver = useResolver(value, context)
 
     const allIterators = useMemo(
-        () => [...createIterator(false, false)(value).take(6)],
+        () => [...resolver(value, createIterator(false, false)(value), true).take(6)],
         [value]
     );
 
@@ -26,7 +30,7 @@ export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSPropertie
             .map(({ name, data, isNonenumerable }, index) => <Fragment key={name}>
                 {index > 0 ? ", " : ""}
                 {renderName && <><NameRender name={name} />: </>}
-                <ValueInline value={data} isPreview />
+                <ValueInline value={data} context={context} isPreview />
             </Fragment>)}
         {allIterators.length > 5 ? ",…" : ""}
         {value instanceof Array ? "]" : "}"}

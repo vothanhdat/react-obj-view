@@ -1,18 +1,20 @@
 import React, { useMemo } from "react";
 import { GroupedProxy, getObjectGroupProxyEntries } from "./utils/groupedProxy";
-import { ObjectRender } from "./ObjectRender";
+import { ObjectRenderWrapper } from "./ObjectRender";
 import { ObjectRenderProps } from "./types";
 import { createIterator } from "./utils/createIterator";
+import { useResolver } from "./utils/useResolver";
 
 
 export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context }) => {
 
+    const resolver = useResolver(value, context)
 
     const [enumrables, noneEnumerables] = useMemo(
         () => {
             const all = value instanceof GroupedProxy
                 ? []
-                : [...createIterator(true, false)(value)];
+                : [...resolver(value, createIterator(true, false)(value), false)];
             return [
                 all.filter(e => !e.isNonenumerable),
                 all.filter(e => e.isNonenumerable),
@@ -22,7 +24,8 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
     );
 
     const renderObject = useMemo(
-        () => value instanceof GroupedProxy ? value
+        () => value instanceof GroupedProxy
+            ? value
             : getObjectGroupProxyEntries(enumrables, 100),
         [enumrables, value]
     );
@@ -37,7 +40,7 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
 
     return <>
         {entries
-            .map(({ name, data, isNonenumerable }) => <ObjectRender
+            .map(({ name, data, isNonenumerable }) => <ObjectRenderWrapper
                 key={path + "." + String(name)}
                 {...{
                     name,

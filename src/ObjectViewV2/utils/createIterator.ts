@@ -1,3 +1,5 @@
+import { Entry } from "../types";
+
 export const hasOwnProperty = Object.prototype.hasOwnProperty;
 export const propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -14,7 +16,8 @@ export function getPropertyValue(object: any, propertyName: PropertyKey) {
     return object[propertyName];
 }
 
-export const createIterator = (showNonenumerable: any, sortObjectKeys: any) => {
+export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (data: any) => Generator<Entry> => {
+
     const objectIterator = function* (data: any) {
         const shouldIterate = (typeof data === 'object' && data !== null) || typeof data === 'function';
         if (!shouldIterate) return;
