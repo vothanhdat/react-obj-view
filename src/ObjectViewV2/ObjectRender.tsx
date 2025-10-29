@@ -9,9 +9,9 @@ import { PromiseWrapper, ResolvePromise } from "./ResolvePromiseWrapper";
 import { ChangeFlashWrappper } from "../utils/ChangeFlashWrappper";
 
 
-const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context, isNonenumerable, renderName = true, }) => {
+const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context, isNonenumerable, renderName = true, traces }) => {
 
-    const { expandChild, setExpandChild, hasChilds, isInGroupping } = useValueInfo(value, path, level, [], isNonenumerable, context);
+    const { expandChild, setExpandChild, hasChilds, isInGroupping, isCircular } = useValueInfo(value, path, level, [], isNonenumerable, context, traces);
 
     const isPreview = expandChild || !context.preview;
 
@@ -23,6 +23,7 @@ const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", lev
                 {hasChilds ? (expandChild ? "▼ " : "▶ ") : "  "}
             </span>
             {renderName && <><NameRender {...{ name }} />: </>}
+            {isCircular ? <> <span className="tag-circular">Circular</span> </> : ""}
             {!isInGroupping && <ValueInline {...{
                 value,
                 isPreview,
@@ -31,15 +32,21 @@ const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", lev
             }} />}
         </div>
         {expandChild ? <div className="node-child">
-            <AllChilds {...{ name, value, path, level, context, isNonenumerable }} />
+            <AllChilds {...{ name, value, path, level, context, isNonenumerable, traces }} />
         </div> : ""}
     </>;
 };
 
 export const ObjectRenderWrapper: React.FC<ObjectRenderProps> = (props) => {
-    return <ChangeFlashWrappper value={props.value} flashClassname="node-updated">
-        {props.value instanceof PromiseWrapper
-            ? <ResolvePromise Component={ObjectRender} {...props} />
-            : <ObjectRender {...props} />}
-    </ChangeFlashWrappper>
+    const children = props.value instanceof PromiseWrapper
+        ? <ResolvePromise Component={ObjectRender} {...props} />
+        : <ObjectRender {...props} />
+        
+    if (props.context.highlightUpdate) {
+        return <ChangeFlashWrappper value={props.value} flashClassname="node-updated">
+            {children}
+        </ChangeFlashWrappper>
+    } else {
+        return children
+    }
 }

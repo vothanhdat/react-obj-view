@@ -2,8 +2,10 @@ import { useState, useCallback } from "react";
 import { GroupedProxy } from "../utils/groupedProxy";
 import { JSONViewCtx } from "../types";
 
-export const useValueInfo = (value: any, path: string, level: number, trace: any[], isNonenumerable: boolean, { expandLevel, expandRef }: JSONViewCtx) => {
+export const useValueInfo = (value: any, path: string, level: number, trace: any[], isNonenumerable: boolean, { expandLevel, expandRef }: JSONViewCtx, traces: any[]) => {
     const [, reload] = useState(0);
+
+    const isCircular = traces.length > 1 && traces.at(0) == traces.at(-1)
 
     const isInGroupping = value instanceof GroupedProxy;
 
@@ -12,7 +14,7 @@ export const useValueInfo = (value: any, path: string, level: number, trace: any
         || value == Object.prototype
     );
 
-    const defaultExpand = hasChilds && !isNonenumerable && level < expandLevel;
+    const defaultExpand = hasChilds && !isCircular && !isNonenumerable && level < expandLevel;
 
     const expandChild = hasChilds && (expandRef.current[path] ?? defaultExpand);
 
@@ -24,8 +26,10 @@ export const useValueInfo = (value: any, path: string, level: number, trace: any
         [expandRef]
     );
 
+
     return {
         hasChilds,
+        isCircular,
         expandChild,
         setExpandChild: hasChilds ? setExpandChild : undefined,
         isInGroupping,

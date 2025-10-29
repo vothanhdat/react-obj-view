@@ -4,9 +4,11 @@ import { ObjectRenderWrapper } from "./ObjectRender";
 import { ObjectRenderProps } from "./types";
 import { createIterator } from "./utils/createIterator";
 import { useResolver } from "./utils/useResolver";
+import { createMemorizeMap } from "../utils/createMemorizeMap";
+import { isRef } from "../utils/isRef";
 
 
-export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context }) => {
+export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context, traces }) => {
 
     const resolver = useResolver(value, context)
 
@@ -23,11 +25,13 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
         [value]
     );
 
+    const groupSize = value instanceof Array ? context.arrayGroupSize : context.objectGroupSize
+
     const renderObject = useMemo(
         () => value instanceof GroupedProxy
             ? value
-            : getObjectGroupProxyEntries(enumrables, 100),
-        [enumrables, value]
+            : getObjectGroupProxyEntries(enumrables, groupSize),
+        [enumrables, groupSize, value]
     );
 
     const entries = useMemo(
@@ -37,6 +41,11 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
             ...context.nonEnumerable ? noneEnumerables : []
         ], [renderObject, noneEnumerables, context.nonEnumerable]
     );
+
+    const traceFactory = useMemo(
+        () => createMemorizeMap((obj) => isRef(obj) ? [...traces ?? [], obj] : traces),
+        [traces]
+    )
 
     return <>
         {entries
@@ -48,6 +57,7 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
                     isNonenumerable,
                     path: path + "." + String(name),
                     level: level + 1,
+                    traces: traceFactory(data),
                     context
                 }} />)}
 

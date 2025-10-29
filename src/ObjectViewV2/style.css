@@ -22,15 +22,24 @@
         opacity: 0.5;
     }
 
+    .tag-circular {
+        font-size: 0.9em;
+        padding: 0.2em 0.4em;
+        background-color: darkgrey;
+        margin-inline: "1em";
+        font-weight: bold;
+    }
+
     .node-default.non-enumrable>.name {
         --opacity: 30%;
     }
 
-    .node-default >.name {
+    .node-default>.name {
         transition: background-color 1s;
         background-color: #0000;
     }
-    .node-updated > .node-default >.name {
+
+    .node-updated>.node-default>.name {
         transition: background-color 0.00s;
         background-color: rgb(255, 50, 0);
     }
@@ -68,6 +77,7 @@
         &.type-object-array {
             --color: #0aa;
         }
+
         &.type-object-object {
             --color: #0aa;
         }

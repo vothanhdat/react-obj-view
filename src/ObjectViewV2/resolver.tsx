@@ -66,7 +66,7 @@ const errorResolver: ResolverFn = function* (error: Error, entriesIterator: Gene
 };
 
 
-export const resolver: JSONViewCtx['resolver'] = new Map<any, ResolverFn>([
+export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn>([
     [Promise, promiseResolver],
     [Error, errorResolver],
 ]);

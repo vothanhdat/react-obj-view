@@ -11,7 +11,10 @@ export type JSONViewCtx = {
     expandRef: React.RefObject<Record<string, boolean>>;
     preview: boolean;
     nonEnumerable: boolean;
-    resolver: Map<any, ResolverFn>
+    resolver: Map<any, ResolverFn>;
+    arrayGroupSize:number
+    objectGroupSize:number
+    highlightUpdate:boolean
 };
 
 
@@ -23,6 +26,7 @@ export type ObjectRenderProps = {
     level: number;
     context: JSONViewCtx;
     renderName?: boolean;
+    traces: any[],
 };
 export type Entry = {
     name: any;
