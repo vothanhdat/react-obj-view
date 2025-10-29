@@ -6,6 +6,7 @@ import { allExamples, quickExamples, performanceTestData } from './exampleData';
 import { JSONViewProps, Constructor } from './ObjectView/JSONViewProps';
 import './style.css';
 import "./Test.css";
+import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -287,15 +288,15 @@ export const Test = () => {
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
             {/* Header Section */}
-            <header style={{ 
-                backgroundColor: '#fff', 
+            <header style={{
+                backgroundColor: '#fff',
                 borderBottom: '1px solid #dee2e6',
                 padding: '1rem 0',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-                <div style={{ 
-                    maxWidth: '1200px', 
-                    margin: '0 auto', 
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
                     padding: '0 20px',
                     display: 'flex',
                     alignItems: 'center',
@@ -312,11 +313,11 @@ export const Test = () => {
                         </p>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <a 
-                            href="https://github.com/vothanhdat/react-obj-view" 
-                            target="_blank" 
+                        <a
+                            href="https://github.com/vothanhdat/react-obj-view"
+                            target="_blank"
                             rel="noopener noreferrer"
-                            style={{ 
+                            style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.5rem',
@@ -330,15 +331,15 @@ export const Test = () => {
                             }}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                             </svg>
                             GitHub
                         </a>
-                        <a 
-                            href="https://www.npmjs.com/package/react-obj-view" 
-                            target="_blank" 
+                        <a
+                            href="https://www.npmjs.com/package/react-obj-view"
+                            target="_blank"
                             rel="noopener noreferrer"
-                            style={{ 
+                            style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.5rem',
@@ -359,10 +360,10 @@ export const Test = () => {
 
             {/* Main Content */}
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-                <div style={{ 
-                    marginBottom: '20px', 
-                    padding: '15px', 
-                    backgroundColor: '#e8f4fd', 
+                <div style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    backgroundColor: '#e8f4fd',
                     borderRadius: '8px',
                     border: '1px solid #bee5eb'
                 }}>
@@ -372,299 +373,309 @@ export const Test = () => {
                         Try selecting "Demo - Custom Renderers" to see custom User and API endpoint visualizations!
                     </p>
                 </div>            <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div>
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                <input
+                                    type="radio"
+                                    checked={!isCustomMode}
+                                    onChange={() => setIsCustomMode(false)}
+                                    style={{ marginRight: '8px' }}
+                                />
+                                Preset Data
+                            </label>
+                            <select
+                                value={testDataOptions.indexOf(selectedData)}
+                                onChange={handleDataChange}
+                                disabled={isCustomMode}
+                                style={{
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    minWidth: '300px',
+                                    opacity: isCustomMode ? 0.5 : 1,
+                                }}
+                            >
+                                {Object.entries(groupedOptions).map(([category, options]) => (
+                                    <optgroup key={category} label={category}>
+                                        {options.map((option) => (
+                                            <option key={option.index} value={option.index}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="expand-select" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                Expand Level:
+                            </label>
+                            <select
+                                id="expand-select"
+                                value={expandLevel.toString()}
+                                onChange={handleExpandLevelChange}
+                                style={{
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                }}
+                            >
+                                <option value="false">Collapsed</option>
+                                <option value="1">Level 1</option>
+                                <option value="2">Level 2</option>
+                                <option value="3">Level 3</option>
+                                <option value="4">Level 4</option>
+                                <option value="5">Level 5</option>
+                                <option value="true">Fully Expanded</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* NEW: Additional controls for new features */}
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                🎨 Features:
+                            </label>
+                            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                <label style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={enableCustomRenderers}
+                                        onChange={(e) => setEnableCustomRenderers(e.target.checked)}
+                                        style={{ marginRight: '6px' }}
+                                    />
+                                    Custom Renderers
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={enableHighlighting}
+                                        onChange={(e) => setEnableHighlighting(e.target.checked)}
+                                        style={{ marginRight: '6px' }}
+                                    />
+                                    Change Highlighting
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                📦 Grouping:
+                            </label>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <label style={{ fontSize: '12px' }}>
+                                    Objects:
+                                    <input
+                                        type="number"
+                                        value={objectGrouped}
+                                        onChange={(e) => setObjectGrouped(parseInt(e.target.value) || 25)}
+                                        style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
+                                        min="1"
+                                        max="100"
+                                    />
+                                </label>
+                                <label style={{ fontSize: '12px' }}>
+                                    Arrays:
+                                    <input
+                                        type="number"
+                                        value={arrayGrouped}
+                                        onChange={(e) => setArrayGrouped(parseInt(e.target.value) || 10)}
+                                        style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
+                                        min="1"
+                                        max="100"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ minWidth: '300px' }}>
                         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                             <input
                                 type="radio"
-                                checked={!isCustomMode}
-                                onChange={() => setIsCustomMode(false)}
+                                checked={isCustomMode}
+                                onChange={toggleCustomMode}
                                 style={{ marginRight: '8px' }}
                             />
-                            Preset Data
+                            Custom JSON Data
                         </label>
-                        <select
-                            value={testDataOptions.indexOf(selectedData)}
-                            onChange={handleDataChange}
-                            disabled={isCustomMode}
+                        <textarea
+                            value={customData}
+                            onChange={handleCustomDataChange}
+                            disabled={!isCustomMode}
+                            placeholder="Enter valid JSON here..."
                             style={{
-                                padding: '8px 12px',
-                                fontSize: '14px',
-                                border: '1px solid #ccc',
+                                width: '100%',
+                                height: '120px',
+                                padding: '8px',
+                                fontSize: '12px',
+                                fontFamily: 'monospace',
+                                border: `1px solid ${parseError && isCustomMode ? '#ff4444' : '#ccc'}`,
                                 borderRadius: '4px',
-                                minWidth: '300px',
-                                opacity: isCustomMode ? 0.5 : 1,
+                                opacity: !isCustomMode ? 0.5 : 1,
+                                backgroundColor: parseError && isCustomMode ? '#fff5f5' : 'white',
                             }}
-                        >
-                            {Object.entries(groupedOptions).map(([category, options]) => (
-                                <optgroup key={category} label={category}>
-                                    {options.map((option) => (
-                                        <option key={option.index} value={option.index}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </optgroup>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label htmlFor="expand-select" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                            Expand Level:
-                        </label>
-                        <select
-                            id="expand-select"
-                            value={expandLevel.toString()}
-                            onChange={handleExpandLevelChange}
-                            style={{
-                                padding: '8px 12px',
-                                fontSize: '14px',
-                                border: '1px solid #ccc',
-                                borderRadius: '4px',
-                            }}
-                        >
-                            <option value="false">Collapsed</option>
-                            <option value="1">Level 1</option>
-                            <option value="2">Level 2</option>
-                            <option value="3">Level 3</option>
-                            <option value="4">Level 4</option>
-                            <option value="5">Level 5</option>
-                            <option value="true">Fully Expanded</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* NEW: Additional controls for new features */}
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                            🎨 Features:
-                        </label>
-                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                            <label style={{ display: 'flex', alignItems: 'center' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={enableCustomRenderers}
-                                    onChange={(e) => setEnableCustomRenderers(e.target.checked)}
-                                    style={{ marginRight: '6px' }}
-                                />
-                                Custom Renderers
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={enableHighlighting}
-                                    onChange={(e) => setEnableHighlighting(e.target.checked)}
-                                    style={{ marginRight: '6px' }}
-                                />
-                                Change Highlighting
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                            📦 Grouping:
-                        </label>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <label style={{ fontSize: '12px' }}>
-                                Objects:
-                                <input
-                                    type="number"
-                                    value={objectGrouped}
-                                    onChange={(e) => setObjectGrouped(parseInt(e.target.value) || 25)}
-                                    style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
-                                    min="1"
-                                    max="100"
-                                />
-                            </label>
-                            <label style={{ fontSize: '12px' }}>
-                                Arrays:
-                                <input
-                                    type="number"
-                                    value={arrayGrouped}
-                                    onChange={(e) => setArrayGrouped(parseInt(e.target.value) || 10)}
-                                    style={{ width: '50px', marginLeft: '4px', padding: '2px' }}
-                                    min="1"
-                                    max="100"
-                                />
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div style={{ minWidth: '300px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                        <input
-                            type="radio"
-                            checked={isCustomMode}
-                            onChange={toggleCustomMode}
-                            style={{ marginRight: '8px' }}
                         />
-                        Custom JSON Data
-                    </label>
-                    <textarea
-                        value={customData}
-                        onChange={handleCustomDataChange}
-                        disabled={!isCustomMode}
-                        placeholder="Enter valid JSON here..."
-                        style={{
-                            width: '100%',
-                            height: '120px',
-                            padding: '8px',
-                            fontSize: '12px',
-                            fontFamily: 'monospace',
-                            border: `1px solid ${parseError && isCustomMode ? '#ff4444' : '#ccc'}`,
-                            borderRadius: '4px',
-                            opacity: !isCustomMode ? 0.5 : 1,
-                            backgroundColor: parseError && isCustomMode ? '#fff5f5' : 'white',
-                        }}
-                    />
-                    {parseError && isCustomMode && (
-                        <div style={{
-                            color: '#ff4444',
-                            fontSize: '12px',
-                            marginTop: '4px',
-                            padding: '4px',
-                            backgroundColor: '#fff5f5',
-                            border: '1px solid #ffcccc',
-                            borderRadius: '4px'
-                        }}>
-                            JSON Error: {parseError}
-                        </div>
-                    )}
+                        {parseError && isCustomMode && (
+                            <div style={{
+                                color: '#ff4444',
+                                fontSize: '12px',
+                                marginTop: '4px',
+                                padding: '4px',
+                                backgroundColor: '#fff5f5',
+                                border: '1px solid #ffcccc',
+                                borderRadius: '4px'
+                            }}>
+                                JSON Error: {parseError}
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div style={{ marginBottom: '20px' }}>
-                <h3>Currently Viewing: {getCurrentLabel()}</h3>
-                <p style={{ color: '#666', fontSize: '14px' }}>
-                    {!isCustomMode && (
-                        <>
-                            Category: {selectedData.category} |
-                            Type: {Array.isArray(selectedData.value) ? 'Array' : typeof selectedData.value} |
-                        </>
-                    )}
-                    {isCustomMode && (
-                        <>
-                            Mode: Custom JSON |
-                            Status: {parseError ? 'Invalid' : 'Valid'} |
-                        </>
-                    )}
-                    Expand Level: {expandLevel === true ? 'Full' : expandLevel === false ? 'None' : expandLevel} |
-                    Custom Renderers: {enableCustomRenderers ? 'ON' : 'OFF'} |
-                    Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
-                    Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
-                </p>
-            </div>
+                <div style={{ marginBottom: '20px' }}>
+                    <h3>Currently Viewing: {getCurrentLabel()}</h3>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                        {!isCustomMode && (
+                            <>
+                                Category: {selectedData.category} |
+                                Type: {Array.isArray(selectedData.value) ? 'Array' : typeof selectedData.value} |
+                            </>
+                        )}
+                        {isCustomMode && (
+                            <>
+                                Mode: Custom JSON |
+                                Status: {parseError ? 'Invalid' : 'Valid'} |
+                            </>
+                        )}
+                        Expand Level: {expandLevel === true ? 'Full' : expandLevel === false ? 'None' : expandLevel} |
+                        Custom Renderers: {enableCustomRenderers ? 'ON' : 'OFF'} |
+                        Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
+                        Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
+                    </p>
+                </div>
 
-            <div
-                style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    backgroundColor: '#f9f9f9',
-                }}
-            >
                 <div
                     style={{
-                        // border: '1px solid #ddd',
-                        maxHeight: '70vh',
-                        overflow: 'auto',
+                        border: '1px solid #ddd',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        backgroundColor: '#f9f9f9',
                     }}
                 >
+                    <div
+                        style={{
+                            // border: '1px solid #ddd',
+                            maxHeight: '70vh',
+                            overflow: 'auto',
+                        }}
+                    >
 
-                    <ObjectView
-                        value={getCurrentData()}
-                        name="testData"
-                        expandLevel={expandLevel}
-                        customRender={customRenderers}
-                        highlightUpdate={enableHighlighting}
-                        objectGrouped={objectGrouped}
-                        arrayGrouped={arrayGrouped}
-                    />
+                        {/* <ObjectInspector
+                            data={getCurrentData()}
+                            name="testData"
+                            expandLevel={expandLevel}
+                            customRender={customRenderers}
+                            highlightUpdate={enableHighlighting}
+                            objectGrouped={objectGrouped}
+                            arrayGrouped={arrayGrouped}
+                            showNonenumerable
+                        /> */}
+                        <ObjectViewV2
+                            value={getCurrentData()}
+                            name="testData"
+                            expandLevel={expandLevel}
+                            customRender={customRenderers}
+                            highlightUpdate={enableHighlighting}
+                            objectGrouped={objectGrouped}
+                            arrayGrouped={arrayGrouped}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        {/* Footer */}
-        <footer style={{ 
-            backgroundColor: '#fff', 
-            borderTop: '1px solid #dee2e6',
-            padding: '2rem 0',
-            marginTop: '2rem'
-        }}>
-            <div style={{ 
-                maxWidth: '1200px', 
-                margin: '0 auto', 
-                padding: '0 20px',
-                textAlign: 'center'
+
+            {/* Footer */}
+            <footer style={{
+                backgroundColor: '#fff',
+                borderTop: '1px solid #dee2e6',
+                padding: '2rem 0',
+                marginTop: '2rem'
             }}>
-                <div style={{ marginBottom: '1rem' }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#212529' }}>React Object View</h4>
-                    <p style={{ margin: '0', color: '#6c757d', fontSize: '0.875rem' }}>
-                        A powerful React component for visualizing JavaScript objects and data structures
-                    </p>
-                </div>
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: '1.5rem',
-                    flexWrap: 'wrap',
-                    marginBottom: '1rem'
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    padding: '0 20px',
+                    textAlign: 'center'
                 }}>
-                    <a 
-                        href="https://github.com/vothanhdat/react-obj-view#readme" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
-                    >
-                        📖 Documentation
-                    </a>
-                    <a 
-                        href="https://github.com/vothanhdat/react-obj-view/blob/master/API_DOCUMENTATION.md" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
-                    >
-                        🔧 API Reference
-                    </a>
-                    <a 
-                        href="https://github.com/vothanhdat/react-obj-view/blob/master/USAGE_GUIDE.md" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
-                    >
-                        📚 Usage Guide
-                    </a>
-                    <a 
-                        href="https://github.com/vothanhdat/react-obj-view/issues" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
-                    >
-                        🐛 Issues
-                    </a>
-                </div>
-                <div style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#adb5bd',
-                    borderTop: '1px solid #e9ecef',
-                    paddingTop: '1rem'
-                }}>
-                    <p style={{ margin: '0' }}>
-                        Made with ❤️ by <a 
-                            href="https://github.com/vothanhdat" 
-                            target="_blank" 
+                    <div style={{ marginBottom: '1rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#212529' }}>React Object View</h4>
+                        <p style={{ margin: '0', color: '#6c757d', fontSize: '0.875rem' }}>
+                            A powerful React component for visualizing JavaScript objects and data structures
+                        </p>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '1.5rem',
+                        flexWrap: 'wrap',
+                        marginBottom: '1rem'
+                    }}>
+                        <a
+                            href="https://github.com/vothanhdat/react-obj-view#readme"
+                            target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: '#007bff', textDecoration: 'none' }}
+                            style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
                         >
-                            Dat Vo
-                        </a> • MIT License • Version {packageVersion}
-                    </p>
+                            📖 Documentation
+                        </a>
+                        <a
+                            href="https://github.com/vothanhdat/react-obj-view/blob/master/API_DOCUMENTATION.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
+                        >
+                            🔧 API Reference
+                        </a>
+                        <a
+                            href="https://github.com/vothanhdat/react-obj-view/blob/master/USAGE_GUIDE.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
+                        >
+                            📚 Usage Guide
+                        </a>
+                        <a
+                            href="https://github.com/vothanhdat/react-obj-view/issues"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.875rem' }}
+                        >
+                            🐛 Issues
+                        </a>
+                    </div>
+                    <div style={{
+                        fontSize: '0.75rem',
+                        color: '#adb5bd',
+                        borderTop: '1px solid #e9ecef',
+                        paddingTop: '1rem'
+                    }}>
+                        <p style={{ margin: '0' }}>
+                            Made with ❤️ by <a
+                                href="https://github.com/vothanhdat"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#007bff', textDecoration: 'none' }}
+                            >
+                                Dat Vo
+                            </a> • MIT License • Version {packageVersion}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </footer>
+            </footer>
         </div>
     );
 };

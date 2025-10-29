@@ -10,7 +10,7 @@
     font-family: monospace;
     user-select: none;
     background-color: var(--jv-bg-color);
-
+    font-size: 12px;;
     .jv-name {
         opacity: 0.8;
     }
