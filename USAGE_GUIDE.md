@@ -196,7 +196,7 @@ const ConfigInspector = () => {
         value={appConfig} 
         name="config"
         expandLevel={1}
-        objectGrouped={50}
+        objectGroupSize={50}
       />
     </div>
   );
@@ -303,13 +303,12 @@ const FormDebugger = () => {
 
 ### 6. Custom Type Visualization
 
-Create custom renderers for your application's specific data types:
+Use resolver overrides to tailor how your domain objects appear in the tree:
 
 ```tsx
-import React, { useState } from 'react';
-import { ObjectView, JSONViewProps } from 'react-obj-view';
+import React, { useMemo } from 'react';
+import { ObjectView } from 'react-obj-view';
 
-// Custom class for your application
 class APIEndpoint {
   constructor(
     public method: string,
@@ -320,93 +319,74 @@ class APIEndpoint {
   ) {}
 }
 
-// Custom renderer component
-const APIEndpointRenderer: React.FC<JSONViewProps> = ({ 
-  value, 
-  name, 
-  displayName, 
-  seperator = ":",
-  context,
-  expandLevel,
-  path = []
-}) => {
-  const [showResponse, setShowResponse] = useState(false);
-  
-  const getStatusColor = (status: number) => {
-    if (status < 300) return '#28a745'; // green
-    if (status < 400) return '#ffc107'; // yellow  
-    return '#dc3545'; // red
-  };
+type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
+type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
 
-  return (
-    <div className="api-endpoint-renderer">
-      {displayName && <span className="jv-name">{name}</span>}
-      {displayName && <span>{seperator}</span>}
-      
-      <div className="api-summary">
-        <span className="api-method" data-method={value.method.toLowerCase()}>
-          {value.method}
-        </span>
-        <span className="api-url">{value.url}</span>
-        <span 
-          className="api-status" 
-          style={{ color: getStatusColor(value.status) }}
-        >
-          {value.status}
-        </span>
-        <span className="api-timing">{value.responseTime}ms</span>
-        
-        {value.data && (
-          <button 
-            className="api-toggle"
-            onClick={() => setShowResponse(!showResponse)}
-          >
-            {showResponse ? 'Hide' : 'Show'} Response
-          </button>
-        )}
-      </div>
-      
-      {showResponse && value.data && (
-        <div className="api-response">
-          <ObjectView 
-            value={value.data}
-            name="response"
-            expandLevel={typeof expandLevel === 'number' ? expandLevel - 1 : expandLevel}
-            objectGrouped={context.objectGrouped}
-            arrayGrouped={context.arrayGrouped}
-            highlightUpdate={context.highlightUpdate}
-          />
-        </div>
-      )}
-    </div>
-  );
+const createEndpointResolvers = (): Map<Function, ResolverFn> => {
+  return new Map([
+    [APIEndpoint, function* endpointResolver(endpoint, iterator, isPreview) {
+      const entries = [...iterator];
+
+      const pull = (key: string) => {
+        const index = entries.findIndex(entry => String(entry.name) === key);
+        if (index >= 0) {
+          const [entry] = entries.splice(index, 1);
+          return entry;
+        }
+        return undefined;
+      };
+
+      if (isPreview) {
+        yield { name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false };
+        yield { name: 'status', data: endpoint.status, isNonenumerable: false };
+        return;
+      }
+
+      const methodEntry = pull('method');
+      const urlEntry = pull('url');
+      const statusEntry = pull('status');
+
+      if (methodEntry) yield methodEntry;
+      if (urlEntry) yield urlEntry;
+      if (statusEntry) yield statusEntry;
+
+      yield {
+        name: 'responseTimeLabel',
+        data: `${endpoint.responseTime}ms`,
+        isNonenumerable: false,
+      };
+
+      const dataEntry = pull('data');
+      if (dataEntry) yield dataEntry;
+
+      yield* entries;
+    }],
+  ]);
 };
 
-// Usage in component
 const APIMonitor = () => {
+  const resolverMap = useMemo(createEndpointResolvers, []);
+
   const apiCalls = {
     userAPI: new APIEndpoint('GET', '/api/users', 200, 145, {
       users: [{ id: 1, name: 'John' }, { id: 2, name: 'Jane' }],
-      total: 2
+      total: 2,
     }),
     authAPI: new APIEndpoint('POST', '/api/auth/login', 401, 89, {
-      error: 'Invalid credentials'
+      error: 'Invalid credentials',
     }),
-    healthCheck: new APIEndpoint('GET', '/health', 200, 23, { status: 'ok' })
+    healthCheck: new APIEndpoint('GET', '/health', 200, 23, { status: 'ok' }),
   };
-
-  const customRenderers = new Map([
-    [APIEndpoint, APIEndpointRenderer]
-  ]);
 
   return (
     <div>
       <h2>API Call Monitor</h2>
-      <ObjectView 
+      <ObjectView
         value={apiCalls}
         name="apiCalls"
-        customRender={customRenderers}
+        resolver={resolverMap}
         expandLevel={1}
+        preview
       />
     </div>
   );
@@ -530,8 +510,8 @@ const LargeDataViewer = ({ data }) => {
     <ObjectView 
       value={data}
       expandLevel={1}        // Don't expand everything
-      arrayGrouped={25}      // Group large arrays
-      objectGrouped={50}     // Group large objects
+      arrayGroupSize={25}    // Group large arrays
+      objectGroupSize={50}   // Group large objects
     />
   );
 };
@@ -565,47 +545,41 @@ const StateViewer = ({ appState }) => {
 };
 ```
 
-### 3. Custom Renderers for Performance
+### 3. Custom Panels for Performance
 
 ```tsx
-// Optimize rendering of large collections with custom renderers
+// Compose ObjectView inside your own UI to keep large collections manageable
+import React, { useState } from 'react';
+import { ObjectView } from 'react-obj-view';
+
 class LargeDataSet {
   constructor(public items: any[], public metadata: any) {}
 }
 
-const OptimizedDataSetRenderer: React.FC<JSONViewProps> = ({ 
-  value, 
-  name, 
-  displayName, 
-  seperator,
-  context 
-}) => {
+const LargeDataSetPanel = ({ dataset }: { dataset: LargeDataSet }) => {
   const [showItems, setShowItems] = useState(false);
-  
+
   return (
     <div>
-      {displayName && <span className="jv-name">{name}</span>}
-      {displayName && <span>{seperator}</span>}
-      
       <div className="dataset-summary">
-        <span>📊 Dataset ({value.items.length} items)</span>
+        <span>📊 Dataset ({dataset.items.length} items)</span>
         <button onClick={() => setShowItems(!showItems)}>
           {showItems ? 'Hide' : 'Show'} Items
         </button>
       </div>
-      
+
       {showItems && (
-        <ObjectView 
-          value={value.items.slice(0, 100)} // Only show first 100 items
+        <ObjectView
+          value={dataset.items.slice(0, 100)} // Only show first 100 items
           name="items (first 100)"
           expandLevel={false}
-          arrayGrouped={25}
+          arrayGroupSize={25}
           highlightUpdate={false}
         />
       )}
-      
-      <ObjectView 
-        value={value.metadata}
+
+      <ObjectView
+        value={dataset.metadata}
         name="metadata"
         expandLevel={1}
       />
@@ -791,7 +765,7 @@ class ErrorBoundaryWithInspector extends React.Component {
 4. **Development Only**: Consider hiding in production builds
 5. **Naming**: Use descriptive names for better debugging experience
 6. **Styling**: Customize CSS to match your application's theme
-7. **Custom Renderers**: Use custom renderers for domain-specific data types
+7. **Resolver Overrides**: Use resolvers when you need custom ordering or derived fields for class instances
 8. **Change Highlighting**: Disable `highlightUpdate` for frequently changing data
-9. **Memory Management**: Custom renderers should avoid memory leaks in cleanup
-10. **Accessibility**: Ensure custom renderers maintain keyboard navigation and screen reader support
+9. **Memory Management**: Keep resolver logic and custom panels free of stale references to prevent leaks
+10. **Accessibility**: Ensure any wrappers or custom panels maintain keyboard navigation and screen reader support

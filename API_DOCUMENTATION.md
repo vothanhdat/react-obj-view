@@ -34,13 +34,17 @@ interface ObjectViewProps {
   name?: string;
   style?: React.CSSProperties;
   expandLevel?: number | boolean;
-  objectGrouped?: number;
-  arrayGrouped?: number;
-  customRender?: Map<Constructor, React.FC<JSONViewProps>>;
+  objectGroupSize?: number;
+  arrayGroupSize?: number;
+  resolver?: Map<Constructor, ResolverFn>;
   highlightUpdate?: boolean;
+  preview?: boolean;
+  nonEnumerable?: boolean;
 }
 
 type Constructor<T = {}> = new (...args: any[]) => T;
+type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
 ```
 
 #### Props Detail
@@ -97,52 +101,50 @@ Controls the initial expansion state of the object tree:
 
 **Performance Note:** Using `expandLevel={true}` with very large or deeply nested objects may cause performance issues.
 
-##### `objectGrouped?: number`
-Threshold for grouping object properties. When an object has more properties than this number, they will be grouped into ranges for better performance and readability.
+##### `objectGroupSize?: number`
+Threshold for grouping object properties. When an object has more properties than this number, the viewer batches them into virtual slices for better readability and performance.
 
-**Default:** `25`
+**Default:** `100`
 
 **Example:**
 ```tsx
 // Group objects with more than 50 properties
-<ObjectView value={largeObject} objectGrouped={50} />
+<ObjectView value={largeObject} objectGroupSize={50} />
 ```
 
-##### `arrayGrouped?: number`
-Threshold for grouping array elements. When an array has more elements than this number, they will be grouped into ranges.
+##### `arrayGroupSize?: number`
+Threshold for grouping array elements. Arrays longer than this number render as collapsible ranges.
 
 **Default:** `10`
 
 **Example:**
 ```tsx
 // Group arrays with more than 20 elements  
-<ObjectView value={largeArray} arrayGrouped={20} />
+<ObjectView value={largeArray} arrayGroupSize={20} />
 ```
 
-##### `customRender?: Map<Constructor, React.FC<JSONViewProps>>`
-Map of custom renderer components for specific constructor functions. Allows you to provide custom visualization for specific data types or class instances.
+##### `resolver?: Map<Constructor, ResolverFn>`
+Override or extend rendering for specific constructors. Resolvers are generators that can reorder, rewrite, or augment entries yielded for a value.
 
-**Default:** `undefined` (uses built-in renderers)
+**Default:** `undefined` (uses built-in resolvers for `Promise` and `Error`)
 
 **Example:**
 ```tsx
-class User {
-  constructor(public name: string, public email: string) {}
-}
+type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
+type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
 
-const UserRenderer = ({ value, name, displayName, separator }) => (
-  <div>
-    {displayName && <span>{name}: </span>}
-    <span>👤 {value.name} ({value.email})</span>
-  </div>
-);
+const resolver = new Map<Function, ResolverFn>([
+  [User, function* (user, iterator, isPreview) {
+    const entries = [...iterator];
+    if (isPreview) {
+      yield { name: 'summary', data: user.name, isNonenumerable: false };
+      return;
+    }
+    yield* entries;
+  }],
+]);
 
-const customRenderers = new Map([[User, UserRenderer]]);
-
-<ObjectView 
-  value={new User("John", "john@example.com")} 
-  customRender={customRenderers}
-/>
+<ObjectView value={new User('Ada', 'ada@example.com')} resolver={resolver} />;
 ```
 
 ##### `highlightUpdate?: boolean`
@@ -159,247 +161,61 @@ Controls whether change detection and highlighting is enabled. When `true`, valu
 <ObjectView value={data} highlightUpdate={true} />
 ```
 
+##### `preview?: boolean`
+Determines whether inline previews render for collapsed nodes. Set to `false` to skip preview badges entirely.
+
+**Default:** `true`
+
+**Example:**
+```tsx
+// Only show node names until expanded
+<ObjectView value={data} preview={false} />
+```
+
+##### `nonEnumerable?: boolean`
+Include non-enumerable properties (like `__proto__` or getters) when iterating objects.
+
+**Default:** `true`
+
+**Example:**
+```tsx
+// Ignore non-enumerable members for a cleaner view
+<ObjectView value={data} nonEnumerable={false} />
+```
+
 ## Internal Components
 
 The ObjectView component now uses a modular architecture with specialized components:
 
 ### Core Components
 
-#### ObjectRouter
-Central routing component that determines which specialized renderer to use based on the value type and constructor.
+#### ObjectRenderWrapper
+Wraps each node, applying resolver overrides, promise resolution, and change-highlighting flash effects.
 
-#### ObjectDetailView  
-Handles rendering of object-like structures (objects, arrays, Maps, Sets) with grouping and expansion logic.
+#### AllChilds / AllChildsPreview  
+Materialize child entries for expanded nodes and inline previews. Handle grouping, resolver output, and trace tracking for circular references.
 
-#### PrimitiveView
-Renders primitive values and simple built-in types with appropriate styling.
+#### ValueInline
+Renders inline value previews with type-aware formatting and keyword badges.
 
-### Specialized Renderers (Addons)
+### Built-in Resolvers
 
-#### StringViewObj
-Handles string values with support for long string truncation and expansion.
+- **Promise resolver**: exposes computed `status` and resolved/rejected values while preserving existing entries.
+- **Error resolver**: prioritizes `name`, `message`, `stack`, and `cause` fields, suppressing duplicate `message` entries.
 
-#### FunctionViewObj
-Renders function values with source code preview and truncation.
+### Hooks & Utilities
 
-#### KeywordValueView
-NEW: Specialized renderer for keyword values (`null`, `undefined`, `true`, `false`) with badge styling.
+#### useValueInfo
+Derives expansion state, grouping metadata, and circular-reference checks for a node.
 
-#### MapView
-Specialized renderer for JavaScript Map objects, displaying key-value pairs with " => " separators.
+#### useResolver
+Memoizes resolver lookups for the current value/constructor pair.
 
-#### SetView  
-Specialized renderer for JavaScript Set objects, displaying unique values as an array.
-
-#### PromiseView
-Handles Promise objects by resolving them and displaying their state (pending, resolved, rejected).
-
-#### InstanceView
-Renders instances of custom classes and constructor functions.
-
-### Hooks
-
-#### useExpandState
-Manages expansion state for individual nodes in the object tree.
-
-#### defaultValue
-Provides default values and utilities for the component system.
+#### useQuickSubscribe
+Internal helper for reading context data quickly within renders.
 
 ## Type Definitions
 
-### JSONViewCtx
-Internal context interface used for managing expansion state and configuration:
-
-```tsx
-interface JSONViewCtx {
-  expandRootRef: React.RefObject<Record<string, boolean>>;
-  customView: CustomViewMap;
-  objectGrouped: number;
-  arrayGrouped: number;
-  highlightUpdate: boolean;
-}
-
-type CustomViewMap = Map<Constructor, React.FC<JSONViewProps>>;
-type Constructor<T = {}> = new (...args: any[]) => T;
-```
-
-### JSONViewProps  
-Internal props interface used by sub-components:
-
-```tsx
-interface JSONViewProps {
-  value: any;
-  path?: string[];
-  trace?: any[];
-  name?: string;
-  expandLevel: number | boolean;
-  currentType?: any;
-  isGrouped?: boolean;
-  displayName?: boolean;
-  seperator?: string;
-  context: JSONViewCtx;
-}
-```
-
-## Custom Renderer System
-
-The ObjectView component now supports a powerful custom renderer system that allows you to register specialized components for specific data types.
-
-### How It Works
-
-1. **Constructor Mapping**: Custom renderers are mapped to constructor functions using a `Map<Constructor, React.FC<JSONViewProps>>`
-2. **Automatic Detection**: The ObjectRouter automatically detects the constructor of each value and looks up custom renderers
-3. **Fallback Behavior**: If no custom renderer is found, the default rendering logic is used
-4. **Built-in Renderers**: The component comes with built-in custom renderers for `Map`, `Set`, and `Promise`
-
-### Creating Custom Renderers
-
-Custom renderers must implement the `JSONViewProps` interface:
-
-```tsx
-interface JSONViewProps {
-  value: any;
-  path?: string[];
-  trace?: any[];
-  name?: string;
-  expandLevel: number | boolean;
-  currentType?: any;
-  isGrouped?: boolean;
-  displayName?: boolean;
-  seperator?: string;
-  context: JSONViewCtx;
-}
-```
-
-### Example: Custom User Class Renderer
-
-```tsx
-import React from 'react';
-import { ObjectView, JSONViewProps } from 'react-obj-view';
-
-class User {
-  constructor(
-    public name: string, 
-    public email: string, 
-    public role: string = 'user'
-  ) {}
-}
-
-const UserRenderer: React.FC<JSONViewProps> = ({ 
-  value, 
-  name, 
-  displayName, 
-  seperator = ":",
-  context 
-}) => {
-  return (
-    <div className="custom-user-renderer">
-      {displayName && <span className="jv-name">{name}</span>}
-      {displayName && <span>{seperator}</span>}
-      <span className="user-badge" data-role={value.role}>
-        👤 {value.name}
-      </span>
-      <span className="user-email">({value.email})</span>
-      {value.role !== 'user' && (
-        <span className="user-role-badge">{value.role.toUpperCase()}</span>
-      )}
-    </div>
-  );
-};
-
-// Register the custom renderer
-const customRenderers = new Map([
-  [User, UserRenderer]
-]);
-
-// Use with ObjectView
-const userData = {
-  admin: new User("Admin User", "admin@example.com", "admin"),
-  moderator: new User("Mod User", "mod@example.com", "moderator"),
-  regular: new User("Regular User", "user@example.com")
-};
-
-<ObjectView 
-  value={userData}
-  customRender={customRenderers}
-  expandLevel={2}
-/>
-```
-
-### Advanced Custom Renderer with Nested Objects
-
-```tsx
-class Product {
-  constructor(
-    public id: string,
-    public name: string,
-    public price: number,
-    public metadata: Record<string, any> = {}
-  ) {}
-}
-
-const ProductRenderer: React.FC<JSONViewProps> = ({ 
-  value, 
-  name, 
-  displayName, 
-  seperator = ":",
-  context,
-  expandLevel,
-  path = [],
-  trace = []
-}) => {
-  const [showDetails, setShowDetails] = useState(false);
-
-  return (
-    <div className="product-renderer">
-      {displayName && <span className="jv-name">{name}</span>}
-      {displayName && <span>{seperator}</span>}
-      
-      <div className="product-summary" onClick={() => setShowDetails(!showDetails)}>
-        <span className="product-id">#{value.id}</span>
-        <span className="product-name">{value.name}</span>
-        <span className="product-price">${value.price}</span>
-        <span className="expand-indicator">{showDetails ? '[-]' : '[+]'}</span>
-      </div>
-      
-      {showDetails && (
-        <div className="product-details">
-          <ObjectView 
-            value={value.metadata}
-            name="metadata"
-            expandLevel={typeof expandLevel === 'number' ? expandLevel - 1 : expandLevel}
-            objectGrouped={context.objectGrouped}
-            arrayGrouped={context.arrayGrouped}
-            highlightUpdate={context.highlightUpdate}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-```
-
-### Best Practices for Custom Renderers
-
-1. **Respect Context**: Always use the context values for consistency
-2. **Handle Expansion**: Implement expansion logic if your renderer contains nested data
-3. **Follow Styling Conventions**: Use the established CSS classes when possible
-4. **Performance**: Be mindful of rendering performance for frequently updated data
-5. **Accessibility**: Ensure your custom renderers are accessible
-
-### Built-in Custom Renderers
-
-The component comes with these built-in custom renderers:
-
-```tsx
-const DEFAULT_CUSTOM_VIEW = new Map([
-  [Map, MapView],
-  [Set, SetView], 
-  [Promise, PromiseView]
-]);
-```
-
-These can be overridden by providing your own renderers for these constructors.
 
 ## Utility Classes
 
@@ -480,6 +296,30 @@ Promises are resolved asynchronously and their state is displayed:
 
 #### Functions
 Functions display their source code with truncation for long function bodies.
+```tsx
+type Entry = {
+  name: any;
+  data: any;
+  isNonenumerable: boolean;
+};
+
+type ResolverFn = (
+  value: any,
+  entries: Generator<Entry>,
+  isPreview: boolean
+) => Generator<Entry>;
+
+interface JSONViewCtx {
+  expandLevel: number;
+  expandRef: React.RefObject<Record<string, boolean>>;
+  preview: boolean;
+  nonEnumerable: boolean;
+  resolver: Map<any, ResolverFn>;
+  arrayGroupSize: number;
+  objectGroupSize: number;
+  highlightUpdate: boolean;
+}
+```
 
 #### Long Strings
 Strings longer than 50 characters are truncated with expand/collapse functionality.
@@ -505,18 +345,17 @@ The component gracefully handles various error conditions:
 import 'react-obj-view/dist/react-obj-view.css';
 ```
 
-**Alternative**: If using a CSS-in-JS solution, you can copy the styles from the CSS file.
+**Problem**: TypeScript errors while authoring resolver maps.
 
-### TypeScript Errors
-
-**Problem**: TypeScript errors with custom renderers.
-
-**Solution**: Ensure proper typing:
+**Solution**: Define helper types for resolver signatures and reuse them:
 ```tsx
-import { JSONViewProps, Constructor } from 'react-obj-view';
+type Entry = { name: PropertyKey; data: unknown; isNonenumerable: boolean };
+type ResolverFn = (value: unknown, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
 
-const customRenderers = new Map<Constructor, React.FC<JSONViewProps>>([
-  [MyClass as Constructor, MyRenderer]
+const resolvers = new Map<Function, ResolverFn>([
+  [MyClass, function* myResolver(value, iterator) {
+    yield* iterator; // customize as needed
+  }],
 ]);
 ```
 
@@ -526,9 +365,9 @@ const customRenderers = new Map<Constructor, React.FC<JSONViewProps>>([
 
 **Solutions**:
 - Use appropriate `expandLevel` (start with `1` or `2`)
-- Increase `objectGrouped` and `arrayGrouped` thresholds
+- Increase `objectGroupSize` and `arrayGroupSize` thresholds
 - Disable `highlightUpdate` for frequently changing data
-- Use custom renderers for complex objects
+- Add resolver overrides to reorder or trim heavy sections
 
 ## Accessibility
 

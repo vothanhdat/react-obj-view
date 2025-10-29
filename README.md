@@ -6,7 +6,7 @@ A powerful and flexible React component for visualizing JavaScript objects and d
 
 **[Try the Interactive Demo →](https://vothanhdat.github.io/react-obj-view/)**
 
-Experience all features hands-on including custom renderers, keyword styling, and configurable highlighting!
+Experience all features hands-on including resolver overrides, keyword styling, and configurable highlighting!
 
 > **Note**: If the demo link shows "404", please wait a few minutes for GitHub Pages to deploy, or check that GitHub Pages is enabled in repository settings.
 
@@ -18,9 +18,9 @@ Experience all features hands-on including custom renderers, keyword styling, an
 - 🔄 **Circular Reference Safe**: Safely handles circular references without infinite loops
 - ⚡ **Performance Optimized**: Efficient rendering with lazy loading and change detection
 - 🎨 **Customizable Styling**: Built-in CSS with full customization support
-- � **Custom Renderers**: Register custom components for specific data types or constructor functions
+- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with generator-based resolvers
 - 💡 **Keyword Highlighting**: Special styling for boolean values, null, undefined with keyword badges
-- �📱 **TypeScript Ready**: Complete TypeScript support with proper type definitions
+- � **TypeScript Ready**: Complete TypeScript support with proper type definitions
 - 🔍 **Developer Friendly**: Perfect for debugging, logging, and data inspection
 - ⚙️ **Configurable Highlighting**: Control change detection and flash highlighting behavior
 
@@ -128,8 +128,8 @@ const complexData = {
   value={complexData} 
   name="appConfig"
   expandLevel={2}
-  objectGrouped={50}  // Group objects with 50+ properties
-  arrayGrouped={20}   // Group arrays with 20+ items
+  objectGroupSize={50}  // Group objects with 50+ properties
+  arrayGroupSize={20}   // Group arrays with 20+ items
 />
 ```
 
@@ -185,10 +185,12 @@ const [appState, setAppState] = useState({
 | `name` | `string` | `undefined` | Display name for the root object |
 | `style` | `CSSProperties` | `undefined` | Custom styles for the container |
 | `expandLevel` | `number \| boolean` | `false` | Initial expansion: `true` (all), `false` (none), or depth number |
-| `objectGrouped` | `number` | `25` | Group objects with more than N properties |
-| `arrayGrouped` | `number` | `10` | Group arrays with more than N elements |
-| `customRender` | `Map<Constructor, React.FC>` | `undefined` | Custom renderers for specific types |
+| `objectGroupSize` | `number` | `100` | Group objects with more than N properties |
+| `arrayGroupSize` | `number` | `10` | Group arrays with more than N elements |
+| `resolver` | `Map<Constructor, ResolverFn>` | `undefined` | Override or extend rendering for constructors |
 | `highlightUpdate` | `boolean` | `true` | Enable/disable change detection highlighting |
+| `preview` | `boolean` | `true` | Render preview badges when collapsed |
+| `nonEnumerable` | `boolean` | `true` | Include non-enumerable properties |
 
 ### Supported Data Types
 
@@ -284,49 +286,113 @@ const largeDataset = {
 
 <ObjectView 
   value={largeDataset}
-  arrayGrouped={50}    // Show 50 items before grouping
-  objectGrouped={100}  // Show 100 properties before grouping
+  arrayGroupSize={50}    // Show 50 items before grouping
+  objectGroupSize={100}  // Show 100 properties before grouping
   expandLevel={1}      // Only expand first level initially
 />
 ```
 
-### Custom Renderers
+### Resolver Overrides
 
-Register custom components for specific data types:
+Fine-tune how specific constructors render by supplying resolver overrides. A resolver is a generator that receives the current value, the default entry iterator, and a `isPreview` flag. You can yield custom entries, reorder fields, or add derived data before falling back to the defaults.
 
 ```tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ObjectView } from 'react-obj-view';
 
-// Custom renderer for User class instances
 class User {
-  constructor(public name: string, public email: string) {}
+  constructor(public name: string, public email: string, public role: string = 'user') {}
 }
 
-const UserRenderer = ({ value, name, displayName, separator = ":" }) => (
-  <div className="custom-user-view">
-    {displayName && <span className="jv-name">{name}</span>}
-    {displayName && <span>{separator}</span>}
-    <span className="user-badge">👤 {value.name}</span>
-    <span className="user-email">({value.email})</span>
-  </div>
-);
+class APIEndpoint {
+  constructor(
+    public method: string,
+    public url: string,
+    public status: number,
+    public responseTime: number,
+  ) {}
+}
 
-// Create custom render map
-const customRenderers = new Map([
-  [User, UserRenderer]
-]);
+type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
+type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
 
-const data = {
-  currentUser: new User("John Doe", "john@example.com"),
-  admin: new User("Admin", "admin@example.com")
+const createResolvers = (): Map<Function, ResolverFn> => {
+  const resolvers = new Map<Function, ResolverFn>();
+
+  resolvers.set(User, function* (user, iterator, isPreview) {
+    const entries = [...iterator];
+
+    if (isPreview) {
+      yield { name: 'summary', data: `${user.name} • ${user.email}`, isNonenumerable: false };
+      if (user.role !== 'user') {
+        yield { name: 'role', data: user.role, isNonenumerable: false };
+      }
+      return;
+    }
+
+    const important = ['name', 'email', 'role'];
+    for (const key of important) {
+      const index = entries.findIndex(entry => String(entry.name) === key);
+      if (index >= 0) {
+        const [entry] = entries.splice(index, 1);
+        yield entry;
+      }
+    }
+
+    if (user.role !== 'user') {
+      yield { name: 'badge', data: `⭐ ${user.role.toUpperCase()}`, isNonenumerable: false };
+    }
+
+    yield* entries;
+  });
+
+  resolvers.set(APIEndpoint, function* (endpoint, iterator, isPreview) {
+    const entries = [...iterator];
+
+    if (isPreview) {
+      yield { name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false };
+      yield { name: 'status', data: endpoint.status, isNonenumerable: false };
+      return;
+    }
+
+    const ordered = ['method', 'url', 'status'];
+    for (const key of ordered) {
+      const index = entries.findIndex(entry => String(entry.name) === key);
+      if (index >= 0) {
+        const [entry] = entries.splice(index, 1);
+        yield entry;
+      }
+    }
+
+    yield {
+      name: 'responseTimeLabel',
+      data: `${endpoint.responseTime}ms`,
+      isNonenumerable: false,
+    };
+
+    yield* entries;
+  });
+
+  return resolvers;
 };
 
-<ObjectView 
-  value={data} 
-  customRender={customRenderers}
-  expandLevel={2}
-/>
+const data = {
+  customUser: new User('Ada Lovelace', 'ada@example.com', 'admin'),
+  login: new APIEndpoint('POST', '/api/auth/login', 401, 92),
+};
+
+const Demo = () => {
+  const resolverMap = useMemo(createResolvers, []);
+
+  return (
+    <ObjectView
+      value={data}
+      resolver={resolverMap}
+      expandLevel={2}
+      preview
+    />
+  );
+};
 ```
 
 ### Controlling Change Highlighting
@@ -350,7 +416,7 @@ const data = {
 ## 💡 Tips & Best Practices
 
 1. **Performance**: Use appropriate `expandLevel` values for large objects
-2. **Grouping**: Adjust `arrayGrouped` and `objectGrouped` based on your data size
+2. **Grouping**: Adjust `arrayGroupSize` and `objectGroupSize` based on your data size
 3. **Debugging**: Perfect for inspecting API responses, state changes, and complex data structures
 4. **Development**: Great for creating admin panels, debug tools, and data browsers
 

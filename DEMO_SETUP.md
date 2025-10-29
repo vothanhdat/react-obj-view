@@ -90,7 +90,7 @@ To use a custom domain:
 The demo showcases:
 
 - ✅ **Interactive Controls**: Toggle features and adjust settings
-- ✅ **Custom Renderers**: User and API endpoint examples
+- ✅ **Resolver Overrides**: User and API endpoint examples
 - ✅ **Keyword Styling**: Enhanced boolean and null value display
 - ✅ **Performance Options**: Grouping and highlighting controls
 - ✅ **Real-time Updates**: See changes instantly
@@ -108,7 +108,7 @@ The demo showcases:
 ### Data Examples
 
 - Add new examples in `src/exampleData/`
-- Create custom renderer examples in `src/Test.tsx`
+- Extend resolver demos in `src/Test.tsx`
 - Update dropdown options in the `testDataOptions` array
 
 ### Branding
