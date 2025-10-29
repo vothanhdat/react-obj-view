@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import { GroupedObject } from "./GroupedObject";
 
 
 export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; flashClassname?: string; enable?: boolean }> = ({ value, enable = true, flashClassname = 'jv-updated', ...rest }) => {
@@ -11,13 +10,8 @@ export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value
         if (ref.current) {
             const p = performance.now();
             let tmp1: any, tmp2: any;
-            let isDiff = value instanceof GroupedObject && refValue.current instanceof GroupedObject
-                ? (
-                    value.getSize() != refValue.current.getSize()
-                    || (tmp1 = value.obj, tmp2 = refValue.current.obj, value.getKeys().some(k => tmp1[k] != tmp2[k]))
-                ) : (
-                    value != refValue.current
-                );
+            let isDiff = value != refValue.current
+            
             const p1 = performance.now();
 
             if (p1 - p >= 1) {
