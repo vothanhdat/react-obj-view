@@ -26,10 +26,20 @@
         --opacity: 30%;
     }
 
+    .node-default >.name {
+        transition: background-color 1s;
+        background-color: #0000;
+    }
+    .node-updated > .node-default >.name {
+        transition: background-color 0.00s;
+        background-color: rgb(255, 50, 0);
+    }
+
     .node-default {
         color: color-mix(in srgb, var(--color) var(--opacity), transparent);
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .node-child {

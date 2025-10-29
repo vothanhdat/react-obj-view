@@ -3,7 +3,7 @@ import "./style.css";
 
 import { Constructor, JSONViewCtx } from "./types";
 import { ObjectRenderWrapper } from "./ObjectRender";
-import { PromiseWrapper } from "./ResolvePromiseWrapper";
+import { resolver } from "./resolver";
 
 
 export const NameRender: React.FC<{ name: string }> = ({ name }) => {
@@ -22,37 +22,6 @@ export type ObjectViewProps = {
     preview?: boolean,
 };
 
-
-const resolver: JSONViewCtx['resolver'] = new Map([
-    [Promise, function* (promise: Promise<any>, entriesIterator, isPreview) {
-
-        let pendingSym = Symbol("Pending");
-
-        let result: Promise<{ status: any, result?: any, reason?: any }> = Promise
-            .race([promise, pendingSym])
-            .then(e => e == pendingSym ? { status: "pending" } : { status: "resolved", result: e })
-            .catch(e => ({ status: "rejected", reason: e }))
-
-        for (let entry of entriesIterator) {
-            yield entry
-        }
-
-        yield {
-            name: isPreview ? "status" : "[[PromiseState]]",
-            data: new PromiseWrapper(result.then(e => e.status)),
-            isNonenumerable: !isPreview,
-        }
-        yield {
-            name: isPreview ? "result" : "[[PromiseResult]]",
-            data: new PromiseWrapper(
-                result.then(e => e.status == "resolved" ? e.result
-                    : e.status == "rejected" ? e.reason
-                        : undefined)
-            ),
-            isNonenumerable: !isPreview,
-        }
-    }]
-])
 
 export const ObjectViewV2: React.FC<ObjectViewProps> = ({
     value, name = "", style, expandLevel = false,

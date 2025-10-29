@@ -6,6 +6,7 @@ import { ValueInline } from "./ValueInline";
 import { AllChilds } from "./AllChilds";
 import { useValueInfo } from "./hooks/useValueInfo";
 import { PromiseWrapper, ResolvePromise } from "./ResolvePromiseWrapper";
+import { ChangeFlashWrappper } from "../utils/ChangeFlashWrappper";
 
 
 const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", level = 0, context, isNonenumerable, renderName = true, }) => {
@@ -17,9 +18,10 @@ const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", lev
     return <>
         <div onClick={() => setExpandChild?.(!expandChild)}
             className={joinClasses("node-default", isNonenumerable && "non-enumrable")}
-            style={{ whiteSpace: expandChild ? "preserve nowrap" : "nowrap", }}
         >
-            <span className="expand-symbol">{hasChilds ? (expandChild ? "▼ " : "▶ ") : "  "}</span>
+            <span className="expand-symbol">
+                {hasChilds ? (expandChild ? "▼ " : "▶ ") : "  "}
+            </span>
             {renderName && <><NameRender {...{ name }} />: </>}
             {!isInGroupping && <ValueInline {...{
                 value,
@@ -35,7 +37,9 @@ const ObjectRender: React.FC<ObjectRenderProps> = ({ name, value, path = "", lev
 };
 
 export const ObjectRenderWrapper: React.FC<ObjectRenderProps> = (props) => {
-    return props.value instanceof PromiseWrapper
-        ? <ResolvePromise Component={ObjectRender} {...props} />
-        : <ObjectRender {...props} />
+    return <ChangeFlashWrappper value={props.value} flashClassname="node-updated">
+        {props.value instanceof PromiseWrapper
+            ? <ResolvePromise Component={ObjectRender} {...props} />
+            : <ObjectRender {...props} />}
+    </ChangeFlashWrappper>
 }

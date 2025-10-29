@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { GroupedObject } from "./GroupedObject";
 
 
-export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; enable?: boolean }> = ({ value, enable = true, ...rest }) => {
+export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; flashClassname?: string; enable?: boolean }> = ({ value, enable = true, flashClassname = 'jv-updated', ...rest }) => {
 
     const ref = useRef<HTMLElement>(undefined);
     const refValue = useRef(value);
@@ -26,8 +26,8 @@ export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value
 
             if (isDiff) {
                 refValue.current = value;
-                ref.current.classList.add('jv-updated');
-                let t = requestAnimationFrame(() => ref.current?.classList.remove('jv-updated'));
+                ref.current.classList.add(flashClassname);
+                let t = requestAnimationFrame(() => ref.current?.classList.remove(flashClassname));
                 return () => cancelAnimationFrame(t);
             }
         }

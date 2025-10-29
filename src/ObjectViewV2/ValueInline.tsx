@@ -4,6 +4,7 @@ import { joinClasses } from "./utils/joinClasses";
 import { JSONViewCtx } from "./types";
 import { PromiseWrapper } from "./ResolvePromiseWrapper";
 import { ResolvePromise } from "./ResolvePromiseWrapper";
+import { ValueString } from "./ValueString";
 
 export type ValueInlineProps = { value: any; isPreview: boolean; className?: string; context: JSONViewCtx }
 
@@ -18,7 +19,7 @@ export const ValueInlinePre: React.FC<ValueInlineProps> = ({ value, className, c
         case "bigint":
             return <span className={joinClasses("value", "type-" + typeof value, className)}>{String(value)}n</span>;
         case "string":
-            return <span className={joinClasses("value", "type-" + typeof value, className)}>{JSON.stringify(value)}</span>;
+            return <ValueString {...{ value, className, context, isPreview }} />;
         case "object": {
             const classes = joinClasses(`value type-object-${value?.constructor?.name?.toLowerCase() ?? "null"}`, className);
             if (!value) {

@@ -1,5 +1,5 @@
 // Edge cases and special JavaScript constructs
-const preventError = (e) => { (e?.catch?.(() => { }), e) }
+const preventError = (e:any) => (e?.catch?.(() => { }), e)
 
 export const edgeCases = {
     // Prototype chain examples
