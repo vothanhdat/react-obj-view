@@ -11,81 +11,8 @@ export const V8: React.FC<ObjectViewProps> = ({
     name,
     expandLevel,
 }) => {
-    const [reload, setReload] = useState(0);
-    // const [reloadAll, setReloadAll] = useState(0);
 
-    const refWalkFn = useRef<typeof walkAsLinkList>(undefined)
-    const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined)
-
-    if (!refWalk.current || refWalkFn.current != walkAsLinkList) {
-        refWalkFn.current = walkAsLinkList
-        refWalk.current = walkAsLinkList()
-    }
-
-    const refExpandMap = useRef<Map<any, any>>(undefined)
-
-
-    if (!refExpandMap.current)
-        refExpandMap.current = new Map()
-
-    const level = typeof expandLevel == 'boolean'
-        ? (expandLevel ? 100 : 0)
-        : Number(expandLevel)
-
-    const linkList = useMemo(
-        () => {
-            // console.time("walking")
-            const result = refWalk.current!.walking(value, true, level, [], refExpandMap.current)
-            // console.timeEnd("walking")
-            return result
-        },
-        [value, name, level]
-    )
-
-    const flattenNodes = useMemo(
-        () => {
-            // console.time("linkListToArray")
-            let r = linkListToArray(linkList)
-            // console.timeEnd("linkListToArray")
-            return r
-        },
-        [linkList, reload]
-    )
-
-    const toggleChildExpand = useCallback(
-        (node: NodeData) => {
-            let current = refExpandMap.current!;
-            let defaultExpand = level > node.depth;
-
-            if (!current)
-                return;
-
-            for (let path of node.paths) {
-                if (!current.has(path)) {
-                    current.set(path, new Map())
-                }
-                current.set(expandRefSymbol, Math.random())
-                current = current!.get(path)
-            }
-
-            const nextExpand = !(current?.get(expandSymbol) ?? defaultExpand);
-
-            current?.set(expandSymbol, nextExpand);
-
-            // console.time("walkingSwap")
-            refWalk.current?.walkingSwap(
-                node.value,
-                node.enumerable,
-                level,
-                node.paths,
-                current,
-            )
-            // console.timeEnd("walkingSwap")
-
-            setReload(e => e + 1)
-        },
-        [refExpandMap, refWalk, level]
-    )
+    const { flattenNodes, toggleChildExpand } = useFlattenObjectView(expandLevel, value, name);
 
     const nodeRender = useCallback(
         (index: number) => <div style={{ height: "15px" }}>
@@ -109,7 +36,6 @@ export const V8: React.FC<ObjectViewProps> = ({
                 computeItemKey={computeItemKey}
                 fixedItemHeight={14}
                 totalCount={flattenNodes.length}
-                // data={flattenNodes}
                 itemContent={nodeRender}
             />
         </div>
@@ -117,4 +43,80 @@ export const V8: React.FC<ObjectViewProps> = ({
 }
 
 
+
+function useFlattenObjectView(expandLevel: number | boolean | undefined, value: any, name: string | undefined) {
+    const [reload, setReload] = useState(0);
+    const refWalkFn = useRef<typeof walkAsLinkList>(undefined);
+    const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined);
+    const refExpandMap = useRef<Map<any, any>>(undefined);
+
+    if (!refWalk.current || refWalkFn.current != walkAsLinkList) {
+        refWalkFn.current = walkAsLinkList;
+        refWalk.current = walkAsLinkList();
+    }
+
+
+
+    if (!refExpandMap.current)
+        refExpandMap.current = new Map();
+
+    const level = typeof expandLevel == 'boolean'
+        ? (expandLevel ? 100 : 0)
+        : Number(expandLevel);
+
+    const linkList = useMemo(
+        () => {
+            // console.time("walking")
+            const result = refWalk.current!.walking(value, true, level, [], refExpandMap.current);
+            // console.timeEnd("walking")
+            return result;
+        },
+        [value, name, level]
+    );
+
+    const flattenNodes = useMemo(
+        () => {
+            // console.time("linkListToArray")
+            let r = linkListToArray(linkList);
+            // console.timeEnd("linkListToArray")
+            return r;
+        },
+        [linkList, reload]
+    );
+
+    const toggleChildExpand = useCallback(
+        (node: NodeData) => {
+            let current = refExpandMap.current!;
+            let defaultExpand = level > node.depth;
+
+            if (!current)
+                return;
+
+            for (let path of node.paths) {
+                if (!current.has(path)) {
+                    current.set(path, new Map());
+                }
+                current.set(expandRefSymbol, Math.random());
+                current = current!.get(path);
+            }
+
+            const nextExpand = !(current?.get(expandSymbol) ?? defaultExpand);
+
+            current?.set(expandSymbol, nextExpand);
+
+            // console.time("walkingSwap")
+            refWalk.current?.walkingSwap(
+                node.value,
+                node.enumerable,
+                level,
+                node.paths,
+                current
+            );
+            // console.timeEnd("walkingSwap")
+            setReload(e => e + 1);
+        },
+        [refExpandMap, refWalk, level]
+    );
+    return { flattenNodes, toggleChildExpand };
+}
 
