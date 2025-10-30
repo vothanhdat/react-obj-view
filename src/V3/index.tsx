@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
 import { NodeData, walkAsLinkList } from "./NodeData";
 import { linkListToArray } from "./LinkList";
@@ -9,26 +9,31 @@ import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual";
 export const V8: React.FC<ObjectViewProps> = ({
     value,
     name,
+    expandLevel,
 }) => {
 
     const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined)
     if (!refWalk.current)
         refWalk.current = walkAsLinkList()
 
-    // console.time("refWalk")
+    const level = typeof expandLevel == 'boolean'
+        ? (expandLevel ? 100 : 0)
+        : Number(expandLevel)
+
 
     const linkList = useMemo(
-        () => refWalk.current!(value, true, []),
-        [value, name]
+        () => refWalk.current!(value, true, level, []),
+        [value, name, level]
     )
-    // console.timeEnd("refWalk")
 
-    // console.time("linkListToArray")
     const flattenNodes = useMemo(
         () => linkListToArray(linkList),
         [linkList]
     )
-    // console.timeEnd("linkListToArray")
+    
+    useEffect(() => console.log("level", level),[level])
+    useEffect(() => console.log("expandLevel", expandLevel),[expandLevel])
+
     const parentRef = useRef(null)
 
     const rowHeight = 20

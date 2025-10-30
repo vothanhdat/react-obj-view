@@ -9,19 +9,19 @@ type NodeWalkState = {
     object: any;
     start: LinkList<NodeData>;
     end: LinkList<NodeData>;
-    expand: boolean;
-    expand_level: number;
+    is_expand: boolean;
+    expand_depth: number;
 };
 
 
 
 export class NodeData {
     constructor(
-        public name: any,
+        public name: PropertyKey,
         public value: any,
-        public path: any,
+        public path: string,
         public depth: number,
-        public enumrable: boolean,
+        public enumerable: boolean,
     ) { }
 }
 
@@ -30,30 +30,33 @@ export const walkAsLinkList = (
         first: true,
         object: undefined,
         path: path.join("."),
-        expand: true,
-        expand_level: 0
+        is_expand: true,
+        expand_depth: 0
     }) as NodeWalkState)
 ) => {
-
+    
+    // Add JSDoc for clarity
+    /**
+     * @param expand_depth - Maximum depth to expand (inclusive). 
+     *                       0 = only root, 1 = root + children, etc.
+     */
     const walking = (
         object: any,
-        enumrable: boolean = true,
-        expandLevel: number,
-        paths: any[] = ["root"],
+        enumerable: boolean = true,
+        expand_depth: number,
+        paths: any[] = [],
     ): [LinkList<NodeData>, LinkList<NodeData>] => {
-        
+
         const state = stateGetter(...paths)
 
-        const expand = expandLevel > paths.length
+        const is_expand = paths.length <= expand_depth
 
-        const expand_level = expand ? expandLevel : 0
-
-        if (state.first || state.object !== object || expand != state.expand || expand_level != state.expand_level) {
+        if (state.first || state.object !== object || is_expand !== state.is_expand || expand_depth !== state.expand_depth) {
 
             state.first = false;
             state.object = object;
-            state.expand = expand;
-            state.expand_level = expand_level;
+            state.is_expand = is_expand;
+            state.expand_depth = expand_depth;
 
             state.start = state.end = new LinkList<NodeData>(
                 new NodeData(
@@ -61,17 +64,17 @@ export const walkAsLinkList = (
                     object,
                     paths.join("/"),
                     paths.length,
-                    enumrable,
+                    enumerable,
                 )
             );
 
             let currentLink = state.start;
 
-            if (state.expand && isRef(object)) {
-                for (let { key, value, enumrable } of getEntries(object)) {
+            if (state.is_expand && isRef(object)) {
+                for (let { key, value, enumerable } of getEntries(object)) {
                     paths.push(key);
 
-                    const [start, end] = walking(value, enumrable, expandLevel, paths);
+                    const [start, end] = walking(value, enumerable, expand_depth, paths);
 
                     if (!start || !end) {
                         console.log({ value, start, end });
@@ -90,7 +93,7 @@ export const walkAsLinkList = (
 
 
             return [state.start, state.end];
-        } else if (state.start, state.end) {
+        } else if (state.start && state.end) {
             return [state.start, state.end];
         } else {
             throw new Error("Invalid Walk Into");
