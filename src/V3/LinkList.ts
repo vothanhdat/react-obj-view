@@ -5,7 +5,7 @@ export class LinkList<T> {
         public obj: T
     ) { }
 
-    get length() {
+    getLength() {
         let count = 1;
         let current: LinkList<T> | undefined = this;
         while (current && count < 1000) {
@@ -14,6 +14,18 @@ export class LinkList<T> {
         }
 
         return count;
+    }
+
+    getDistance(to: LinkList<T>) {
+        let count = 0;
+        let current: LinkList<T> | undefined = this;
+        while (count < 100000 && current) {
+            if(current == to){
+                return count
+            }
+            current = current.next;
+        }
+        return -1;
     }
 }
 
