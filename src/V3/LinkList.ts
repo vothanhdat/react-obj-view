@@ -23,7 +23,7 @@ export const linkListToArray = <T>([start, end]: [LinkList<T> | undefined, LinkL
     while (current) {
         result.push(current.obj);
         current = current.next;
-        if (current == end) break;
+        // if (current == end) break;
     }
     return result;
 };

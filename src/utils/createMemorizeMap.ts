@@ -21,11 +21,11 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
 
         return current.get(resultSymbol)
 
-    }) as T & { clear: (...params: any[]) => void };
+    }) as T & { clearAllChild: (...params: any[]) => void };
 
-    fn.clear = (...params: any) => {
+    fn.clearAllChild = (...params: any) => {
         let current = rootMap;
-        
+
         for (let param of params) {
             if (current) {
                 current = current.get(param)
@@ -35,7 +35,9 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
         }
 
         if (current) {
+            const value = current.get(resultSymbol)
             current.clear()
+            current.set(resultSymbol, value)
         }
     }
 
