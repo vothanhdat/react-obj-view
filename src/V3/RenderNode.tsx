@@ -9,6 +9,7 @@ export const RenderNode: React.FC<{
 
     const is_expand = node.walkState?.is_expand
         ?? node.depth < node.walkState.expand_depth
+    const isCircular = node.isCircular
     const hasChild = node.hasChild
 
     return <div style={{
@@ -28,10 +29,11 @@ export const RenderNode: React.FC<{
             onClick={() => node.hasChild && toggleChildExpand(node)}
         >
             <span className="expand-symbol">
-                {hasChild ? (is_expand ? "▼ " : "▶ ") : <>&#160;&#160;</>}
+                {hasChild && !isCircular ? (is_expand ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
             {node.depth == 0 ? "ROOT" : String(node.name)}
             :
+            {isCircular ? <span>CIRCULAR</span> : <></>}
             {String(node.value)?.slice(0, 50)}
         </div>
     </div>;

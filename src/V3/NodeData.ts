@@ -25,6 +25,7 @@ export class NodeData {
         public enumerable: boolean,
         public paths: PropertyKey[],
         public walkState: NodeWalkState,
+        public isCircular: boolean,
     ) { }
 
     get hasChild() {
@@ -52,6 +53,8 @@ export const walkAsLinkList = (
         ref_expand: undefined,
     }) as NodeWalkState)
 
+    const visiting = new WeakSet();
+
     const walking = (
         object: any,
         enumerable: boolean = true,
@@ -64,7 +67,11 @@ export const walkAsLinkList = (
             throw new Error("expand_depth must be non-negative");
         }
 
-        const is_expand = (expandMap?.get(expandSymbol) as boolean) ?? (expand_depth > paths.length)
+        const isCircular = isRef(object) && visiting.has(object);
+
+        const isDefaultExpand = !isCircular && expand_depth > paths.length
+
+        const is_expand = !isCircular && ((expandMap?.get(expandSymbol) as boolean) ?? isDefaultExpand)
 
         const ref_expand = is_expand && (expandMap?.get(expandRefSymbol) as any)
 
@@ -74,7 +81,6 @@ export const walkAsLinkList = (
             stateGetter.clearAllChild(...paths);
         }
 
-
         if (
             state.first
             || state.object !== object
@@ -82,6 +88,7 @@ export const walkAsLinkList = (
             || expand_depth !== state.expand_depth
             || ref_expand !== state.ref_expand
         ) {
+            isRef(object) && !isCircular && visiting.add(object);
 
             state.first = false;
             state.object = object;
@@ -98,12 +105,13 @@ export const walkAsLinkList = (
                     enumerable,
                     [...paths],
                     state,
+                    isCircular,
                 )
             );
 
             let currentLink = state.start;
 
-            if (is_expand && isRef(object)) {
+            if (!isCircular && is_expand && isRef(object)) {
 
                 for (let { key, value, enumerable } of getEntries(object)) {
 
@@ -129,6 +137,7 @@ export const walkAsLinkList = (
 
             state.end = currentLink;
 
+            isRef(object) && !isCircular && visiting.delete(object);
 
             return [state.start, state.end];
         } else if (state.start && state.end) {
@@ -142,18 +151,26 @@ export const walkAsLinkList = (
         object: any,
         enumerable: boolean = true,
         expand_depth: number,
-        paths: any[] = [],
+        paths: PropertyKey[] = [],
         expandMap: ExpandMap,
     ) => {
 
-        // console.log(stateGetter([]))
-        // console.log(paths)
-        // logNext(stateGetter().start, "ROOT BEFORE")
+        const allVisited = paths
+            .reduce(
+                (visiteds, path) => [...visiteds, visiteds.at(-1)?.[path]],
+                [stateGetter().object]
+            )
+            .slice(0, -1)
+
 
         const state = stateGetter(...paths)
 
         if (state.start && state.end) {
-            // logNext(state.start, "BEFORE")
+
+            allVisited
+                .filter(isRef)
+                .forEach((object) => visiting.add(object))
+
             const prevStart = state.start
             const prevNext = state.end?.next;
 
@@ -165,8 +182,6 @@ export const walkAsLinkList = (
                 expandMap,
             )
 
-            // prevStart.obj = postStart!.obj;
-            // prevStart.next = postStart!.next;
 
             state.end = postEnd!;
             state.start = prevStart!;
@@ -174,16 +189,11 @@ export const walkAsLinkList = (
             state.start.obj = postStart!.obj;
             state.start.next = postStart!.next;
 
-            // logNext(state.start, "PREV")
-
+            allVisited
+                .filter(isRef)
+                .forEach((object) => visiting.delete(object))
 
         }
-
-        // logNext(stateGetter().start, "ROOT AFTER")
-
-        // console.log(stateGetter.rootMap)
-
-
 
     };
 
