@@ -186,7 +186,8 @@ export const walkAsLinkList = (
             )
 
 
-            if (startAfter == endAfter) {
+            if (startAfter === endAfter) {
+                state.start = state.end = startAfter!;
                 head!.next = startAfter;
                 tail!.prev = startAfter;
                 startAfter!.prev = head
