@@ -9,7 +9,6 @@ type NodeWalkState = {
     object: any;
     start: LinkList<NodeData>;
     end: LinkList<NodeData>;
-    // is_expand: boolean;
     expand_depth: number;
 };
 
@@ -30,7 +29,7 @@ export const walkAsLinkList = (
         first: true,
         object: undefined,
         path: path.join("."),
-        expand_depth: 0
+        expand_depth: 0,
     }) as NodeWalkState)
 ) => {
 
@@ -40,6 +39,10 @@ export const walkAsLinkList = (
         expand_depth: number,
         paths: any[] = [],
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
+
+        if (expand_depth < 0) {
+            throw new Error("expand_depth must be non-negative");
+        }
 
         const is_expand = expand_depth >= paths.length
 
