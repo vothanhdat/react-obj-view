@@ -17,7 +17,7 @@ export class LinkList<T> {
     }
 }
 
-export const linkListToArray = <T>([start, end]: [LinkList<T>, LinkList<T>]): T[] => {
+export const linkListToArray = <T>([start, end]: [LinkList<T> | undefined, LinkList<T> | undefined]): T[] => {
     let result: T[] = [];
     let current: LinkList<T> | undefined = start;
     while (current) {

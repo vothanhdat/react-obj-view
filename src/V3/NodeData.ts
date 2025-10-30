@@ -9,7 +9,7 @@ type NodeWalkState = {
     object: any;
     start: LinkList<NodeData>;
     end: LinkList<NodeData>;
-    is_expand: boolean;
+    // is_expand: boolean;
     expand_depth: number;
 };
 
@@ -30,32 +30,30 @@ export const walkAsLinkList = (
         first: true,
         object: undefined,
         path: path.join("."),
-        is_expand: true,
         expand_depth: 0
     }) as NodeWalkState)
 ) => {
-    
-    // Add JSDoc for clarity
-    /**
-     * @param expand_depth - Maximum depth to expand (inclusive). 
-     *                       0 = only root, 1 = root + children, etc.
-     */
+
     const walking = (
         object: any,
         enumerable: boolean = true,
         expand_depth: number,
         paths: any[] = [],
-    ): [LinkList<NodeData>, LinkList<NodeData>] => {
+    ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
+
+        const is_expand = expand_depth >= paths.length
+
+        if (!is_expand) {
+            stateGetter.clear(...paths);
+            return [undefined, undefined]
+        }
 
         const state = stateGetter(...paths)
 
-        const is_expand = paths.length <= expand_depth
-
-        if (state.first || state.object !== object || is_expand !== state.is_expand || expand_depth !== state.expand_depth) {
+        if (state.first || state.object !== object || expand_depth !== state.expand_depth) {
 
             state.first = false;
             state.object = object;
-            state.is_expand = is_expand;
             state.expand_depth = expand_depth;
 
             state.start = state.end = new LinkList<NodeData>(
@@ -70,18 +68,19 @@ export const walkAsLinkList = (
 
             let currentLink = state.start;
 
-            if (state.is_expand && isRef(object)) {
+            if (isRef(object)) {
                 for (let { key, value, enumerable } of getEntries(object)) {
+
                     paths.push(key);
 
                     const [start, end] = walking(value, enumerable, expand_depth, paths);
 
+                    paths.pop();
+
                     if (!start || !end) {
-                        console.log({ value, start, end });
-                        throw new Error("Invalid Walking");
+                        continue;
                     }
 
-                    paths.pop();
                     currentLink.next = start;
                     currentLink = end;
                 }

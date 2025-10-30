@@ -8,7 +8,7 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
     const rootMap = new Map()
     const resultSymbol = Symbol("result")
 
-    return ((...params: any) => {
+    const fn = ((...params: any) => {
         let current = rootMap;
         for (let param of params) {
             if (!current.has(param))
@@ -21,5 +21,23 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
 
         return current.get(resultSymbol)
 
-    }) as T
+    }) as T & { clear: (...params: any[]) => void };
+
+    fn.clear = (...params: any) => {
+        let current = rootMap;
+        
+        for (let param of params) {
+            if (current) {
+                current = current.get(param)
+            } else {
+                return;
+            }
+        }
+
+        if (current) {
+            current.clear()
+        }
+    }
+
+    return fn
 }
