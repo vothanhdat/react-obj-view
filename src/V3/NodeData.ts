@@ -9,6 +9,8 @@ type NodeWalkState = {
     object: any;
     start: LinkList<NodeData>;
     end: LinkList<NodeData>;
+    expand: boolean;
+    expand_level: number;
 };
 
 
@@ -28,19 +30,31 @@ export const walkAsLinkList = (
         first: true,
         object: undefined,
         path: path.join("."),
+        expand: true,
+        expand_level: 0
     }) as NodeWalkState)
 ) => {
 
     const walking = (
         object: any,
         enumrable: boolean = true,
+        expandLevel: number,
         paths: any[] = ["root"],
-        state = stateGetter(...paths)
     ): [LinkList<NodeData>, LinkList<NodeData>] => {
+        
+        const state = stateGetter(...paths)
 
-        if (state.first || state.object !== object) {
+        const expand = expandLevel > paths.length
+
+        const expand_level = expand ? expandLevel : 0
+
+        if (state.first || state.object !== object || expand != state.expand || expand_level != state.expand_level) {
+
             state.first = false;
             state.object = object;
+            state.expand = expand;
+            state.expand_level = expand_level;
+
             state.start = state.end = new LinkList<NodeData>(
                 new NodeData(
                     paths.at(-1),
@@ -53,11 +67,11 @@ export const walkAsLinkList = (
 
             let currentLink = state.start;
 
-            if (isRef(object)) {
+            if (state.expand && isRef(object)) {
                 for (let { key, value, enumrable } of getEntries(object)) {
                     paths.push(key);
 
-                    const [start, end] = walking(value, enumrable, paths);
+                    const [start, end] = walking(value, enumrable, expandLevel, paths);
 
                     if (!start || !end) {
                         console.log({ value, start, end });
