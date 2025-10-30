@@ -3,7 +3,7 @@ import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
 import { expandRefSymbol, expandSymbol, NodeData, walkAsLinkList } from "./NodeData";
 import { linkListToArray } from "./LinkList";
 import { RenderNode } from "./RenderNode";
-import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual";
+import { Virtuoso } from 'react-virtuoso'
 
 
 export const V8: React.FC<ObjectViewProps> = ({
@@ -65,52 +65,32 @@ export const V8: React.FC<ObjectViewProps> = ({
         [refExpandMap, level]
     )
 
-    const parentRef = useRef(null)
+    const nodeRender = useCallback(
+        (_, node: NodeData) => <div >
+            <RenderNode
+                node={node}
+                toggleChildExpand={toggleChildExpand}
+                key={node.path} />
+        </div>,
+        [toggleChildExpand]
+    )
 
-    const rowHeight = 20
+    const computeItemKey = useCallback(
+        (_, node: NodeData) => node.path,
+        []
+    )
 
-    const rowVirtualizer = useVirtualizer({
-        count: flattenNodes.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => rowHeight,
-        overscan: 5,
-    });
-
-    useEffect(() => console.log(value), [value])
-    
-    return <div style={{ height: `300px`, overflow: 'auto', }} ref={parentRef}>
-
-        <div
-            style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-            }}
-        >
-            {rowVirtualizer
-                .getVirtualItems()
-                .map(virtualRow => [virtualRow, flattenNodes[virtualRow.index]] as [VirtualItem, NodeData])
-                .map(([virtualRow, nodeData]) => (
-                    <div
-                        key={virtualRow.index}
-                        className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
-                        style={{
-                            position: 'absolute', top: 0, left: 0, width: '100%',
-                            height: `${virtualRow.size}px`,
-                            transform: `translateY(${virtualRow.start}px)`,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        <RenderNode
-                            node={nodeData}
-                            toggleChildExpand={toggleChildExpand}
-                            key={nodeData.path} />
-                    </div>
-
-                ))}
+    return <>
+        <div style={{ height: `300px`, overflow: 'auto', }}>
+            <Virtuoso
+                style={{ height: '100%' }}
+                computeItemKey={computeItemKey}
+                data={flattenNodes}
+                itemContent={nodeRender}
+            />
         </div>
-    </div>
+    </>
 }
+
+
 

@@ -24,6 +24,7 @@ export class NodeData {
         public depth: number,
         public enumerable: boolean,
         public paths: PropertyKey[],
+        public walkState: NodeWalkState,
     ) { }
 
     get hasChild() {
@@ -33,6 +34,10 @@ export class NodeData {
 
 export const expandSymbol = Symbol("expand")
 export const expandRefSymbol = Symbol("expandRef")
+export type ExpandMap = Map<
+    PropertyKey | typeof expandSymbol | typeof expandRefSymbol,
+    ExpandMap | boolean
+> | undefined
 
 export const walkAsLinkList = (
     stateGetter = createMemorizeMap((...path) => ({
@@ -50,7 +55,7 @@ export const walkAsLinkList = (
         enumerable: boolean = true,
         expand_depth: number,
         paths: any[] = [],
-        expandMap: Map<any, any> | undefined,
+        expandMap: ExpandMap,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
 
         if (expand_depth < 0) {
@@ -58,9 +63,9 @@ export const walkAsLinkList = (
         }
 
 
-        const is_expand = expandMap?.get(expandSymbol) ?? (expand_depth > paths.length)
+        const is_expand = (expandMap?.get(expandSymbol) as boolean) ?? (expand_depth > paths.length)
 
-        const ref_expand = is_expand && expandMap?.get(expandRefSymbol)
+        const ref_expand = is_expand && (expandMap?.get(expandRefSymbol) as any)
 
         const state = stateGetter(...paths)
 
@@ -68,13 +73,15 @@ export const walkAsLinkList = (
             stateGetter.clearAllChild(...paths);
         }
 
+
         if (
             state.first
             || state.object !== object
-            || is_expand != state.is_expand
+            || is_expand !== state.is_expand
             || expand_depth !== state.expand_depth
-            || ref_expand != state.ref_expand
+            || ref_expand !== state.ref_expand
         ) {
+            // console.log("walk", paths.join("/"))
 
             state.first = false;
             state.object = object;
@@ -90,6 +97,7 @@ export const walkAsLinkList = (
                     paths.length,
                     enumerable,
                     [...paths],
+                    state,
                 )
             );
 
@@ -103,7 +111,7 @@ export const walkAsLinkList = (
 
                     const [start, end] = walking(
                         value, enumerable, expand_depth, paths,
-                        expandMap?.get(key),
+                        expandMap?.get(key) as ExpandMap,
                     );
 
                     paths.pop();
@@ -130,5 +138,5 @@ export const walkAsLinkList = (
         }
     };
 
-    return { walking };
+    return { walking, stateGetter };
 };

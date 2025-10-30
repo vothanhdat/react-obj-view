@@ -54,7 +54,6 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-inspector": "^9.0.0",
     "typescript": "^5.8.3",
     "vite": "7",
     "vite-bundle-analyzer": "^1.1.0",
@@ -62,7 +61,6 @@
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728",
   "dependencies": {
-    "@tanstack/react-virtual": "^3.13.12",
-    "@types/react-inspector": "^6.0.1"
+    "react-virtuoso": "^4.14.1"
   }
 }
