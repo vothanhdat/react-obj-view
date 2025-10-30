@@ -48,17 +48,12 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
     const [reload, setReload] = useState(0);
     const refWalkFn = useRef<typeof walkAsLinkList>(undefined);
     const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined);
-    const refExpandMap = useRef<Map<any, any>>(undefined);
 
     if (!refWalk.current || refWalkFn.current != walkAsLinkList) {
         refWalkFn.current = walkAsLinkList;
         refWalk.current = walkAsLinkList();
     }
 
-
-
-    if (!refExpandMap.current)
-        refExpandMap.current = new Map();
 
     const level = typeof expandLevel == 'boolean'
         ? (expandLevel ? 100 : 0)
@@ -67,7 +62,7 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
     const linkList = useMemo(
         () => {
             // console.time("walking")
-            const result = refWalk.current!.walking(value, true, level, [], refExpandMap.current);
+            const result = refWalk.current!.walking(value, true, level);
             // console.timeEnd("walking")
             return result;
         },
@@ -86,7 +81,7 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
 
     const toggleChildExpand = useCallback(
         (node: NodeData) => {
-            let current = refExpandMap.current!;
+            let current = refWalk.current?.expandMap as any;
             let defaultExpand = level > node.depth;
 
             if (!current)
@@ -105,17 +100,11 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
             current?.set(expandSymbol, nextExpand);
 
             // console.time("walkingSwap")
-            refWalk.current?.walkingSwap(
-                node.value,
-                node.enumerable,
-                level,
-                node.paths,
-                current
-            );
+            refWalk.current?.walkingSwap(node.paths);
             // console.timeEnd("walkingSwap")
             setReload(e => e + 1);
         },
-        [refExpandMap, refWalk, level]
+        [ refWalk, level]
     );
     return { flattenNodes, toggleChildExpand };
 }

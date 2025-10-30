@@ -53,14 +53,16 @@ export const walkAsLinkList = (
         ref_expand: undefined,
     }) as NodeWalkState)
 
+    const currentExpandMap: ExpandMap = new Map()
+
     const visiting = new WeakSet();
 
-    const walking = (
+    const walkingInternal = (
         object: any,
         enumerable: boolean = true,
         expand_depth: number,
         paths: any[] = [],
-        expandMap: ExpandMap,
+        expandMap: ExpandMap = currentExpandMap,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
 
         if (expand_depth < 0) {
@@ -117,7 +119,7 @@ export const walkAsLinkList = (
 
                     paths.push(key);
 
-                    const [start, end] = walking(
+                    const [start, end] = walkingInternal(
                         value, enumerable, expand_depth, paths,
                         expandMap?.get(key) as ExpandMap,
                     );
@@ -151,12 +153,15 @@ export const walkAsLinkList = (
         }
     };
 
+    const walking = (object: any, enumerable: boolean = true, expand_depth: number) => walkingInternal(
+        object,
+        enumerable,
+        expand_depth,
+    )
+
+
     const walkingSwap = (
-        object: any,
-        enumerable: boolean = true,
-        expand_depth: number,
         paths: PropertyKey[] = [],
-        expandMap: ExpandMap,
     ) => {
 
         const allVisited = paths
@@ -165,54 +170,67 @@ export const walkAsLinkList = (
                 [stateGetter().object]
             )
             .slice(0, -1)
+            .filter(isRef)
+
+
+        const expandMap = paths
+            .reduce(
+                (map, path) => map instanceof Map && map?.get(path),
+                currentExpandMap as any
+            )
 
 
         const state = stateGetter(...paths)
 
-        if (state.start && state.end) {
-            allVisited
-                .filter(isRef)
-                .forEach((object) => visiting.add(object))
-
-            const head = state.start.prev;
-            const tail = state.end.next;
-
-            const [startAfter, endAfter] = walking(
-                object,
-                enumerable,
-                expand_depth,
-                paths,
-                expandMap,
-            )
-
-
-            if (startAfter === endAfter) {
-                state.start = state.end = startAfter!;
-                head!.next = startAfter;
-                tail!.prev = startAfter;
-                startAfter!.prev = head
-                startAfter!.next = tail
-            } else {
-                state.start = startAfter!;
-                state.end = endAfter!;
-
-                head!.next = startAfter;
-                startAfter!.prev = head!;
-
-                tail!.prev = endAfter
-                endAfter!.next = tail
-            }
-
-
-            allVisited
-                .filter(isRef)
-                .forEach((object) => visiting.delete(object))
-
+        if (!state.start || !state.end) {
+            throw new Error("Invalid state: missing start or end nodes");
         }
+
+
+        allVisited
+            .forEach((object) => visiting.add(object))
+
+        const head = state.start.prev;
+        const tail = state.end.next;
+
+        const [startAfter, endAfter] = walkingInternal(
+            state.object,
+            true,
+            state.expand_depth,
+            paths,
+            expandMap,
+        )
+
+        if (!state.start || !state.end) {
+            throw new Error("Invalid state: missing start or end nodes");
+        }
+
+        if (startAfter === endAfter) {
+            state.start = state.end = startAfter!;
+            head!.next = startAfter;
+            tail!.prev = startAfter;
+            startAfter!.prev = head
+            startAfter!.next = tail
+        } else {
+            state.start = startAfter!;
+            state.end = endAfter!;
+
+            head!.next = startAfter;
+            startAfter!.prev = head!;
+
+            tail!.prev = endAfter
+            endAfter!.next = tail
+        }
+
+
+        allVisited
+            .forEach((object) => visiting.delete(object))
+
 
     };
 
-    return { walking, walkingSwap, stateGetter };
+
+    return { walking, walkingSwap, stateGetter, expandMap: currentExpandMap };
 };
 
 
