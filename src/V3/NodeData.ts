@@ -40,7 +40,10 @@ export type ExpandMap = Map<
 > | undefined
 
 export const walkAsLinkList = (
-    stateGetter = createMemorizeMap((...path) => ({
+
+) => {
+
+    const stateGetter = createMemorizeMap((...path) => ({
         first: true,
         object: undefined,
         path: path.join("."),
@@ -48,7 +51,6 @@ export const walkAsLinkList = (
         is_expand: true,
         ref_expand: undefined,
     }) as NodeWalkState)
-) => {
 
     const walking = (
         object: any,
@@ -61,7 +63,6 @@ export const walkAsLinkList = (
         if (expand_depth < 0) {
             throw new Error("expand_depth must be non-negative");
         }
-
 
         const is_expand = (expandMap?.get(expandSymbol) as boolean) ?? (expand_depth > paths.length)
 
@@ -81,7 +82,6 @@ export const walkAsLinkList = (
             || expand_depth !== state.expand_depth
             || ref_expand !== state.ref_expand
         ) {
-            // console.log("walk", paths.join("/"))
 
             state.first = false;
             state.object = object;
@@ -138,5 +138,66 @@ export const walkAsLinkList = (
         }
     };
 
-    return { walking, stateGetter };
+    const walkingSwap = (
+        object: any,
+        enumerable: boolean = true,
+        expand_depth: number,
+        paths: any[] = [],
+        expandMap: ExpandMap,
+    ) => {
+
+        // console.log(stateGetter([]))
+        // console.log(paths)
+        // logNext(stateGetter().start, "ROOT BEFORE")
+
+        const state = stateGetter(...paths)
+
+        if (state.start && state.end) {
+            // logNext(state.start, "BEFORE")
+            const prevStart = state.start
+            const prevNext = state.end?.next;
+
+            const [postStart, postEnd] = walking(
+                object,
+                enumerable,
+                expand_depth,
+                paths,
+                expandMap,
+            )
+
+            // prevStart.obj = postStart!.obj;
+            // prevStart.next = postStart!.next;
+
+            state.end = postEnd!;
+            state.start = prevStart!;
+            state.end.next = prevNext;
+            state.start.obj = postStart!.obj;
+            state.start.next = postStart!.next;
+
+            // logNext(state.start, "PREV")
+
+
+        }
+
+        // logNext(stateGetter().start, "ROOT AFTER")
+
+        // console.log(stateGetter.rootMap)
+
+
+
+    };
+
+    return { walking, walkingSwap, stateGetter };
 };
+
+
+const logNext = (e: LinkList<NodeData>, tag: string, max = 50) => {
+    let list = []
+    let c: any = e
+    while (c && list.length < max) {
+        list.push([c.idx, c.obj.paths.join(">")]);
+        c = c.next;
+    }
+    console.log(tag, list)
+    return list
+}
