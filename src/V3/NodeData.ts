@@ -11,13 +11,17 @@ type NodeWalkState = {
     end: LinkList<NodeData>;
 };
 
-export type NodeData = {
-    path: any;
-    name: any;
-    value: any;
-    depth: number;
-    enumrable: boolean;
-};
+
+
+export class NodeData {
+    constructor(
+        public name: any,
+        public value: any,
+        public path: any,
+        public depth: number,
+        public enumrable: boolean,
+    ) { }
+}
 
 export const walkAsLinkList = (
     stateGetter = createMemorizeMap((...path) => ({
@@ -35,17 +39,17 @@ export const walkAsLinkList = (
     ): [LinkList<NodeData>, LinkList<NodeData>] => {
 
         if (state.first || state.object !== object) {
-
-            state.start = state.end = new LinkList<NodeData>({
-                value: object,
-                path: paths.join("/"),
-                depth: paths.length,
-                name: paths.at(-1),
-                enumrable,
-            });
-
             state.first = false;
             state.object = object;
+            state.start = state.end = new LinkList<NodeData>(
+                new NodeData(
+                    paths.at(-1),
+                    object,
+                    paths.join("/"),
+                    paths.length,
+                    enumrable,
+                )
+            );
 
             let currentLink = state.start;
 
