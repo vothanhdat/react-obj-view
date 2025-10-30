@@ -11,20 +11,28 @@ export const RenderNode: React.FC<{
         ?? node.depth < node.walkState.expand_depth
     const hasChild = node.hasChild
 
-    return <div
-        style={{
-            paddingLeft: `${node.depth * 2}em`,
-            display: "inline",
-            cursor: node.hasChild ? 'pointer' : '',
-            userSelect: node.hasChild ? 'none' : 'inherit',
-        }}
-        onClick={() => node.hasChild && toggleChildExpand(node)}
-    >
-        <span className="expand-symbol" style={{ whiteSpace: "preserve" }}>
-            {hasChild ? (is_expand ? "▼ " : "▶ ") : "  "}
-        </span>
-        {node.depth == 0 ? "ROOT" : String(node.name)}
-        :
-        {String(node.value)?.slice(0, 50)}
+    return <div style={{
+        display: "block",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis",
+        paddingLeft: `${node.depth * 2}em`,
+    }}>
+
+        <div
+            style={{
+                display: "inline",
+                cursor: node.hasChild ? 'pointer' : '',
+                userSelect: node.hasChild ? 'none' : 'inherit',
+            }}
+            onClick={() => node.hasChild && toggleChildExpand(node)}
+        >
+            <span className="expand-symbol">
+                {hasChild ? (is_expand ? "▼ " : "▶ ") : <>&#160;&#160;</>}
+            </span>
+            {node.depth == 0 ? "ROOT" : String(node.name)}
+            :
+            {String(node.value)?.slice(0, 50)}
+        </div>
     </div>;
 };

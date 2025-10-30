@@ -12,6 +12,7 @@ export const V8: React.FC<ObjectViewProps> = ({
     expandLevel,
 }) => {
     const [reload, setReload] = useState(0);
+    // const [reloadAll, setReloadAll] = useState(0);
 
     const refWalkFn = useRef<typeof walkAsLinkList>(undefined)
     const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined)
@@ -22,6 +23,8 @@ export const V8: React.FC<ObjectViewProps> = ({
     }
 
     const refExpandMap = useRef<Map<any, any>>(undefined)
+
+
     if (!refExpandMap.current)
         refExpandMap.current = new Map()
 
@@ -30,13 +33,23 @@ export const V8: React.FC<ObjectViewProps> = ({
         : Number(expandLevel)
 
     const linkList = useMemo(
-        () => refWalk.current!.walking(value, true, level, [], refExpandMap.current),
-        [value, name, level, reload]
+        () => {
+            // console.time("walking")
+            const result = refWalk.current!.walking(value, true, level, [], refExpandMap.current)
+            // console.timeEnd("walking")
+            return result
+        },
+        [value, name, level]
     )
 
     const flattenNodes = useMemo(
-        () => linkListToArray(linkList),
-        [linkList]
+        () => {
+            // console.time("linkListToArray")
+            let r = linkListToArray(linkList)
+            // console.timeEnd("linkListToArray")
+            return r
+        },
+        [linkList, reload]
     )
 
     const toggleChildExpand = useCallback(
@@ -52,40 +65,51 @@ export const V8: React.FC<ObjectViewProps> = ({
                     current.set(path, new Map())
                 }
                 current.set(expandRefSymbol, Math.random())
-                current = current?.get(path)
+                current = current!.get(path)
             }
 
-            current?.set(
-                expandSymbol,
-                !(current?.get(expandSymbol) ?? defaultExpand)
-            );
+            const nextExpand = !(current?.get(expandSymbol) ?? defaultExpand);
+
+            current?.set(expandSymbol, nextExpand);
+
+            // console.time("walkingSwap")
+            refWalk.current?.walkingSwap(
+                node.value,
+                node.enumerable,
+                level,
+                node.paths,
+                current,
+            )
+            // console.timeEnd("walkingSwap")
 
             setReload(e => e + 1)
         },
-        [refExpandMap, level]
+        [refExpandMap, refWalk, level]
     )
 
     const nodeRender = useCallback(
-        (_, node: NodeData) => <div >
+        (index: number) => <div style={{ height: "15px" }}>
             <RenderNode
-                node={node}
+                node={flattenNodes[index]}
                 toggleChildExpand={toggleChildExpand}
-                key={node.path} />
+                key={flattenNodes[index].path} />
         </div>,
-        [toggleChildExpand]
+        [toggleChildExpand, flattenNodes]
     )
 
     const computeItemKey = useCallback(
-        (_, node: NodeData) => node.path,
-        []
+        (index: number) => flattenNodes[index].path,
+        [flattenNodes]
     )
 
     return <>
-        <div style={{ height: `300px`, overflow: 'auto', }}>
+        <div style={{ height: `300px`, overflow: 'auto', fontFamily: 'monospace', fontSize: "12px" }}>
             <Virtuoso
                 style={{ height: '100%' }}
                 computeItemKey={computeItemKey}
-                data={flattenNodes}
+                fixedItemHeight={14}
+                totalCount={flattenNodes.length}
+                // data={flattenNodes}
                 itemContent={nodeRender}
             />
         </div>
