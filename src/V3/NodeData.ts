@@ -1,7 +1,7 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { getEntries } from "./getEntries";
-import { LinkList } from "./LinkList";
+import { FirstNode, LastNode, LinkList } from "./LinkList";
 
 type NodeWalkState = {
     path: string;
@@ -125,17 +125,21 @@ export const walkAsLinkList = (
                     paths.pop();
 
                     if (!start || !end) {
-                        continue;
+                        throw new Error("!start || !end")
                     }
 
                     currentLink.next = start;
+                    start.prev = currentLink;
+
                     currentLink = end;
                 }
             }
 
-            currentLink.next = undefined;
-
             state.end = currentLink;
+
+            state.end.next = new LastNode(undefined as any, state.end, undefined);
+
+            state.start.prev = new FirstNode(undefined as any, undefined, state.start);
 
             isRef(object) && !isCircular && visiting.delete(object);
 
@@ -166,15 +170,14 @@ export const walkAsLinkList = (
         const state = stateGetter(...paths)
 
         if (state.start && state.end) {
-
             allVisited
                 .filter(isRef)
                 .forEach((object) => visiting.add(object))
 
-            const prevStart = state.start
-            const prevNext = state.end?.next;
+            const head = state.start.prev;
+            const tail = state.end.next;
 
-            const [postStart, postEnd] = walking(
+            const [startAfter, endAfter] = walking(
                 object,
                 enumerable,
                 expand_depth,
@@ -183,11 +186,22 @@ export const walkAsLinkList = (
             )
 
 
-            state.end = postEnd!;
-            state.start = prevStart!;
-            state.end.next = prevNext;
-            state.start.obj = postStart!.obj;
-            state.start.next = postStart!.next;
+            if (startAfter == endAfter) {
+                head!.next = startAfter;
+                tail!.prev = startAfter;
+                startAfter!.prev = head
+                startAfter!.next = tail
+            } else {
+                state.start = startAfter!;
+                state.end = endAfter!;
+
+                head!.next = startAfter;
+                startAfter!.prev = head!;
+
+                tail!.prev = endAfter
+                endAfter!.next = tail
+            }
+
 
             allVisited
                 .filter(isRef)
@@ -205,7 +219,7 @@ const logNext = (e: LinkList<NodeData>, tag: string, max = 50) => {
     let list = []
     let c: any = e
     while (c && list.length < max) {
-        list.push([c.idx, c.obj.paths.join(">")]);
+        c.obj && list.push([c.idx, c.obj.paths.join(">")]);
         c = c.next;
     }
     console.log(tag, list)
