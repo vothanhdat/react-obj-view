@@ -44,6 +44,10 @@ export class NodeData {
 export const expandSymbol: unique symbol = Symbol("expand")
 export const expandRefSymbol: unique symbol = Symbol("expandRef")
 
+type ExpandMap = { get(e: typeof expandSymbol): boolean, set(e: typeof expandSymbol, v: boolean): void }
+    & { get(e: typeof expandRefSymbol): number, set(e: typeof expandRefSymbol, v: number): void }
+    & Map<PropertyKey, ExpandMap>
+
 export const walkingFactory = () => {
 
     const stateGetter = createMemorizeMap((...path) => ({
@@ -55,7 +59,7 @@ export const walkingFactory = () => {
         ref_expand: undefined,
     }) as NodeWalkState)
 
-    const currentExpandMap = new Map()
+    const currentExpandMap: ExpandMap = new Map()
 
     const visiting = new WeakSet();
 
@@ -64,16 +68,18 @@ export const walkingFactory = () => {
         expand_depth: number,
         enumerable: boolean = true,
         paths: any[] = [],
-        expandMap = currentExpandMap,
+        expandMap: ExpandMap = currentExpandMap,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
 
         if (expand_depth < 0) {
             throw new Error("expand_depth must be non-negative");
         }
 
-        const isCircular = isRef(object) && visiting.has(object);
+        const isRefObject = isRef(object)
+        const isCircular = isRefObject && visiting.has(object);
+        const shouldTrackCircular = isRefObject && !isCircular;
 
-        const isDefaultExpand = !isCircular && expand_depth > paths.length
+        const isDefaultExpand = isRefObject && !isCircular && expand_depth > paths.length
 
         const is_expand = !isCircular && ((expandMap?.get(expandSymbol) as boolean) ?? isDefaultExpand)
 
@@ -81,7 +87,6 @@ export const walkingFactory = () => {
 
         const state = stateGetter(...paths)
 
-        const shouldTrackCircular = isRef(object) && !isCircular;
 
         if (
             state.first
@@ -181,8 +186,8 @@ export const walkingFactory = () => {
 
         const expandMap = paths
             .reduce(
-                (map, path) => map instanceof Map && map?.get(path),
-                currentExpandMap as any
+                (map, path) => map?.get(path) as any as ExpandMap,
+                currentExpandMap
             )
 
 
@@ -248,7 +253,7 @@ export const walkingFactory = () => {
                 current.set(path, new Map());
             }
             current.set(expandRefSymbol, Math.random());
-            current = current!.get(path)
+            current = current!.get(path)!
         }
 
         const nextExpand = !(
@@ -256,9 +261,11 @@ export const walkingFactory = () => {
             ?? stateGetter(...paths).is_expand
         );
 
+        // !nextExpand && current.clear();
         current?.set(expandSymbol, nextExpand);
 
         walkingSwap(paths);
+
     }
 
     return {
