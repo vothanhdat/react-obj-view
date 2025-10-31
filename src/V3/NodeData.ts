@@ -1,3 +1,4 @@
+import { ResolverFn } from "../ObjectViewV2/types";
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { getEntries } from "./getEntries";
@@ -7,6 +8,12 @@ import { FirstNode, LastNode, LinkList } from "./LinkList";
 type ExpandState = boolean | ExpandTree | undefined;
 type ExpandTree = { [key in PropertyKey]?: ExpandState };
 
+export type WalkingConfig = {
+    expandDepth: number,
+    nonEnumerable: boolean,
+    resolver: Map<any, ResolverFn> | undefined,
+}
+
 type NodeWalkState = {
     path: string;
     first: boolean;
@@ -14,8 +21,8 @@ type NodeWalkState = {
     start?: LinkList<NodeData>;
     end?: LinkList<NodeData>;
     isExpanded: boolean;
-    expandDepth: number;
     expandState?: ExpandState;
+    config: WalkingConfig;
 };
 
 type NodeContext = {
@@ -23,10 +30,10 @@ type NodeContext = {
     paths: PropertyKey[];
     isCircular: boolean;
     isExpanded: boolean;
-    expandDepth: number;
     enumerable: boolean;
     isRefObject: boolean;
     expandState: ExpandState;
+    config: WalkingConfig;
 };
 
 
@@ -57,13 +64,15 @@ export class NodeData {
 
 }
 
+
+
 export const walkingFactory = () => {
 
     const stateGetter = createMemorizeMap((...path): NodeWalkState => ({
         first: true,
         object: undefined,
         path: path.join("."),
-        expandDepth: 0,
+        config: { expandDepth: 0, nonEnumerable: false, resolver: undefined },
         isExpanded: true,
         expandState: undefined,
     }));
@@ -83,7 +92,7 @@ export const walkingFactory = () => {
         state.first = false;
         state.object = meta.object;
         state.isExpanded = meta.isExpanded;
-        state.expandDepth = meta.expandDepth;
+        state.config = meta.config;
         state.expandState = meta.expandState;
 
         state.start = state.end = new LinkList<NodeData>(
@@ -111,8 +120,8 @@ export const walkingFactory = () => {
 
                 const [childStart, childEnd] = walkingInternal(
                     value,
-                    meta.expandDepth,
                     enumerable,
+                    meta.config,
                     [...meta.paths, key],
                     getChildExpandState(meta.expandState, key),
                 );
@@ -141,7 +150,7 @@ export const walkingFactory = () => {
         state.first
         || state.object !== snapshot.object
         || state.isExpanded !== snapshot.isExpanded
-        || state.expandDepth !== snapshot.expandDepth
+        || state.config !== snapshot.config
         || state.expandState !== snapshot.expandState;
 
     const collectAncestorRefs = (paths: PropertyKey[]): object[] => {
@@ -170,12 +179,12 @@ export const walkingFactory = () => {
 
     const walkingInternal = (
         object: unknown,
-        expandDepth: number,
         enumerable: boolean,
+        config: WalkingConfig,
         paths: PropertyKey[],
         expandState: ExpandState,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
-
+        const { expandDepth, nonEnumerable, resolver } = config
         if (expandDepth < 0) {
             throw new Error("expandDepth must be non-negative");
         }
@@ -195,7 +204,7 @@ export const walkingFactory = () => {
             paths,
             isCircular,
             isExpanded,
-            expandDepth,
+            config,
             expandState: isExpanded ? expandState : undefined,
             enumerable,
             isRefObject,
@@ -225,15 +234,21 @@ export const walkingFactory = () => {
         }
     };
 
-    const walking = (object: unknown, expandDepth: number) => walkingInternal(
+    const walking = (
+        object: unknown,
+        config: WalkingConfig
+    ) => walkingInternal(
         object,
-        expandDepth,
         true,
+        config,
         [],
         currentExpandMap,
     );
 
-    const walkingSwap = (paths: PropertyKey[] = []) => {
+    const walkingSwap = (
+        paths: PropertyKey[] = [],
+        config: WalkingConfig
+    ) => {
         const state = stateGetter(...paths);
 
         if (!state.start || !state.end) {
@@ -254,8 +269,8 @@ export const walkingFactory = () => {
 
             const [startAfter, endAfter] = walkingInternal(
                 state.object,
-                state.expandDepth,
                 true,
+                config,
                 paths,
                 resolveExpandState(paths),
             );
@@ -286,7 +301,8 @@ export const walkingFactory = () => {
     };
 
     const toggleExpand = (
-        ...paths: PropertyKey[]
+        paths: PropertyKey[],
+        config: WalkingConfig
     ) => {
 
         currentExpandMap = immutableNestedUpdate(
@@ -295,7 +311,7 @@ export const walkingFactory = () => {
             paths,
         ) as ExpandTree;
 
-        walkingSwap(paths);
+        walkingSwap(paths, config);
 
     };
 
