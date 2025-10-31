@@ -78,9 +78,9 @@ export const walkingFactory = () => {
         if (
             state.first
             || state.object !== object
-            || is_expand !== state.is_expand
-            || expand_depth !== state.expand_depth
-            || ref_expand !== state.ref_expand
+            || state.is_expand !== is_expand
+            || state.expand_depth !== expand_depth
+            || state.ref_expand !== ref_expand
         ) {
 
             try {
@@ -116,14 +116,12 @@ export const walkingFactory = () => {
 
                         mark(key);
 
-                        paths.push(key);
 
                         const [start, end] = walkingInternal(
-                            value, expand_depth, enumerable, paths,
+                            value, expand_depth, enumerable,
+                            [...paths, key],
                             expandMap?.get(key),
                         );
-
-                        paths.pop();
 
                         if (!start || !end) {
                             throw new Error("!start || !end")
@@ -264,18 +262,6 @@ export const walkingFactory = () => {
     return {
         walking,
         toggleExpand,
-        // expandMap: currentExpandMap
     };
 };
 
-
-// const logNext = (e: LinkList<NodeData>, tag: string, max = 50) => {
-//     let list = []
-//     let c: any = e
-//     while (c && list.length < max) {
-//         c.obj && list.push([c.idx, c.obj.paths.join(">")]);
-//         c = c.next;
-//     }
-//     console.log(tag, list)
-//     return list
-// }
