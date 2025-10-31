@@ -33,16 +33,10 @@ export class NodeData {
     }
 }
 
-export const expandSymbol = Symbol("expand")
-export const expandRefSymbol = Symbol("expandRef")
-export type ExpandMap = Map<
-    PropertyKey | typeof expandSymbol | typeof expandRefSymbol,
-    ExpandMap | boolean
-> | undefined
+export const expandSymbol: unique symbol = Symbol("expand")
+export const expandRefSymbol: unique symbol = Symbol("expandRef")
 
-export const walkAsLinkList = (
-
-) => {
+export const walkingFactory = () => {
 
     const stateGetter = createMemorizeMap((...path) => ({
         first: true,
@@ -53,7 +47,7 @@ export const walkAsLinkList = (
         ref_expand: undefined,
     }) as NodeWalkState)
 
-    const currentExpandMap: ExpandMap = new Map()
+    const currentExpandMap = new Map()
 
     const visiting = new WeakSet();
 
@@ -62,7 +56,7 @@ export const walkAsLinkList = (
         enumerable: boolean = true,
         expand_depth: number,
         paths: any[] = [],
-        expandMap: ExpandMap = currentExpandMap,
+        expandMap = currentExpandMap,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
 
         if (expand_depth < 0) {
@@ -79,6 +73,7 @@ export const walkAsLinkList = (
 
         const state = stateGetter(...paths)
 
+        const shouldTrackCircular = isRef(object) && !isCircular;
 
         if (
             state.first
@@ -87,65 +82,75 @@ export const walkAsLinkList = (
             || expand_depth !== state.expand_depth
             || ref_expand !== state.ref_expand
         ) {
-            isRef(object) && !isCircular && visiting.add(object);
 
-            state.first = false;
-            state.object = object;
-            state.is_expand = is_expand;
-            state.expand_depth = expand_depth;
-            state.ref_expand = ref_expand;
+            try {
+                shouldTrackCircular && visiting.add(object);
 
-            state.start = state.end = new LinkList<NodeData>(
-                new NodeData(
-                    paths.at(-1),
-                    object,
-                    paths.join("/"),
-                    paths.length,
-                    enumerable,
-                    [...paths],
-                    state,
-                    isCircular,
-                )
-            );
 
-            let currentLink = state.start;
-            
-            const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...paths)
+                state.first = false;
+                state.object = object;
+                state.is_expand = is_expand;
+                state.expand_depth = expand_depth;
+                state.ref_expand = ref_expand;
 
-            if (!isCircular && is_expand && isRef(object)) {
+                state.start = state.end = new LinkList<NodeData>(
+                    new NodeData(
+                        paths.at(-1),
+                        object,
+                        paths.join("/"),
+                        paths.length,
+                        enumerable,
+                        [...paths],
+                        state,
+                        isCircular,
+                    )
+                );
 
-                for (let { key, value, enumerable } of getEntries(object)) {
+                let currentLink = state.start;
 
-                    mark(key);
-                    paths.push(key);
+                const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...paths)
 
-                    const [start, end] = walkingInternal(
-                        value, enumerable, expand_depth, paths,
-                        expandMap?.get(key) as ExpandMap,
-                    );
+                if (!isCircular && is_expand && isRef(object)) {
 
-                    paths.pop();
+                    for (let { key, value, enumerable } of getEntries(object)) {
 
-                    if (!start || !end) {
-                        throw new Error("!start || !end")
+                        mark(key);
+
+                        paths.push(key);
+
+                        const [start, end] = walkingInternal(
+                            value, enumerable, expand_depth, paths,
+                            expandMap?.get(key),
+                        );
+
+                        paths.pop();
+
+                        if (!start || !end) {
+                            throw new Error("!start || !end")
+                        }
+
+                        currentLink.next = start;
+                        start.prev = currentLink;
+
+                        currentLink = end;
                     }
-
-                    currentLink.next = start;
-                    start.prev = currentLink;
-
-                    currentLink = end;
                 }
+
+                clean()
+
+                state.end = currentLink;
+
+                state.end.next = new LastNode(undefined as any, state.end, undefined);
+
+                state.start.prev = new FirstNode(undefined as any, undefined, state.start);
+
+
+            } catch (error) {
+                throw error;
+            } finally {
+                shouldTrackCircular && visiting.delete(object);
             }
 
-            clean()
-
-            state.end = currentLink;
-
-            state.end.next = new LastNode(undefined as any, state.end, undefined);
-
-            state.start.prev = new FirstNode(undefined as any, undefined, state.start);
-
-            isRef(object) && !isCircular && visiting.delete(object);
 
             return [state.start, state.end];
         } else if (state.start && state.end) {
@@ -160,7 +165,6 @@ export const walkAsLinkList = (
         enumerable,
         expand_depth,
     )
-
 
     const walkingSwap = (
         paths: PropertyKey[] = [],
@@ -203,10 +207,6 @@ export const walkAsLinkList = (
             expandMap,
         )
 
-        if (!state.start || !state.end) {
-            throw new Error("Invalid state: missing start or end nodes");
-        }
-
         if (startAfter === endAfter) {
             state.start = state.end = startAfter!;
             head!.next = startAfter;
@@ -231,8 +231,38 @@ export const walkAsLinkList = (
 
     };
 
+    const toggleExpand = (
+        ...paths: PropertyKey[]
+    ) => {
 
-    return { walking, walkingSwap, stateGetter, expandMap: currentExpandMap };
+        let current = currentExpandMap
+
+        for (let path of paths) {
+
+            if (!current.has(path)) {
+                current.set(path, new Map());
+            }
+            current.set(expandRefSymbol, Math.random());
+
+            current = current!.get(path)
+        }
+
+        const nextExpand = !(
+            current?.get(expandSymbol)
+            ?? stateGetter(...paths).is_expand
+        );
+
+        current?.set(expandSymbol, nextExpand);
+
+        walkingSwap(paths);
+    }
+
+
+    return {
+        walking,
+        toggleExpand,
+        // expandMap: currentExpandMap
+    };
 };
 
 

@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
-import { expandRefSymbol, expandSymbol, NodeData, walkAsLinkList } from "./NodeData";
+import { expandRefSymbol, expandSymbol, NodeData, walkingFactory } from "./NodeData";
 import { linkListToArray } from "./LinkList";
 import { RenderNode } from "./RenderNode";
 import { Virtuoso } from 'react-virtuoso'
@@ -46,12 +46,12 @@ export const V8: React.FC<ObjectViewProps> = ({
 
 function useFlattenObjectView(expandLevel: number | boolean | undefined, value: any, name: string | undefined) {
     const [reload, setReload] = useState(0);
-    const refWalkFn = useRef<typeof walkAsLinkList>(undefined);
-    const refWalk = useRef<ReturnType<typeof walkAsLinkList>>(undefined);
+    const refWalkFn = useRef<typeof walkingFactory>(undefined);
+    const refWalk = useRef<ReturnType<typeof walkingFactory>>(undefined);
 
-    if (!refWalk.current || refWalkFn.current != walkAsLinkList) {
-        refWalkFn.current = walkAsLinkList;
-        refWalk.current = walkAsLinkList();
+    if (!refWalk.current || refWalkFn.current != walkingFactory) {
+        refWalkFn.current = walkingFactory;
+        refWalk.current = walkingFactory();
     }
 
 
@@ -81,30 +81,12 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
 
     const toggleChildExpand = useCallback(
         (node: NodeData) => {
-            let current = refWalk.current?.expandMap as any;
-            let defaultExpand = level > node.depth;
-
-            if (!current)
-                return;
-
-            for (let path of node.paths) {
-                if (!current.has(path)) {
-                    current.set(path, new Map());
-                }
-                current.set(expandRefSymbol, Math.random());
-                current = current!.get(path);
-            }
-
-            const nextExpand = !(current?.get(expandSymbol) ?? defaultExpand);
-
-            current?.set(expandSymbol, nextExpand);
-
-            // console.time("walkingSwap")
-            refWalk.current?.walkingSwap(node.paths);
-            // console.timeEnd("walkingSwap")
+            // console.time("toggleExpand")
+            refWalk.current?.toggleExpand(...node.paths)
+            // console.time("toggleExpand")
             setReload(e => e + 1);
         },
-        [ refWalk, level]
+        [refWalk, level]
     );
     return { flattenNodes, toggleChildExpand };
 }
