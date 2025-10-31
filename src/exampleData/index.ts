@@ -112,4 +112,42 @@ export const performanceTestData = {
       children: i < 999 ? [i + 1, i + 2].filter(x => x < 1000) : [],
     },
   })),
+  supperLarge: Array.from({ length: 10000 }, (_, i) => ({
+    id: i,
+    value: `item-${i}`,
+    description: `This is item number ${i} with some additional text to make it longer`,
+    metadata: {
+      created: new Date(2023, 0, (i % 365) + 1),
+      modified: new Date(2023, (i % 12), (i % 28) + 1),
+      tags: Array.from({ length: (i % 5) + 1 }, (_, j) => `tag-${i}-${j}`),
+      stats: {
+        views: Math.floor(Math.random() * 1000),
+        likes: Math.floor(Math.random() * 100),
+        shares: Math.floor(Math.random() * 50),
+      },
+    },
+    relations: {
+      parent: i > 0 ? i - 1 : null,
+      children: i < 999 ? [i + 1, i + 2].filter(x => x < 1000) : [],
+    },
+  })),
+  suppersupperLarge: Array.from({ length: 100000 }, (_, i) => ({
+    id: i,
+    value: `item-${i}`,
+    description: `This is item number ${i} with some additional text to make it longer`,
+    metadata: {
+      created: new Date(2023, 0, (i % 365) + 1),
+      modified: new Date(2023, (i % 12), (i % 28) + 1),
+      tags: Array.from({ length: (i % 5) + 1 }, (_, j) => `tag-${i}-${j}`),
+      stats: {
+        views: Math.floor(Math.random() * 1000),
+        likes: Math.floor(Math.random() * 100),
+        shares: Math.floor(Math.random() * 50),
+      },
+    },
+    relations: {
+      parent: i > 0 ? i - 1 : null,
+      children: i < 999 ? [i + 1, i + 2].filter(x => x < 1000) : [],
+    },
+  })),
 };

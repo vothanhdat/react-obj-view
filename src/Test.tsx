@@ -6,6 +6,7 @@ import './style.css';
 import "./Test.css";
 import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
 import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
+import { V8 } from './V3';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -199,6 +200,8 @@ const testDataOptions = [
     { label: 'Performance - Small Dataset (10 items)', value: performanceTestData.small, category: 'Performance' },
     { label: 'Performance - Medium Dataset (100 items)', value: performanceTestData.medium, category: 'Performance' },
     { label: 'Performance - Large Dataset (1000 items)', value: performanceTestData.large, category: 'Performance' },
+    { label: 'Performance - Supper Large Dataset (10,000 items)', value: performanceTestData.supperLarge, category: 'Performance' },
+    { label: 'Performance - Universe Dataset (100,000 items)', value: performanceTestData.suppersupperLarge, category: 'Performance' },
 ];
 
 export const Test = () => {
@@ -607,7 +610,7 @@ export const Test = () => {
                         }}
                     >
 
-                        <ObjectViewV2
+                        <V8
                             value={getCurrentData()}
                             name="testData"
                             expandLevel={expandLevel}

@@ -848,25 +848,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-virtual@npm:^3.13.12":
-  version: 3.13.12
-  resolution: "@tanstack/react-virtual@npm:3.13.12"
-  dependencies:
-    "@tanstack/virtual-core": "npm:3.13.12"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/0eda3d5691ec3bf93a1cdaa955f4972c7aa9a5026179622824bb52ff8c47e59ee4634208e52d77f43ffb3ce435ee39a0899d6a81f6316918ce89d68122490371
-  languageName: node
-  linkType: hard
-
-"@tanstack/virtual-core@npm:3.13.12":
-  version: 3.13.12
-  resolution: "@tanstack/virtual-core@npm:3.13.12"
-  checksum: 10c0/483f38761b73db05c181c10181f0781c1051be3350ae5c378e65057e5f1fdd6606e06e17dbaad8a5e36c04b208ea1a1344cacd4eca0dcde60f335cf398e4d698
-  languageName: node
-  linkType: hard
-
 "@types/argparse@npm:1.0.38":
   version: 1.0.38
   resolution: "@types/argparse@npm:1.0.38"
@@ -928,15 +909,6 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.2.0
   checksum: 10c0/6154dfb8e7a638313d7fa15b2b16494f2235afda4c43be37d10f34e5c7a730f6b95117facb5e6eebc73b15cceea7f6da23be46cda5d2262fd00fd7e6069547e3
-  languageName: node
-  linkType: hard
-
-"@types/react-inspector@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "@types/react-inspector@npm:6.0.1"
-  dependencies:
-    react-inspector: "npm:*"
-  checksum: 10c0/4560b32c6244f186a7b6a613373f66527e05bca704b17f87da8f1a0803ed653a50c4f7f48d8fda8ac196f10175b628573bbd23e62e319de5a8ec0a941009fa0f
   languageName: node
   linkType: hard
 
@@ -2242,28 +2214,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-inspector@npm:*, react-inspector@npm:^9.0.0":
-  version: 9.0.0
-  resolution: "react-inspector@npm:9.0.0"
-  peerDependencies:
-    react: ^18.0.0 || ^19.0.0
-  checksum: 10c0/494787480206a787ed13ae774cae48e16f369e187c52e5897ab98f4701a18ab25fab98d78d86be91fac9218f505c7f7ab687d902baa887161138896f9150f5b6
-  languageName: node
-  linkType: hard
-
 "react-obj-view@workspace:.":
   version: 0.0.0-use.local
   resolution: "react-obj-view@workspace:."
   dependencies:
-    "@tanstack/react-virtual": "npm:^3.13.12"
     "@types/react": "npm:^19.2.2"
     "@types/react-dom": "npm:^19.2.2"
-    "@types/react-inspector": "npm:^6.0.1"
     "@vitejs/plugin-react": "npm:^5.0.0"
     babel-plugin-react-compiler: "npm:^1.0.0"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
-    react-inspector: "npm:^9.0.0"
+    react-virtuoso: "npm:^4.14.1"
     typescript: "npm:^5.8.3"
     vite: "npm:7"
     vite-bundle-analyzer: "npm:^1.1.0"
@@ -2278,6 +2239,16 @@ __metadata:
   version: 0.17.0
   resolution: "react-refresh@npm:0.17.0"
   checksum: 10c0/002cba940384c9930008c0bce26cac97a9d5682bc623112c2268ba0c155127d9c178a9a5cc2212d560088d60dfd503edd808669a25f9b377f316a32361d0b23c
+  languageName: node
+  linkType: hard
+
+"react-virtuoso@npm:^4.14.1":
+  version: 4.14.1
+  resolution: "react-virtuoso@npm:4.14.1"
+  peerDependencies:
+    react: ">=16 || >=17 || >= 18 || >= 19"
+    react-dom: ">=16 || >=17 || >= 18 || >=19"
+  checksum: 10c0/1a9287e787b14f670475928f87e2d482da6d295b3de379a0a66d25e5bd570b63d0c130860abd3b897d663e0aab427278adbc3511637b0eea6f2e40c1e1e40923
   languageName: node
   linkType: hard
 
