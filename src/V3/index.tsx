@@ -62,7 +62,7 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
     const linkList = useMemo(
         () => {
             // console.time("walking")
-            const result = refWalk.current!.walking(value, true, level);
+            const result = refWalk.current!.walking(value, level);
             // console.timeEnd("walking")
             return result;
         },

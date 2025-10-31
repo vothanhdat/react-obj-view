@@ -53,8 +53,8 @@ export const walkingFactory = () => {
 
     const walkingInternal = (
         object: any,
-        enumerable: boolean = true,
         expand_depth: number,
+        enumerable: boolean = true,
         paths: any[] = [],
         expandMap = currentExpandMap,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
@@ -119,7 +119,7 @@ export const walkingFactory = () => {
                         paths.push(key);
 
                         const [start, end] = walkingInternal(
-                            value, enumerable, expand_depth, paths,
+                            value, expand_depth, enumerable, paths,
                             expandMap?.get(key),
                         );
 
@@ -145,8 +145,6 @@ export const walkingFactory = () => {
                 state.start.prev = new FirstNode(undefined as any, undefined, state.start);
 
 
-            } catch (error) {
-                throw error;
             } finally {
                 shouldTrackCircular && visiting.delete(object);
             }
@@ -160,9 +158,8 @@ export const walkingFactory = () => {
         }
     };
 
-    const walking = (object: any, enumerable: boolean = true, expand_depth: number) => walkingInternal(
+    const walking = (object: any, expand_depth: number) => walkingInternal(
         object,
-        enumerable,
         expand_depth,
     )
 
@@ -193,40 +190,46 @@ export const walkingFactory = () => {
         }
 
 
+
         allVisited
             .forEach((object) => visiting.add(object))
 
-        const head = state.start.prev;
-        const tail = state.end.next;
+        try {
 
-        const [startAfter, endAfter] = walkingInternal(
-            state.object,
-            true,
-            state.expand_depth,
-            paths,
-            expandMap,
-        )
+            const head = state.start.prev;
+            const tail = state.end.next;
 
-        if (startAfter === endAfter) {
-            state.start = state.end = startAfter!;
-            head!.next = startAfter;
-            tail!.prev = startAfter;
-            startAfter!.prev = head
-            startAfter!.next = tail
-        } else {
-            state.start = startAfter!;
-            state.end = endAfter!;
+            const [startAfter, endAfter] = walkingInternal(
+                state.object,
+                state.expand_depth,
+                true,
+                paths,
+                expandMap,
+            )
 
-            head!.next = startAfter;
-            startAfter!.prev = head!;
+            if (startAfter === endAfter) {
+                state.start = state.end = startAfter!;
+                head!.next = startAfter;
+                tail!.prev = startAfter;
+                startAfter!.prev = head
+                startAfter!.next = tail
+            } else {
+                state.start = startAfter!;
+                state.end = endAfter!;
 
-            tail!.prev = endAfter
-            endAfter!.next = tail
+                head!.next = startAfter;
+                startAfter!.prev = head!;
+
+                tail!.prev = endAfter
+                endAfter!.next = tail
+            }
+
+
+        } finally {
+            allVisited
+                .forEach((object) => visiting.delete(object))
         }
 
-
-        allVisited
-            .forEach((object) => visiting.delete(object))
 
 
     };
@@ -266,13 +269,13 @@ export const walkingFactory = () => {
 };
 
 
-const logNext = (e: LinkList<NodeData>, tag: string, max = 50) => {
-    let list = []
-    let c: any = e
-    while (c && list.length < max) {
-        c.obj && list.push([c.idx, c.obj.paths.join(">")]);
-        c = c.next;
-    }
-    console.log(tag, list)
-    return list
-}
+// const logNext = (e: LinkList<NodeData>, tag: string, max = 50) => {
+//     let list = []
+//     let c: any = e
+//     while (c && list.length < max) {
+//         c.obj && list.push([c.idx, c.obj.paths.join(">")]);
+//         c = c.next;
+//     }
+//     console.log(tag, list)
+//     return list
+// }
