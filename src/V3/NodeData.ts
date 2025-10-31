@@ -4,15 +4,29 @@ import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
 
+type ExpandState = boolean | ExpandTree;
+type ExpandTree = { [key in PropertyKey]?: ExpandState };
+
 type NodeWalkState = {
     path: string;
     first: boolean;
-    object: any;
-    start: LinkList<NodeData>;
-    end: LinkList<NodeData>;
-    is_expand: boolean;
-    expand_depth: number;
-    expand_ref?: any
+    object: unknown;
+    start?: LinkList<NodeData>;
+    end?: LinkList<NodeData>;
+    isExpanded: boolean;
+    expandDepth: number;
+    expandState?: ExpandState;
+};
+
+type NodeContext = {
+    object: unknown;
+    paths: PropertyKey[];
+    isCircular: boolean;
+    isExpanded: boolean;
+    expandDepth: number;
+    enumerable: boolean;
+    isRefObject: boolean;
+    expandState: ExpandState;
 };
 
 
@@ -45,111 +59,163 @@ export class NodeData {
 
 export const walkingFactory = () => {
 
-    const stateGetter = createMemorizeMap((...path) => ({
+    const stateGetter = createMemorizeMap((...path): NodeWalkState => ({
         first: true,
         object: undefined,
         path: path.join("."),
-        expand_depth: 0,
-        is_expand: true,
-        // ref_expand: undefined,
-    }) as NodeWalkState)
+        expandDepth: 0,
+        isExpanded: true,
+        expandState: undefined,
+    }));
 
-    let currentExpandMap: Record<PropertyKey, any> = {}
+    let currentExpandMap: ExpandTree = {};
 
-    const visiting = new WeakSet();
+    const visiting = new WeakSet<object>();
 
-    const walkingInternal = (
-        object: any,
-        expand_depth: number,
-        enumerable: boolean,
-        paths: PropertyKey[],
-        expandMap: Record<PropertyKey, any> | undefined,
-    ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
-
-        if (expand_depth < 0) {
-            throw new Error("expand_depth must be non-negative");
+    const getChildExpandState = (state: ExpandState, key: PropertyKey): ExpandState => {
+        if (state && typeof state === "object") {
+            return state[key] || false;
         }
+        return false;
+    };
 
-        const isRefObject = isRef(object)
-        const isCircular = isRefObject && visiting.has(object);
-        const shouldTrackCircular = isRefObject && !isCircular;
+    const hydrateState = (state: NodeWalkState, meta: NodeContext,) => {
+        state.first = false;
+        state.object = meta.object;
+        state.isExpanded = meta.isExpanded;
+        state.expandDepth = meta.expandDepth;
+        state.expandState = meta.expandState;
 
-        const isDefaultExpand = isRefObject && !isCircular && expand_depth > paths.length
+        state.start = state.end = new LinkList<NodeData>(
+            new NodeData(
+                meta.object,
+                meta.enumerable,
+                meta.paths,
+                meta.isCircular,
+                state,
+            )
+        );
+    };
 
-        const is_expand = !isCircular && !!(expandMap ?? isDefaultExpand)
+    const rebuildBranch = (
+        state: NodeWalkState,
+        meta: NodeContext,
+    ) => {
+        const startNode = state.start!;
+        let currentLink = startNode;
+        const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...meta.paths);
 
-        const expand_ref = is_expand && expandMap
+        if (!meta.isCircular && meta.isExpanded && meta.isRefObject) {
+            for (let { key, value, enumerable } of getEntries(meta.object)) {
+                mark(key);
 
-        const state = stateGetter(...paths)
-
-        if (
-            state.first
-            || state.object !== object
-            || state.is_expand !== is_expand
-            || state.expand_depth !== expand_depth
-            || state.expand_ref !== expand_ref
-        ) {
-
-            try {
-                state.first = false;
-                state.object = object;
-                state.is_expand = is_expand;
-                state.expand_depth = expand_depth;
-                state.expand_ref = expand_ref
-
-                shouldTrackCircular && visiting.add(object);
-
-                state.start = state.end = new LinkList<NodeData>(
-                    new NodeData(
-                        object,
-                        enumerable,
-                        paths,
-                        isCircular,
-                        state,
-                    )
+                const [childStart, childEnd] = walkingInternal(
+                    value,
+                    meta.expandDepth,
+                    enumerable,
+                    [...meta.paths, key],
+                    getChildExpandState(meta.expandState, key),
                 );
 
-                let currentLink = state.start;
-
-                const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...paths)
-
-                if (!isCircular && is_expand && isRef(object)) {
-
-                    for (let { key, value, enumerable } of getEntries(object)) {
-
-                        mark(key);
-
-
-                        const [start, end] = walkingInternal(
-                            value, expand_depth, enumerable,
-                            [...paths, key],
-                            expandMap?.[key],
-                        );
-
-                        if (!start || !end) {
-                            throw new Error("!start || !end")
-                        }
-
-                        currentLink.next = start;
-                        start.prev = currentLink;
-
-                        currentLink = end;
-                    }
+                if (!childStart || !childEnd) {
+                    throw new Error("Invalid child traversal bounds");
                 }
 
-                clean()
+                currentLink.next = childStart;
+                childStart.prev = currentLink;
 
-                state.end = currentLink;
+                currentLink = childEnd;
+            }
+        }
 
-                state.end.next = new LastNode(undefined as any, state.end, undefined);
+        clean();
 
-                state.start.prev = new FirstNode(undefined as any, undefined, state.start);
+        state.end = currentLink;
 
+        const endNode = state.end!;
+        endNode.next = new LastNode(undefined as any, endNode, undefined);
+        startNode.prev = new FirstNode(undefined as any, undefined, startNode);
+    };
+
+    const shouldRefreshState = (state: NodeWalkState, snapshot: NodeContext,) =>
+        state.first
+        || state.object !== snapshot.object
+        || state.isExpanded !== snapshot.isExpanded
+        || state.expandDepth !== snapshot.expandDepth
+        || state.expandState !== snapshot.expandState;
+
+    const collectAncestorRefs = (paths: PropertyKey[]): object[] => {
+        const ancestors: object[] = [];
+        let current: unknown = stateGetter().object;
+
+        for (const segment of paths) {
+            if (isRef(current)) {
+                ancestors.push(current as object);
+            }
+            current = (current as any)?.[segment];
+        }
+
+        return ancestors;
+    };
+
+    const resolveExpandState = (paths: PropertyKey[]): ExpandState => {
+        let branch: ExpandState = currentExpandMap;
+
+        for (const segment of paths) {
+            branch = getChildExpandState(branch, segment);
+        }
+
+        return branch;
+    };
+
+    const walkingInternal = (
+        object: unknown,
+        expandDepth: number,
+        enumerable: boolean,
+        paths: PropertyKey[],
+        expandState: ExpandState,
+    ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
+
+        if (expandDepth < 0) {
+            throw new Error("expandDepth must be non-negative");
+        }
+
+        const isRefObject = isRef(object);
+        const isCircular = isRefObject && visiting.has(object as object);
+        const shouldTrackCircular = isRefObject && !isCircular;
+
+        const isDefaultExpand = isRefObject && !isCircular && expandDepth > paths.length;
+
+        const isExpanded = !isCircular && !!(expandState ?? isDefaultExpand);
+
+        const state = stateGetter(...paths);
+
+        const nodeContext: NodeContext = {
+            object,
+            paths,
+            isCircular,
+            isExpanded,
+            expandDepth,
+            expandState,
+            enumerable,
+            isRefObject,
+        };
+
+
+        if (shouldRefreshState(state, nodeContext)) {
+            try {
+
+                hydrateState(state, nodeContext);
+
+                shouldTrackCircular && visiting.add(object as object);
+
+                rebuildBranch(state, nodeContext);
 
             } finally {
-                shouldTrackCircular && visiting.delete(object);
-            }
 
+                shouldTrackCircular && visiting.delete(object as object);
+
+            }
 
             return [state.start, state.end];
         } else if (state.start && state.end) {
@@ -159,83 +225,64 @@ export const walkingFactory = () => {
         }
     };
 
-    const walking = (object: any, expand_depth: number) => walkingInternal(
+    const walking = (object: unknown, expandDepth: number) => walkingInternal(
         object,
-        expand_depth,
+        expandDepth,
         true,
         [],
         currentExpandMap,
-    )
+    );
 
-    const walkingSwap = (
-        paths: PropertyKey[] = [],
-    ) => {
-
-        const allVisited = paths
-            .reduce(
-                (visiteds, path) => [...visiteds, visiteds.at(-1)?.[path]],
-                [stateGetter().object]
-            )
-            .slice(0, -1)
-            .filter(isRef)
-
-
-        const expandMap = paths
-            .reduce(
-                (map, path) => map?.[path],
-                currentExpandMap
-            )
-
-
-        const state = stateGetter(...paths)
+    const walkingSwap = (paths: PropertyKey[] = []) => {
+        const state = stateGetter(...paths);
 
         if (!state.start || !state.end) {
             throw new Error("Invalid state: missing start or end nodes");
         }
 
-
-
-        allVisited
-            .forEach((object) => visiting.add(object))
+        const ancestors = collectAncestorRefs(paths);
+        // Avoid flagging ancestors as circular while rebuilding this branch.
+        ancestors.forEach((object) => visiting.add(object));
 
         try {
-
             const head = state.start.prev;
             const tail = state.end.next;
 
-            const [startAfter, endAfter] = walkingInternal(
-                state.object,
-                state.expand_depth,
-                true,
-                paths,
-                expandMap,
-            )
-
-            if (startAfter === endAfter) {
-                state.start = state.end = startAfter!;
-                head!.next = startAfter;
-                tail!.prev = startAfter;
-                startAfter!.prev = head
-                startAfter!.next = tail
-            } else {
-                state.start = startAfter!;
-                state.end = endAfter!;
-
-                head!.next = startAfter;
-                startAfter!.prev = head!;
-
-                tail!.prev = endAfter
-                endAfter!.next = tail
+            if (!head || !tail) {
+                throw new Error("Invalid state: missing list boundaries");
             }
 
+            const [startAfter, endAfter] = walkingInternal(
+                state.object,
+                state.expandDepth,
+                true,
+                paths,
+                resolveExpandState(paths),
+            );
 
+            if (!startAfter || !endAfter) {
+                throw new Error("walkingInternal returned incomplete bounds");
+            }
+
+            if (startAfter === endAfter) {
+                state.start = state.end = startAfter;
+                head.next = startAfter;
+                tail.prev = startAfter;
+                startAfter.prev = head;
+                startAfter.next = tail;
+            } else {
+                state.start = startAfter;
+                state.end = endAfter;
+
+                head.next = startAfter;
+                startAfter.prev = head;
+
+                tail.prev = endAfter;
+                endAfter.next = tail;
+            }
         } finally {
-            allVisited
-                .forEach((object) => visiting.delete(object))
+            ancestors.forEach((object) => visiting.delete(object));
         }
-
-
-
     };
 
     const toggleExpand = (
@@ -244,17 +291,16 @@ export const walkingFactory = () => {
 
         currentExpandMap = immutableNestedUpdate(
             currentExpandMap,
-            expand => !(expand ?? stateGetter(...paths).is_expand),
+            expand => !(expand ?? stateGetter(...paths).isExpanded),
             paths,
-        )
+        ) as ExpandTree;
 
         walkingSwap(paths);
 
-    }
+    };
 
     return {
         walking,
         toggleExpand,
     };
 };
-

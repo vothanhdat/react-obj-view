@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { NodeData } from "./NodeData";
 
 export const RenderNode: React.FC<{
@@ -6,11 +5,10 @@ export const RenderNode: React.FC<{
     toggleChildExpand: (node: NodeData) => void
 }> = ({ node, toggleChildExpand }) => {
 
-
-    const is_expand = node.walkState?.is_expand
-        ?? node.depth < node.walkState.expand_depth
-    const isCircular = node.isCircular
-    const hasChild = node.hasChild
+    const isExpanded = node.walkState?.isExpanded
+        ?? node.depth < node.walkState.expandDepth;
+    const isCircular = node.isCircular;
+    const hasChild = node.hasChild;
 
     return <div style={{
         display: "block",
@@ -29,7 +27,7 @@ export const RenderNode: React.FC<{
             onClick={() => node.hasChild && toggleChildExpand(node)}
         >
             <span className="expand-symbol">
-                {hasChild && !isCircular ? (is_expand ? "▼ " : "▶ ") : <>&#160;&#160;</>}
+                {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
             {node.depth == 0 ? "ROOT" : String(node.name)}
             :
