@@ -1,3 +1,4 @@
+import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
 import { NodeData } from "./NodeData";
 
 export const RenderNode: React.FC<{
@@ -6,33 +7,46 @@ export const RenderNode: React.FC<{
 }> = ({ node, toggleChildExpand }) => {
 
     const isExpanded = node.walkState?.isExpanded
-        ?? node.depth < node.walkState.expandDepth;
+        ?? node.depth < node.walkState.config.expandDepth;
+
     const isCircular = node.isCircular;
+
     const hasChild = node.hasChild;
 
-    return <div style={{
-        display: "block",
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis",
-        paddingLeft: `${node.depth * 2}em`,
-    }}>
-
+    return <div className="node-container" data-level={node.depth}>
         <div
-            style={{
-                display: "inline",
-                cursor: node.hasChild ? 'pointer' : '',
-                userSelect: node.hasChild ? 'none' : 'inherit',
-            }}
+            className="node-default"
+            data-child={node.hasChild}
+            data-nonenumrable={!node.enumerable}
             onClick={() => node.hasChild && toggleChildExpand(node)}
         >
             <span className="expand-symbol">
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
-            {node.depth == 0 ? "ROOT" : String(node.name)}
-            :
-            {isCircular ? <span>CIRCULAR</span> : <></>}
-            {String(node.value)?.slice(0, 50)}
+            <span className="name">
+                {node.depth == 0 ? "ROOT" : String(node.name)}
+            </span>
+
+            <span className="symbol">: </span>
+
+            {isCircular ? <span className="tag-circular">CIRCULAR</span> : <></>}
+
+            <RenderValue {...{
+                value: node.value,
+                enumrable: node.enumerable
+            }} />
+
         </div>
     </div>;
 };
+
+
+export const RenderValue: React.FC<{ value: any, enumrable?: boolean }> = ({ value }) => {
+    return <span className={joinClasses(
+        "value",
+        `type-${typeof value}`,
+        value?.constructor?.name ? `type-object-${value?.constructor?.name}`?.toLowerCase() : ``
+    )}>
+        {String(value)?.slice(0, 50)}
+    </span>
+}

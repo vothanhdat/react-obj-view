@@ -1,9 +1,9 @@
-import { ResolverFn } from "../ObjectViewV2/types";
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
+import { ResolverFn } from "./types";
 
 type ExpandState = boolean | ExpandTree | undefined;
 type ExpandTree = { [key in PropertyKey]?: ExpandState };
@@ -115,7 +115,7 @@ export const walkingFactory = () => {
         const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...meta.paths);
 
         if (!meta.isCircular && meta.isExpanded && meta.isRefObject) {
-            for (let { key, value, enumerable } of getEntries(meta.object)) {
+            for (let { key, value, enumerable } of getEntries(meta.object, meta.config)) {
                 mark(key);
 
                 const [childStart, childEnd] = walkingInternal(
@@ -269,7 +269,7 @@ export const walkingFactory = () => {
 
             const [startAfter, endAfter] = walkingInternal(
                 state.object,
-                true,
+                state.start.obj.enumerable,
                 config,
                 paths,
                 resolveExpandState(paths),

@@ -1,18 +1,31 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
-import { NodeData, walkingFactory } from "./NodeData";
+import { NodeData, walkingFactory, WalkingConfig } from "./NodeData";
 import { linkListToArray } from "./LinkList";
 import { RenderNode } from "./RenderNode";
 import { Virtuoso } from 'react-virtuoso'
-
+import "./style.css"
+import { ObjectViewProps, ResolverFn } from "./types";
 
 export const V8: React.FC<ObjectViewProps> = ({
     value,
     name,
     expandLevel,
+    highlightUpdate,
+    resolver,
+    nonEnumerable = false,
+    preview,
 }) => {
 
-    const { flattenNodes, toggleChildExpand } = useFlattenObjectView(expandLevel, value, name);
+
+    const { flattenNodes, toggleChildExpand } = useFlattenObjectView(
+        value,
+        name,
+        typeof expandLevel == 'boolean'
+            ? (expandLevel ? 100 : 0)
+            : Number(expandLevel),
+        nonEnumerable,
+        resolver,
+    );
 
     const nodeRender = useCallback(
         (index: number) => <div style={{ height: "15px" }}>
@@ -30,7 +43,7 @@ export const V8: React.FC<ObjectViewProps> = ({
     )
 
     return <>
-        <div style={{ height: `300px`, overflow: 'auto', fontFamily: 'monospace', fontSize: "12px" }}>
+        <div className="big-objview-root" style={{ height: `400px` }}>
             <Virtuoso
                 style={{ height: '100%' }}
                 computeItemKey={computeItemKey}
@@ -44,7 +57,25 @@ export const V8: React.FC<ObjectViewProps> = ({
 
 
 
-function useFlattenObjectView(expandLevel: number | boolean | undefined, value: any, name: string | undefined) {
+function useFlattenObjectView(
+    value: any,
+    name: string | undefined,
+    expandDepth: number,
+    nonEnumerable: boolean,
+    resolver: Map<any, ResolverFn> | undefined,
+) {
+
+
+    const config = useMemo(
+        () => ({
+            expandDepth,
+            resolver,
+            nonEnumerable,
+        }) as WalkingConfig,
+        [resolver, nonEnumerable, expandDepth]
+    )
+
+
     const [reload, setReload] = useState(0);
     const refWalkFn = useRef<typeof walkingFactory>(undefined);
     const refWalk = useRef<ReturnType<typeof walkingFactory>>(undefined);
@@ -54,26 +85,24 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
         refWalk.current = walkingFactory();
     }
 
-
-    const level = typeof expandLevel == 'boolean'
-        ? (expandLevel ? 100 : 0)
-        : Number(expandLevel);
-
     const linkList = useMemo(
         () => {
-            // console.time("walking")
-            const result = refWalk.current!.walking(value, level);
-            // console.timeEnd("walking")
+            console.time("walking")
+            const result = refWalk.current!.walking(
+                value,
+                config,
+            );
+            console.timeEnd("walking")
             return result;
         },
-        [value, name, level]
+        [value, name, config]
     );
 
     const flattenNodes = useMemo(
         () => {
-            // console.time("linkListToArray")
+            console.time("linkListToArray")
             let r = linkListToArray(linkList);
-            // console.timeEnd("linkListToArray")
+            console.timeEnd("linkListToArray")
             return r;
         },
         [linkList, reload]
@@ -81,12 +110,12 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
 
     const toggleChildExpand = useCallback(
         (node: NodeData) => {
-            // console.time("toggleExpand")
-            refWalk.current?.toggleExpand(...node.paths)
-            // console.timeEnd("toggleExpand")
+            console.time("toggleExpand")
+            refWalk.current?.toggleExpand(node.paths, config)
+            console.timeEnd("toggleExpand")
             setReload(e => e + 1);
         },
-        [refWalk, level]
+        [refWalk, config]
     );
     return { flattenNodes, toggleChildExpand };
 }

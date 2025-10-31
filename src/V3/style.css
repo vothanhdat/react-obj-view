@@ -1,0 +1,151 @@
+:root {
+    color-scheme: light dark;
+    --bigobjview-color: light-dark(#333b3c, #efefec);
+    --bigobjview-bg-color: light-dark(#f9f9f9, #212121);
+    --bigobjview-change-color: rgb(255, 50, 0);
+}
+
+.big-objview-root {
+    font-family: monospace;
+    user-select: none;
+    font-size: 12px;
+    --color: #000;
+    --bg-color: var(--bigobjview-bg-color);
+    --opacity: 100%;
+    background-color: var(--bg-color);
+    color: var(--color);
+
+    .node-container {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-left: calc(1.5 * attr(data-level em));
+    }
+
+    .node-default {
+        display: inline;
+        &[data-child="true"] {
+            cursor: pointer;
+        }
+    }
+
+    .expand-symbol {
+        width: 1em;
+        display: inline-block;
+        opacity: 0.5;
+    }
+
+    .tag-circular {
+        font-size: 0.9em;
+        padding: 0.2em 0.4em;
+        background-color: darkgrey;
+        margin-inline: "1em";
+        font-weight: bold;
+    }
+
+    .symbol {
+        opacity: 0.5;
+    }
+
+    .node-default[data-nonenumrable="true"]>.name {
+        --opacity: 30%;
+    }
+
+    .node-default>.name {
+        transition: background-color 1s;
+        background-color: #0000;
+    }
+
+    .node-updated>.node-default>.name {
+        transition: background-color 0.00s;
+        background-color: rgb(255, 50, 0);
+    }
+
+    .node-default {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .value {
+        &.type-boolean {
+            --color: #08f;
+        }
+
+        &.type-number,
+        &.type-bigint {
+            --color: red;
+        }
+
+        &.type-symbol {}
+
+        &.type-undefined {}
+
+        &.type-string {
+            --color: orange;
+        }
+
+        /* 
+        &.type-object {
+            --color: #0aa;
+        } */
+        &.type-object-array {
+            --color: #0aa;
+        }
+
+        &.type-object-object {
+            --color: #0aa;
+        }
+
+        &.type-object-promise {
+            --color: #0aa;
+        }
+
+        &.type-object-map {
+            --color: #0aa;
+        }
+
+        &.type-object-set {
+            --color: #0aa;
+        }
+
+        &.type-null {}
+
+        &.type-function {
+            --color: #08f;
+        }
+
+        &.type-object-regexp {
+            --color: red;
+        }
+
+        &.type-object-date {
+            --color: #08f;
+        }
+
+        &.type-object-error {
+            --color: red;
+        }
+
+
+        &.value-preview {
+            >.name {
+                --opacity: 30%;
+            }
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .name {}
+
+    .node-default,
+    .name,
+    .value {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+    }
+
+}
