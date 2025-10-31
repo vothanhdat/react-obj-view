@@ -21,24 +21,39 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
 
         return current.get(resultSymbol)
 
-    }) as T & { clearAllChild: (...params: any[]) => void };
+    }) as T & { checkUnusedKeyAndDeletes: (...params: any[]) => { mark: any, clean: any } };
 
-    fn.clearAllChild = (...params: any) => {
+    fn.checkUnusedKeyAndDeletes = (...params: any) => {
+
         let current = rootMap;
 
         for (let param of params) {
             if (current) {
                 current = current.get(param)
-            } else {
-                return;
-            }
+            } else { }
         }
 
         if (current) {
-            const value = current.get(resultSymbol)
-            current.clear()
-            current.set(resultSymbol, value)
+
+            let keyToDeletes = new Set(current.keys())
+
+            keyToDeletes.delete(resultSymbol);
+
+            return {
+                mark(key: any) {
+                    keyToDeletes.delete(key)
+                },
+                clean() {
+                    keyToDeletes.size > 0 && console.log(`[${params.join(".")}]`, `[CLEAN]`, keyToDeletes)
+                    for (let key of keyToDeletes) {
+                        current.delete(key);
+                    }
+                }
+            }
+        } else {
+            return { mark() { }, clean() { } }
         }
+
     }
 
     return fn

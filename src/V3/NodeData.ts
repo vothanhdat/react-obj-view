@@ -79,9 +79,6 @@ export const walkAsLinkList = (
 
         const state = stateGetter(...paths)
 
-        if (state.is_expand && !is_expand) {
-            stateGetter.clearAllChild(...paths);
-        }
 
         if (
             state.first
@@ -112,11 +109,14 @@ export const walkAsLinkList = (
             );
 
             let currentLink = state.start;
+            
+            const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...paths)
 
             if (!isCircular && is_expand && isRef(object)) {
 
                 for (let { key, value, enumerable } of getEntries(object)) {
 
+                    mark(key);
                     paths.push(key);
 
                     const [start, end] = walkingInternal(
@@ -136,6 +136,8 @@ export const walkAsLinkList = (
                     currentLink = end;
                 }
             }
+
+            clean()
 
             state.end = currentLink;
 
