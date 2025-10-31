@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
-import { expandRefSymbol, expandSymbol, NodeData, walkingFactory } from "./NodeData";
+import { NodeData, walkingFactory } from "./NodeData";
 import { linkListToArray } from "./LinkList";
 import { RenderNode } from "./RenderNode";
 import { Virtuoso } from 'react-virtuoso'
@@ -83,7 +83,7 @@ function useFlattenObjectView(expandLevel: number | boolean | undefined, value: 
         (node: NodeData) => {
             // console.time("toggleExpand")
             refWalk.current?.toggleExpand(...node.paths)
-            // console.time("toggleExpand")
+            // console.timeEnd("toggleExpand")
             setReload(e => e + 1);
         },
         [refWalk, level]
