@@ -11,18 +11,19 @@ type NodeWalkState = {
     end: LinkList<NodeData>;
     is_expand: boolean;
     expand_depth: number;
-    ref_expand: any
+    ref_expand?: any
 };
 
 
 
 export class NodeData {
+
     constructor(
         public readonly value: any,
         public readonly enumerable: boolean,
         public readonly paths: PropertyKey[],
-        public readonly walkState: NodeWalkState,
         public readonly isCircular: boolean,
+        public readonly walkState: NodeWalkState,
     ) { }
 
     get hasChild() {
@@ -39,14 +40,8 @@ export class NodeData {
     get depth(): number {
         return this.paths.length
     }
+
 }
-
-export const expandSymbol: unique symbol = Symbol("expand")
-export const expandRefSymbol: unique symbol = Symbol("expandRef")
-
-type ExpandMap = { get(e: typeof expandSymbol): boolean, set(e: typeof expandSymbol, v: boolean): void }
-    & { get(e: typeof expandRefSymbol): number, set(e: typeof expandRefSymbol, v: number): void }
-    & Map<PropertyKey, ExpandMap>
 
 export const walkingFactory = () => {
 
@@ -56,19 +51,19 @@ export const walkingFactory = () => {
         path: path.join("."),
         expand_depth: 0,
         is_expand: true,
-        ref_expand: undefined,
+        // ref_expand: undefined,
     }) as NodeWalkState)
 
-    const currentExpandMap: ExpandMap = new Map()
+    let currentExpandMap: Record<PropertyKey, any> = {}
 
     const visiting = new WeakSet();
 
     const walkingInternal = (
         object: any,
         expand_depth: number,
-        enumerable: boolean = true,
-        paths: any[] = [],
-        expandMap: ExpandMap = currentExpandMap,
+        enumerable: boolean,
+        paths: PropertyKey[],
+        expandMap: Record<PropertyKey, any> | undefined,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
 
         if (expand_depth < 0) {
@@ -81,9 +76,9 @@ export const walkingFactory = () => {
 
         const isDefaultExpand = isRefObject && !isCircular && expand_depth > paths.length
 
-        const is_expand = !isCircular && ((expandMap?.get(expandSymbol) as boolean) ?? isDefaultExpand)
+        const is_expand = !isCircular && !!(expandMap ?? isDefaultExpand)
 
-        const ref_expand = is_expand && (expandMap?.get(expandRefSymbol) as any)
+        const ref_expand = is_expand && expandMap
 
         const state = stateGetter(...paths)
 
@@ -93,7 +88,7 @@ export const walkingFactory = () => {
             || state.object !== object
             || state.is_expand !== is_expand
             || state.expand_depth !== expand_depth
-            || state.ref_expand !== ref_expand
+            || state.ref_expand!== ref_expand
         ) {
 
             try {
@@ -101,8 +96,7 @@ export const walkingFactory = () => {
                 state.object = object;
                 state.is_expand = is_expand;
                 state.expand_depth = expand_depth;
-                state.ref_expand = ref_expand;
-
+                state.ref_expand = ref_expand
 
                 shouldTrackCircular && visiting.add(object);
 
@@ -111,8 +105,8 @@ export const walkingFactory = () => {
                         object,
                         enumerable,
                         paths,
-                        state,
                         isCircular,
+                        state,
                     )
                 );
 
@@ -130,7 +124,7 @@ export const walkingFactory = () => {
                         const [start, end] = walkingInternal(
                             value, expand_depth, enumerable,
                             [...paths, key],
-                            expandMap?.get(key),
+                            expandMap?.[key],
                         );
 
                         if (!start || !end) {
@@ -169,6 +163,9 @@ export const walkingFactory = () => {
     const walking = (object: any, expand_depth: number) => walkingInternal(
         object,
         expand_depth,
+        true,
+        [],
+        currentExpandMap,
     )
 
     const walkingSwap = (
@@ -186,7 +183,7 @@ export const walkingFactory = () => {
 
         const expandMap = paths
             .reduce(
-                (map, path) => map?.get(path) as any as ExpandMap,
+                (map, path) => map?.[path],
                 currentExpandMap
             )
 
@@ -246,25 +243,28 @@ export const walkingFactory = () => {
         ...paths: PropertyKey[]
     ) => {
 
-        let current = currentExpandMap
-
-        for (let path of paths) {
-            if (!current.has(path)) {
-                current.set(path, new Map());
+        const updateState = (current: any, updater: (e: any) => any, paths: PropertyKey[]): any => {
+            if (paths.length) {
+                const [path, ...rest] = paths
+                return {
+                    ...current || {},
+                    [path]: updateState(current?.[path], updater, rest)
+                }
+            } else {
+                return updater(current)
             }
-            current.set(expandRefSymbol, Math.random());
-            current = current!.get(path)!
         }
 
-        const nextExpand = !(
-            current?.get(expandSymbol)
-            ?? stateGetter(...paths).is_expand
-        );
+        currentExpandMap = updateState(
+            currentExpandMap,
+            expand => !(expand ?? stateGetter(...paths).is_expand),
+            paths,
+        )
 
-        // !nextExpand && current.clear();
-        current?.set(expandSymbol, nextExpand);
+        console.log(currentExpandMap)
 
         walkingSwap(paths);
+
 
     }
 
