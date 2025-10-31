@@ -1,6 +1,7 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { getEntries } from "./getEntries";
+import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
 
 type NodeWalkState = {
@@ -11,9 +12,8 @@ type NodeWalkState = {
     end: LinkList<NodeData>;
     is_expand: boolean;
     expand_depth: number;
-    ref_expand?: any
+    expand_ref?: any
 };
-
 
 
 export class NodeData {
@@ -78,17 +78,16 @@ export const walkingFactory = () => {
 
         const is_expand = !isCircular && !!(expandMap ?? isDefaultExpand)
 
-        const ref_expand = is_expand && expandMap
+        const expand_ref = is_expand && expandMap
 
         const state = stateGetter(...paths)
-
 
         if (
             state.first
             || state.object !== object
             || state.is_expand !== is_expand
             || state.expand_depth !== expand_depth
-            || state.ref_expand!== ref_expand
+            || state.expand_ref !== expand_ref
         ) {
 
             try {
@@ -96,7 +95,7 @@ export const walkingFactory = () => {
                 state.object = object;
                 state.is_expand = is_expand;
                 state.expand_depth = expand_depth;
-                state.ref_expand = ref_expand
+                state.expand_ref = expand_ref
 
                 shouldTrackCircular && visiting.add(object);
 
@@ -243,28 +242,13 @@ export const walkingFactory = () => {
         ...paths: PropertyKey[]
     ) => {
 
-        const updateState = (current: any, updater: (e: any) => any, paths: PropertyKey[]): any => {
-            if (paths.length) {
-                const [path, ...rest] = paths
-                return {
-                    ...current || {},
-                    [path]: updateState(current?.[path], updater, rest)
-                }
-            } else {
-                return updater(current)
-            }
-        }
-
-        currentExpandMap = updateState(
+        currentExpandMap = immutableNestedUpdate(
             currentExpandMap,
             expand => !(expand ?? stateGetter(...paths).is_expand),
             paths,
         )
 
-        console.log(currentExpandMap)
-
         walkingSwap(paths);
-
 
     }
 
