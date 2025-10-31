@@ -18,18 +18,26 @@ type NodeWalkState = {
 
 export class NodeData {
     constructor(
-        public name: PropertyKey,
-        public value: any,
-        public path: string,
-        public depth: number,
-        public enumerable: boolean,
-        public paths: PropertyKey[],
-        public walkState: NodeWalkState,
-        public isCircular: boolean,
+        public readonly value: any,
+        public readonly enumerable: boolean,
+        public readonly paths: PropertyKey[],
+        public readonly walkState: NodeWalkState,
+        public readonly isCircular: boolean,
     ) { }
 
     get hasChild() {
         return isRef(this.value)
+    }
+
+    get path(): string {
+        return this.paths.join(".")
+    }
+    get name(): PropertyKey | undefined {
+        return this.paths.at(-1)!
+    }
+
+    get depth(): number {
+        return this.paths.length
     }
 }
 
@@ -84,23 +92,20 @@ export const walkingFactory = () => {
         ) {
 
             try {
-                shouldTrackCircular && visiting.add(object);
-
-
                 state.first = false;
                 state.object = object;
                 state.is_expand = is_expand;
                 state.expand_depth = expand_depth;
                 state.ref_expand = ref_expand;
 
+
+                shouldTrackCircular && visiting.add(object);
+
                 state.start = state.end = new LinkList<NodeData>(
                     new NodeData(
-                        paths.at(-1),
                         object,
-                        paths.join("/"),
-                        paths.length,
                         enumerable,
-                        [...paths],
+                        paths,
                         state,
                         isCircular,
                     )
@@ -239,12 +244,10 @@ export const walkingFactory = () => {
         let current = currentExpandMap
 
         for (let path of paths) {
-
             if (!current.has(path)) {
                 current.set(path, new Map());
             }
             current.set(expandRefSymbol, Math.random());
-
             current = current!.get(path)
         }
 
@@ -257,7 +260,6 @@ export const walkingFactory = () => {
 
         walkingSwap(paths);
     }
-
 
     return {
         walking,
