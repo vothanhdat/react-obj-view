@@ -21,6 +21,12 @@ import 'react-obj-view/dist/react-obj-view.css';
 
 > **Why separate CSS import?** This gives you control over when styles are loaded and allows for better optimization in your build process.
 
+## Immutability & Updates
+
+- React Object View treats your data as immutable; always return new object/array references when data changes so the viewer can recompute the tree.
+- Mutating a nested value in place keeps the parent reference stable and would otherwise leave the UI stale.
+- Adopt immutable patterns (spread, reducers, `immer`, etc.) in your state management so the viewer reflects every change without surprises.
+
 ## Common Use Cases
 
 ### 1. API Response Debugging

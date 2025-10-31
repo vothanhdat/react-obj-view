@@ -72,6 +72,13 @@ const App = () => {
 };
 ```
 
+## ♻️ Immutability Matters
+
+- React Object View relies on referential equality to reuse computed tree nodes, so updates must flow through new object/array references.
+- In-place mutations (for example `state.user.name = "Alice"`) keep the same parent reference, so the viewer would otherwise render stale data.
+- During development we detect these mutations, rebuild the affected subtree, and emit a warning identifying the mutated path. Production builds skip the check for performance.
+- Prefer immutable update helpers (spread, structured cloning, reducers, `immer`, etc.) and pass fresh references to `<ObjectView />` whenever data changes.
+
 ## 📖 Examples
 
 ### Controlling Expansion
