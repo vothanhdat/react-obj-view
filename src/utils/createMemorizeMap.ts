@@ -44,7 +44,7 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
                     keyToDeletes.delete(key)
                 },
                 clean() {
-                    keyToDeletes.size > 0 && console.log(`[${params.join(".")}]`, `[CLEAN]`, keyToDeletes)
+                    // keyToDeletes.size > 0 && console.log(`[${params.join(".")}]`, `[CLEAN]`, keyToDeletes)
                     for (let key of keyToDeletes) {
                         current.delete(key);
                     }

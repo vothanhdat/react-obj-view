@@ -4,7 +4,7 @@ import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
 
-type ExpandState = boolean | ExpandTree;
+type ExpandState = boolean | ExpandTree | undefined;
 type ExpandTree = { [key in PropertyKey]?: ExpandState };
 
 type NodeWalkState = {
@@ -74,9 +74,9 @@ export const walkingFactory = () => {
 
     const getChildExpandState = (state: ExpandState, key: PropertyKey): ExpandState => {
         if (state && typeof state === "object") {
-            return state[key] || false;
+            return state[key] ?? undefined;
         }
-        return false;
+        return undefined;
     };
 
     const hydrateState = (state: NodeWalkState, meta: NodeContext,) => {
@@ -196,7 +196,7 @@ export const walkingFactory = () => {
             isCircular,
             isExpanded,
             expandDepth,
-            expandState,
+            expandState: isExpanded ? expandState : undefined,
             enumerable,
             isRefObject,
         };
