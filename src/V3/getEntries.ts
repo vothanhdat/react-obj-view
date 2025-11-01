@@ -7,7 +7,7 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
     if (!shouldIterate) return;
 
-    if (Array.isArray(value)) {
+    if (value instanceof Array) {
 
         for (let key = 0; key < value.length; key++) {
             yield { key, value: value[key], enumerable: true };
@@ -29,7 +29,7 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
     if (config.nonEnumerable && value !== Object.prototype /* already added */) {
         yield {
-            key: '__proto__',
+            key: '[[Prototype]]',
             value: Object.getPrototypeOf(value),
             enumerable: false,
         };
@@ -38,13 +38,13 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
 
 
-export const getEntries = function (value: any, config: WalkingConfig) {
-
-    if (config.resolver?.has(value?.constructor)) {
+export const getEntries = function (value: any, config: WalkingConfig, isPreview = false) {
+    const prototype = value?.constructor
+    if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
         let iterator = config.resolver?.get(value?.constructor)?.(
             value,
             getEntriesOrignal(value, config),
-            false,
+            isPreview,
         )
 
         if (iterator)

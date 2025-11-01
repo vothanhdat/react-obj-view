@@ -7,13 +7,18 @@ export function getPropertyValue(object: any, propertyName: PropertyKey) {
     const propertyDescriptor = Object.getOwnPropertyDescriptor(object, propertyName);
     if (propertyDescriptor?.get) {
         try {
-            return propertyDescriptor.get();
+            return propertyDescriptor.get.bind(object)();
         } catch {
-            return propertyDescriptor.get;
+
         }
     }
 
-    return object[propertyName];
+    try {
+        return object[propertyName];
+    } catch {
+
+    }
+    return undefined
 }
 
 export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (data: any) => Generator<Entry> => {

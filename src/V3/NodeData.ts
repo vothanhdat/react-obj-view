@@ -15,7 +15,7 @@ export type WalkingConfig = {
 }
 
 type NodeWalkState = {
-    path: string;
+    // path: string;
     first: boolean;
     object: unknown;
     start?: LinkList<NodeData>;
@@ -52,7 +52,14 @@ export class NodeData {
     }
 
     get path(): string {
-        return this.paths.join(".")
+        return this.paths
+            .map(e => {
+                try {
+                    return String(e)
+                } catch (error) {
+                    return ""
+                }
+            }).join(".")
     }
     get name(): PropertyKey | undefined {
         return this.paths.at(-1)!
@@ -68,10 +75,10 @@ export class NodeData {
 
 export const walkingFactory = () => {
 
-    const stateGetter = createMemorizeMap((...path): NodeWalkState => ({
+    const stateGetter = createMemorizeMap((...paths): NodeWalkState => ({
         first: true,
         object: undefined,
-        path: path.join("."),
+        // path: path.join("."),
         config: { expandDepth: 0, nonEnumerable: false, resolver: undefined },
         isExpanded: true,
         expandState: undefined,
@@ -193,7 +200,7 @@ export const walkingFactory = () => {
         const isCircular = isRefObject && visiting.has(object as object);
         const shouldTrackCircular = isRefObject && !isCircular;
 
-        const isDefaultExpand = isRefObject && !isCircular && expandDepth > paths.length;
+        const isDefaultExpand = isRefObject && enumerable && !isCircular && expandDepth > paths.length;
 
         const isExpanded = !isCircular && !!(expandState ?? isDefaultExpand);
 

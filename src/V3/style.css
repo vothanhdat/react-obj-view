@@ -39,6 +39,7 @@
     .tag-circular {
         font-size: 0.9em;
         padding: 0.2em 0.4em;
+        margin-inline-end: 0.5em;
         background-color: darkgrey;
         margin-inline: "1em";
         font-weight: bold;
@@ -81,16 +82,14 @@
 
         &.type-symbol {}
 
-        &.type-undefined {}
+        &.type-undefined {
+            --opacity: 30%;
+        }
 
         &.type-string {
             --color: orange;
         }
 
-        /* 
-        &.type-object {
-            --color: #0aa;
-        } */
         &.type-object-array {
             --color: #0aa;
         }
@@ -111,10 +110,13 @@
             --color: #0aa;
         }
 
-        &.type-null {}
+        &.type-null {
+            --opacity: 30%;
+        }
 
         &.type-function {
             --color: #08f;
+            font-style: italic;
         }
 
         &.type-object-regexp {
@@ -131,6 +133,7 @@
 
 
         &.value-preview {
+            --color: var(--bigobjview-color);
             >.name {
                 --opacity: 30%;
             }

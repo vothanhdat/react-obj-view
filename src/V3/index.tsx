@@ -5,6 +5,7 @@ import { RenderNode } from "./RenderNode";
 import { Virtuoso } from 'react-virtuoso'
 import "./style.css"
 import { ObjectViewProps, ResolverFn } from "./types";
+import { DEFAULT_RESOLVER } from "./resolver";
 
 export const V8: React.FC<ObjectViewProps> = ({
     value,
@@ -17,7 +18,7 @@ export const V8: React.FC<ObjectViewProps> = ({
 }) => {
 
 
-    const { flattenNodes, toggleChildExpand } = useFlattenObjectView(
+    const { flattenNodes, toggleChildExpand, combinedResolver } = useFlattenObjectView(
         value,
         name,
         typeof expandLevel == 'boolean'
@@ -30,6 +31,7 @@ export const V8: React.FC<ObjectViewProps> = ({
     const nodeRender = useCallback(
         (index: number) => <div style={{ height: "15px" }}>
             <RenderNode
+                resolver={combinedResolver}
                 node={flattenNodes[index]}
                 toggleChildExpand={toggleChildExpand}
                 key={flattenNodes[index].path} />
@@ -65,14 +67,20 @@ function useFlattenObjectView(
     resolver: Map<any, ResolverFn> | undefined,
 ) {
 
+    const combinedResolver = useMemo(
+        () => new Map([
+            ...DEFAULT_RESOLVER,
+            ...resolver ?? [],
+        ]), [resolver, DEFAULT_RESOLVER]
+    )
 
     const config = useMemo(
         () => ({
             expandDepth,
-            resolver,
+            resolver: combinedResolver,
             nonEnumerable,
         }) as WalkingConfig,
-        [resolver, nonEnumerable, expandDepth]
+        [combinedResolver, nonEnumerable, expandDepth]
     )
 
 
@@ -87,6 +95,7 @@ function useFlattenObjectView(
 
     const linkList = useMemo(
         () => {
+            console.log("walking config", config)
             console.time("walking")
             const result = refWalk.current!.walking(
                 value,
@@ -117,6 +126,10 @@ function useFlattenObjectView(
         },
         [refWalk, config]
     );
-    return { flattenNodes, toggleChildExpand };
+    return {
+        flattenNodes,
+        toggleChildExpand,
+        combinedResolver
+    };
 }
 
