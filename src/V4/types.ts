@@ -1,5 +1,6 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { WalkingConfig } from "../V3/NodeData";
+import { CircularChecking } from "./CircularChecking";
 import { LinkedNode } from "./LinkedNode";
 import { NodeData } from "./NodeData";
 
@@ -8,12 +9,21 @@ export type WalkingState = {
     value: unknown;
     start?: LinkedNode<NodeData>;
     end?: LinkedNode<NodeData>;
-};
+
+    expanded: boolean;
+    expandedDepth: number;
+    childStats?: ChildStats | undefined
+}
 
 export type DataEntry = {
     name: PropertyKey;
     value: unknown;
 };
+
+export type ChildStats = {
+    childMaxDepth: number,
+    childCanExpand: boolean,
+}
 
 export type ProcessStack<T> = {
     data: T;
@@ -24,11 +34,15 @@ export type ProcessStack<T> = {
     cursor: LinkedNode<NodeData>;
     state?: WalkingState | undefined;
     context: SharingContext
+    hasChild?: boolean
+    changed?: boolean
+    parentContext: ChildStats
 };
 
 export type SharingContext = {
     getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
     config: WalkingConfig;
+    cirular: CircularChecking
 }
 
 

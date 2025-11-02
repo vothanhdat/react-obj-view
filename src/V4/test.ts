@@ -1,7 +1,7 @@
 import { performanceTestData } from "../exampleData";
-import { isRef } from "../utils/isRef";
 import { walkingFactoryV4 } from "../V4/walkingV4";
 import { linkListToArray } from "./LinkedNode";
+import { NodeData } from "./NodeData";
 
 
 const printTree = (nodes: NodeData[]) => {
@@ -23,7 +23,7 @@ const printTree = (nodes: NodeData[]) => {
 
 const obj = {
     e: 100,
-    ee: { ee: { oo: 399, iii: [2123] }, d: 10 },
+    ee: { ee: { oo: 399, iii: [2123, { z: 1000 }] }, d: 10 },
     d: [1000, 2, 3, 4, 3, [1, 2, 34]],
     g: { a: 2 }
 }
@@ -41,9 +41,9 @@ const arr2 = arr.map((e, i) => i % 5 == 0 ? ({ ...e, }) : e)
 const flattenFn2 = walkingFactoryV4()
 
 console.log("-------------------------------")
-// for (let data of [obj, obj2, obj3]) {
-for (let data of [arr, arr2]) {
-    for (let depth of [10]) {
+for (let data of [obj]) {
+    // for (let data of [arr]) {
+    for (let depth of [0, 1, 2, 3, 2, 1, 0]) {
         console.group("DEPTH", depth)
         const time = performance.now()
 
@@ -56,7 +56,7 @@ for (let data of [arr, arr2]) {
         console.log("timeFlatten", timeFlatten - timeLink)
 
         console.log("lng", nodes.length)
-        // console.table(nodes.map(e => ({ path: e.paths.join("/"), value: String(e.value) })))
+        console.table(nodes.map(e => ({ path: e.paths.join("/"), value: String(e.value) })))
 
         console.groupEnd()
         console.log("")

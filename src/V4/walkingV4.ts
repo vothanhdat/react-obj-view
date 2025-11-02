@@ -1,14 +1,19 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
+import { isRef } from "../utils/isRef";
 import { getEntriesOrignal } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
+import { CircularChecking } from "./CircularChecking";
 import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore } from "./LinkedNode";
 import { NodeData } from "./NodeData";
-import { StateGetter, WalkingState, ProcessStack, DataEntry, Stage, SharingContext } from "./types";
+import { StateGetter, WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats } from "./types";
 
-
+const DEFAULT_CHILD_STATS: ChildStats = {
+    childMaxDepth: 0,
+    childCanExpand: false,
+}
 
 function createRootNodeStack({ rootName, value, context }: {
-    rootName: string;
+    rootName: PropertyKey;
     value: unknown;
     context: SharingContext
 }) {
@@ -21,7 +26,7 @@ function createRootNodeStack({ rootName, value, context }: {
 
     const rootPaths = [rootName];
 
-    const rootNodeStack = {
+    const rootNodeStack: ProcessStack<DataEntry> = {
         data: { value, name: rootName, },
         iterator: getIterator(value, config),
         paths: rootPaths,
@@ -29,6 +34,7 @@ function createRootNodeStack({ rootName, value, context }: {
         stage: Stage.INIT,
         cursor: endLink,
         context,
+        parentContext: { ...DEFAULT_CHILD_STATS },
     };
     return { rootNodeStack, startLink, endLink };
 }
@@ -37,23 +43,74 @@ function initializeNode(
     current: ProcessStack<DataEntry>,
     stateGetter: StateGetter,
 ) {
-    const { data, paths, cursor } = current;
+    const { data, paths, cursor, context, depth, parentContext } = current;
+
+    const { expandDepth } = context.config
 
     const state = stateGetter(...paths);
 
-    current.state = state
+    const isCircular = context.cirular.checkCircucal(data.value)
 
-    if (!state.inited || state.value !== data.value) {
+    const hasChild = isRef(data.value)
+
+    const defaultEnable = hasChild
+        && !isCircular
+        && depth < expandDepth
+
+    const isExpanded = defaultEnable
+
+    current.state = state
+    current.hasChild = hasChild
+
+
+    current.changed = (
+        !state.inited
+        || state.value !== data.value
+        || state.expanded !== isExpanded
+        || (
+            isExpanded
+            && state.expandedDepth < expandDepth
+            && state.childStats?.childCanExpand
+        )
+        || (
+            isExpanded
+            && state.childStats?.childMaxDepth! >= expandDepth
+            && state.expandedDepth >= expandDepth
+        )
+    )
+
+    // console.log(
+    //     "start",
+    //     paths,
+    //     {
+    //         isExpanded,
+    //         expandDepth,
+    //         depth,
+    //         "state.expanded": state.expanded,
+    //         "current.changed": current.changed,
+    //     },
+    //     state.childStats
+    // )
+
+
+    if (current.changed) {
+
+        context.cirular.enterNode(data.value)
 
         state.inited = true;
         state.value = data.value;
+        state.expanded = isExpanded
+        state.expandedDepth = expandDepth
+
+        //RESET CHILD STAT IN CASE UPDATE
+        state.childStats = { ...DEFAULT_CHILD_STATS }
 
         const newLink = new LinkedDataNode(
             new NodeData(
                 paths,
                 data.value,
                 true,
-                false
+                isCircular
             )
         );
 
@@ -65,11 +122,19 @@ function initializeNode(
         state.start = newLink;
         state.end = newLinker;
 
-        current.stage = Stage.ITERATE;
+
+        if (isExpanded) {
+            current.stage = Stage.ITERATE;
+        } else {
+            current.stage = Stage.FINAL;
+        }
+
     } else {
+
         if (!(state.end && state.start)) {
             throw new Error("Invalid State");
         }
+
         insertListsBefore(cursor, state.start!, state.end!);
 
         current.stage = Stage.FINAL;
@@ -81,6 +146,7 @@ function iterateThroughNode(
     context: SharingContext
 ): ProcessStack<DataEntry>[] {
     const { config, getIterator } = context
+
     const newStacks: ProcessStack<DataEntry>[] = [];
 
     const { iterator, paths, depth, state } = current;
@@ -96,8 +162,8 @@ function iterateThroughNode(
             depth: depth + 1,
             stage: Stage.INIT,
             cursor: state!.end!,
-            state: undefined,
             context,
+            parentContext: state?.childStats!,
         });
 
     }
@@ -114,7 +180,23 @@ function finnalizeNode(
     current: ProcessStack<DataEntry>,
     context: SharingContext,
 ) {
-    const { iterator, data, paths, stage, depth, cursor, state } = current;
+    const { iterator, data, paths, stage, depth, cursor, state, changed, parentContext, hasChild = false } = current;
+
+    parentContext.childCanExpand ||= ((!state?.expanded!) && hasChild)
+
+    parentContext.childMaxDepth = Math.max(
+        parentContext.childMaxDepth,
+        state!.childStats!.childMaxDepth + 1,
+    )
+
+
+    if (changed) {
+        parentContext.childCanExpand ||= state?.childStats!.childCanExpand!;
+        context.cirular.exitNode(data.value)
+
+        // console.log("childState", paths, state!.childStats)
+    }
+
 }
 
 export const walkingFactoryV4 = () => {
@@ -122,6 +204,8 @@ export const walkingFactoryV4 = () => {
     const stateGetter: StateGetter = createMemorizeMap((...paths): WalkingState => ({
         inited: false,
         value: undefined,
+        expanded: false,
+        expandedDepth: 0,
     }));
 
 
@@ -141,7 +225,8 @@ export const walkingFactoryV4 = () => {
 
         const context: SharingContext = {
             getIterator,
-            config
+            config,
+            cirular: new CircularChecking()
         }
 
         const {
