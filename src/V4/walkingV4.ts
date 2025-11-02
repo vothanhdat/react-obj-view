@@ -3,16 +3,16 @@ import { getEntriesOrignal } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
 import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore } from "./LinkedNode";
 import { NodeData } from "./NodeData";
-import { StateGetter, WalkingState, StackProcess, DataEntry, Stage } from "./types";
+import { StateGetter, WalkingState, ProcessStack, DataEntry, Stage, SharingContext } from "./types";
 
 
 
-function createRootNodeStack({ rootName, value, getIterator, config }: {
+function createRootNodeStack({ rootName, value, context }: {
     rootName: string;
     value: unknown;
-    getIterator: (value: any, config: any) => IteratorObject<{ name: string | number; value: any; }, undefined, unknown>;
-    config: WalkingConfig;
+    context: SharingContext
 }) {
+    const { config, getIterator } = context
     const startLink = new LinkingNode<NodeData>();
     const endLink = new LinkingNode<NodeData>();
 
@@ -28,12 +28,13 @@ function createRootNodeStack({ rootName, value, getIterator, config }: {
         depth: 0,
         stage: Stage.INIT,
         cursor: endLink,
+        context,
     };
     return { rootNodeStack, startLink, endLink };
 }
 
 function initializeNode(
-    current: StackProcess<DataEntry>,
+    current: ProcessStack<DataEntry>,
     stateGetter: StateGetter,
 ) {
     const { data, paths, cursor } = current;
@@ -76,11 +77,12 @@ function initializeNode(
 }
 
 function iterateThroughNode(
-    current: StackProcess<DataEntry>,
-    getIterator: (value: any, config: any) => IteratorObject<{ name: string | number; value: any; }, undefined, unknown>,
-    config: WalkingConfig
-): StackProcess<DataEntry>[] {
-    const newStacks: StackProcess<DataEntry>[] = [];
+    current: ProcessStack<DataEntry>,
+    context: SharingContext
+): ProcessStack<DataEntry>[] {
+    const { config, getIterator } = context
+    const newStacks: ProcessStack<DataEntry>[] = [];
+
     const { iterator, paths, depth, state } = current;
 
     let { value: nextChild, done } = iterator.next();
@@ -95,6 +97,7 @@ function iterateThroughNode(
             stage: Stage.INIT,
             cursor: state!.end!,
             state: undefined,
+            context,
         });
 
     }
@@ -107,9 +110,11 @@ function iterateThroughNode(
 }
 
 
-function finnalizeNode(current: StackProcess<DataEntry>) {
+function finnalizeNode(
+    current: ProcessStack<DataEntry>,
+    context: SharingContext,
+) {
     const { iterator, data, paths, stage, depth, cursor, state } = current;
-
 }
 
 export const walkingFactoryV4 = () => {
@@ -127,45 +132,50 @@ export const walkingFactoryV4 = () => {
     const walking = (
         value: unknown,
         config: WalkingConfig,
+        rootName = ""
     ) => {
-        let count = 0;
 
-        const stack: StackProcess<DataEntry>[] = []
+        let stepCounter = 0;
 
-        let rootName = ""
+        const stack: ProcessStack<DataEntry>[] = []
 
-        const { rootNodeStack, startLink, endLink } = createRootNodeStack({ rootName, value, getIterator, config });
+        const context: SharingContext = {
+            getIterator,
+            config
+        }
+
+        const {
+            rootNodeStack,
+            startLink,
+            endLink,
+        } = createRootNodeStack({ rootName, value, context });
 
         stack.push(rootNodeStack)
 
         while (stack.length) {
-
             const current = stack.at(-1)!;
-
             switch (current.stage) {
-
                 case Stage.INIT: {
                     initializeNode(current, stateGetter);
                     break;
                 }
                 case Stage.ITERATE: {
-                    const newStacks = iterateThroughNode(current, getIterator, config);
+                    const newStacks = iterateThroughNode(current, context);
                     stack.push(...newStacks)
                     break;
                 }
                 case Stage.FINAL: {
-                    finnalizeNode(current);
+                    finnalizeNode(current, context);
                     stack.pop();
                     break;
                 }
             }
-
-            count++;
+            stepCounter++;
         }
 
-        console.log({ count })
+        console.log({ stepCounter })
 
-        return [startLink, endLink,]
+        return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }
 
     return {

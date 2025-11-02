@@ -1,4 +1,5 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
+import { WalkingConfig } from "../V3/NodeData";
 import { LinkedNode } from "./LinkedNode";
 import { NodeData } from "./NodeData";
 
@@ -14,7 +15,7 @@ export type DataEntry = {
     value: unknown;
 };
 
-export type StackProcess<T> = {
+export type ProcessStack<T> = {
     data: T;
     depth: number;
     paths: PropertyKey[];
@@ -22,7 +23,14 @@ export type StackProcess<T> = {
     stage: Stage;
     cursor: LinkedNode<NodeData>;
     state?: WalkingState | undefined;
+    context: SharingContext
 };
+
+export type SharingContext = {
+    getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
+    config: WalkingConfig;
+}
+
 
 export enum Stage {
     INIT, ITERATE, FINAL

@@ -1,8 +1,7 @@
 import { performanceTestData } from "../exampleData";
 import { isRef } from "../utils/isRef";
-import { linkListToArray } from "./LinkList";
-import { NodeData, walkingFactory } from "./NodeData";
 import { walkingFactoryV4 } from "../V4/walkingV4";
+import { linkListToArray } from "./LinkedNode";
 
 
 const printTree = (nodes: NodeData[]) => {
@@ -32,11 +31,7 @@ const obj = {
 const obj2 = { ...obj, ee: { ...obj.ee, d: 20, } }
 const obj3 = { ...obj2, d: [123] }
 
-// const flattenFn1 = getFlattenObj()
 
-// // printTree(flattenLink(flattenFn1(obj)))
-// // printTree(flattenLink(flattenFn1(obj2)))
-// // printTree(flattenLink(flattenFn1(obj3)))
 console.log("-------------------------------")
 
 const arr = performanceTestData.suppersupperLarge
@@ -47,7 +42,7 @@ const flattenFn2 = walkingFactoryV4()
 
 console.log("-------------------------------")
 // for (let data of [obj, obj2, obj3]) {
-    for (let data of [arr, arr2]) {
+for (let data of [arr, arr2]) {
     for (let depth of [10]) {
         console.group("DEPTH", depth)
         const time = performance.now()
