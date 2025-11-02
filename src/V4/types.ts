@@ -42,7 +42,8 @@ export type ProcessStack<T> = {
 export type SharingContext = {
     getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
     config: WalkingConfig;
-    cirular: CircularChecking
+    cirular: CircularChecking,
+    walkCounter: number,
 }
 
 

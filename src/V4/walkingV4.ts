@@ -71,27 +71,12 @@ function initializeNode(
             isExpanded
             && state.expandedDepth < expandDepth
             && state.childStats?.childCanExpand
-        )
-        || (
+        ) || (
             isExpanded
             && state.childStats?.childMaxDepth! >= expandDepth
-            && state.expandedDepth >= expandDepth
+            && state.expandedDepth > expandDepth
         )
     )
-
-    // console.log(
-    //     "start",
-    //     paths,
-    //     {
-    //         isExpanded,
-    //         expandDepth,
-    //         depth,
-    //         "state.expanded": state.expanded,
-    //         "current.changed": current.changed,
-    //     },
-    //     state.childStats
-    // )
-
 
     if (current.changed) {
 
@@ -110,7 +95,9 @@ function initializeNode(
                 paths,
                 data.value,
                 true,
-                isCircular
+                isCircular,
+                context.walkCounter,
+                isExpanded,
             )
         );
 
@@ -176,25 +163,22 @@ function iterateThroughNode(
 }
 
 
-function finnalizeNode(
+function finalizeNode(
     current: ProcessStack<DataEntry>,
     context: SharingContext,
 ) {
     const { iterator, data, paths, stage, depth, cursor, state, changed, parentContext, hasChild = false } = current;
 
     parentContext.childCanExpand ||= ((!state?.expanded!) && hasChild)
+    parentContext.childCanExpand ||= state?.childStats!.childCanExpand!;
 
     parentContext.childMaxDepth = Math.max(
         parentContext.childMaxDepth,
         state!.childStats!.childMaxDepth + 1,
     )
 
-
     if (changed) {
-        parentContext.childCanExpand ||= state?.childStats!.childCanExpand!;
         context.cirular.exitNode(data.value)
-
-        // console.log("childState", paths, state!.childStats)
     }
 
 }
@@ -212,6 +196,7 @@ export const walkingFactoryV4 = () => {
     const getIterator = (value: any, config: any) => getEntriesOrignal(value, config)
         .map(({ key: name, value }) => ({ name, value }))
 
+    let walkingCounter = 0
 
     const walking = (
         value: unknown,
@@ -226,7 +211,8 @@ export const walkingFactoryV4 = () => {
         const context: SharingContext = {
             getIterator,
             config,
-            cirular: new CircularChecking()
+            cirular: new CircularChecking(),
+            walkCounter: walkingCounter++,
         }
 
         const {
@@ -250,7 +236,7 @@ export const walkingFactoryV4 = () => {
                     break;
                 }
                 case Stage.FINAL: {
-                    finnalizeNode(current, context);
+                    finalizeNode(current, context);
                     stack.pop();
                     break;
                 }
@@ -258,7 +244,7 @@ export const walkingFactoryV4 = () => {
             stepCounter++;
         }
 
-        console.log({ stepCounter })
+        // console.log({ stepCounter })
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }

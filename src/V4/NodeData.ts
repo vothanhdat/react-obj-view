@@ -6,10 +6,12 @@ export class NodeData {
         public readonly paths: PropertyKey[],
         public readonly value: any,
         public readonly enumerable: boolean,
-        public readonly isCircular: boolean
+        public readonly isCircular: boolean,
+        public readonly walkUID: number,
+        public readonly expanded: boolean,
     ) { }
 
-    get path(): string {
+    public get path(): string {
         return this.paths
             .map(e => {
                 try {
@@ -20,11 +22,11 @@ export class NodeData {
             }).join(".");
     }
 
-    get name(): PropertyKey | undefined {
+    public get name(): PropertyKey | undefined {
         return this.paths.at(-1)!;
     }
 
-    get depth(): number {
+    public get depth(): number {
         return this.paths.length;
     }
 }
