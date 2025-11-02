@@ -41,9 +41,9 @@ const arr2 = arr.map((e, i) => i % 5 == 0 ? ({ ...e, }) : e)
 const flattenFn2 = walkingFactoryV4()
 
 console.log("-------------------------------")
-for (let data of [obj]) {
-    // for (let data of [arr]) {
-    for (let depth of [0, 1, 2, 3, 2, 1, 0]) {
+// for (let data of [obj, obj2, obj3]) {
+for (let data of [arr, arr2]) {
+    for (let depth of [10]) {
         console.group("DEPTH", depth)
         const time = performance.now()
 
@@ -56,7 +56,11 @@ for (let data of [obj]) {
         console.log("timeFlatten", timeFlatten - timeLink)
 
         console.log("lng", nodes.length)
-        console.table(nodes.map(e => ({ path: e.paths.join("/"), value: String(e.value) })))
+        // console.table(nodes.map(e => ({
+        //     path: e.paths.join("/"),
+        //     value: String(e.value),
+        //     idx: e.walkUID,
+        // })))
 
         console.groupEnd()
         console.log("")
