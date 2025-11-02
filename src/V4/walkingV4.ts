@@ -7,10 +7,10 @@ import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore } from
 import { NodeData } from "./NodeData";
 import { StateGetter, WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats } from "./types";
 
-const DEFAULT_CHILD_STATS: ChildStats = {
+const getDefaultChildStats = (): ChildStats => ({
     childMaxDepth: 0,
     childCanExpand: false,
-}
+})
 
 function createRootNodeStack({ rootName, value, context }: {
     rootName: PropertyKey;
@@ -34,13 +34,13 @@ function createRootNodeStack({ rootName, value, context }: {
         stage: Stage.INIT,
         cursor: endLink,
         context,
-        parentContext: { ...DEFAULT_CHILD_STATS },
+        parentContext: getDefaultChildStats(),
     };
     return { rootNodeStack, startLink, endLink };
 }
 
 function initializeNode(
-    current: ProcessStack<DataEntry>,
+    current: ProcessStack<DataEntry> & { stage: Stage.INIT },
     stateGetter: StateGetter,
 ) {
     const { data, paths, cursor, context, depth, parentContext } = current;
@@ -90,7 +90,7 @@ function initializeNode(
         current.stateCleanUp = stateGetter.checkUnusedKeyAndDeletes(...paths)
 
         //RESET CHILD STAT IN CASE UPDATE
-        state.childStats = { ...DEFAULT_CHILD_STATS }
+        state.childStats = getDefaultChildStats()
 
         const newLink = new LinkedDataNode(
             new NodeData(
@@ -113,8 +113,10 @@ function initializeNode(
 
 
         if (isExpanded) {
+            //@ts-ignore
             current.stage = Stage.ITERATE;
         } else {
+            //@ts-ignore
             current.stage = Stage.FINAL;
         }
 
@@ -126,12 +128,13 @@ function initializeNode(
 
         insertListsBefore(cursor, state.start!, state.end!);
 
+        //@ts-ignore
         current.stage = Stage.FINAL;
     }
 }
 
 function iterateThroughNode(
-    current: ProcessStack<DataEntry>,
+    current: ProcessStack<DataEntry> & { stage: Stage.ITERATE },
     context: SharingContext
 ): ProcessStack<DataEntry>[] {
     const { config, getIterator } = context
@@ -150,15 +153,16 @@ function iterateThroughNode(
             paths: [...paths, nextChild.name],
             depth: depth + 1,
             stage: Stage.INIT,
-            cursor: state!.end!,
+            cursor: state.end!,
             context,
-            parentContext: state?.childStats!,
+            parentContext: state.childStats!,
         });
 
-        stateCleanUp?.mark?.(nextChild.name);
+        stateCleanUp.mark(nextChild.name);
     }
 
     if (done) {
+        //@ts-ignore
         current.stage = Stage.FINAL;
     }
 
@@ -167,7 +171,7 @@ function iterateThroughNode(
 
 
 function finalizeNode(
-    current: ProcessStack<DataEntry>,
+    current: ProcessStack<DataEntry> & { stage: Stage.FINAL },
     context: SharingContext,
 ) {
     const {
@@ -175,7 +179,7 @@ function finalizeNode(
         stateCleanUp
     } = current;
 
-    parentContext.childCanExpand ||= ((!state?.expanded!) && hasChild)
+    parentContext.childCanExpand ||= (!state?.expanded && hasChild)
     parentContext.childCanExpand ||= state?.childStats!.childCanExpand!;
 
     parentContext.childMaxDepth = Math.max(
@@ -234,15 +238,18 @@ export const walkingFactoryV4 = () => {
             const current = stack.at(-1)!;
             switch (current.stage) {
                 case Stage.INIT: {
+                    //@ts-ignore //Typescript Doesn't detech INIT branch
                     initializeNode(current, stateGetter);
                     break;
                 }
                 case Stage.ITERATE: {
+                    //@ts-ignore //Typescript Doesn't detech ITERATE branch
                     const newStacks = iterateThroughNode(current, context);
                     stack.push(...newStacks)
                     break;
                 }
                 case Stage.FINAL: {
+                    //@ts-ignore //Typescript Doesn't detech FINAL branch
                     finalizeNode(current, context);
                     stack.pop();
                     break;

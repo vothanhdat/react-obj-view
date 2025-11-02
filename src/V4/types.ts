@@ -25,20 +25,43 @@ export type ChildStats = {
     childCanExpand: boolean,
 }
 
+export type StateCleanUp = { mark: (e: PropertyKey) => void, clean: () => void }
+
+
 export type ProcessStack<T> = {
     data: T;
     depth: number;
     paths: PropertyKey[];
     iterator: Iterator<T, void, unknown>;
-    stage: Stage;
+    // stage: Stage;
     cursor: LinkedNode<NodeData>;
-    state?: WalkingState | undefined;
-    context: SharingContext
+    parentContext: ChildStats;
+    context: SharingContext;
+} & ({
+    stage: Stage.INIT
+    state?: WalkingState;
     hasChild?: boolean
     changed?: boolean
-    parentContext: ChildStats,
-    stateCleanUp?: {mark:(e: PropertyKey) => void, clean:() => void}
-};
+    stateCleanUp?: StateCleanUp
+} | {
+    stage: Stage.ITERATE,
+    state: WalkingState;
+    hasChild: boolean
+    changed: boolean
+    stateCleanUp: StateCleanUp
+} | {
+    stage: Stage.FINAL,
+    state?: WalkingState;
+    hasChild?: boolean
+    changed?: boolean
+    stateCleanUp?: StateCleanUp
+} | {
+    stage: Stage,
+    changed: true
+    state: WalkingState;
+    hasChild: boolean
+    stateCleanUp: StateCleanUp
+})
 
 export type SharingContext = {
     getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
