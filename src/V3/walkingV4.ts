@@ -1,5 +1,6 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { getEntriesOrignal } from "./getEntries";
+import { WalkingConfig } from "./NodeData";
 
 
 
@@ -141,29 +142,17 @@ export const walkingFactoryV4 = () => {
 
     const walking = (
         value: unknown,
-        config: any,
+        config: WalkingConfig,
     ) => {
-        let rootName = ""
         let count = 0;
-        
+
         const stack: StackProcess<DataEntry>[] = []
 
-        const startLink = new LinkingNode<NodeData>()
-        const endLink = new LinkingNode<NodeData>()
+        let rootName = ""
 
-        startLink.next = endLink;
-        endLink.prev = startLink;
+        const { rootNodeStack, startLink, endLink } = createRootNodeStack({ rootName, value, getIterator, config });
 
-        const rootPaths = [rootName]
-
-        stack.push({
-            data: { value, name: rootName, },
-            iterator: getIterator(value, config),
-            paths: rootPaths,
-            depth: 0,
-            stage: Stage.INIT,
-            cursor: endLink,
-        })
+        stack.push(rootNodeStack)
 
         while (stack.length) {
 
@@ -211,7 +200,30 @@ const debugLink = (link: LinkedNode<any>) => {
     return ids.join(" > ")
 }
 
+function createRootNodeStack({ rootName, value, getIterator, config }: {
+    rootName: string;
+    value: unknown;
+    getIterator: (value: any, config: any) => IteratorObject<{ name: string | number; value: any; }, undefined, unknown>;
+    config: WalkingConfig;
+}) {
+    const startLink = new LinkingNode<NodeData>();
+    const endLink = new LinkingNode<NodeData>();
 
+    startLink.next = endLink;
+    endLink.prev = startLink;
+
+    const rootPaths = [rootName];
+
+    const rootNodeStack = {
+        data: { value, name: rootName, },
+        iterator: getIterator(value, config),
+        paths: rootPaths,
+        depth: 0,
+        stage: Stage.INIT,
+        cursor: endLink,
+    };
+    return { rootNodeStack, startLink, endLink };
+}
 
 function initializeNode(
     current: StackProcess<DataEntry>,
@@ -260,7 +272,7 @@ function initializeNode(
 function iterateThroughNode(
     current: StackProcess<DataEntry>,
     getIterator: (value: any, config: any) => IteratorObject<{ name: string | number; value: any; }, undefined, unknown>,
-    config: any
+    config: WalkingConfig
 ): StackProcess<DataEntry>[] {
     const newStacks: StackProcess<DataEntry>[] = [];
     const { iterator, paths, depth, state } = current;
