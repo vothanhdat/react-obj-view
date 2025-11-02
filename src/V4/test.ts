@@ -67,4 +67,29 @@ for (let data of [arr, arr2]) {
     }
 }
 
+for (let data of [arr2]) {
+    for (let depth of [1, 3, 5, 10]) {
+        console.group("DEPTH", depth)
+        const time = performance.now()
+
+        const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined })
+        const timeLink = performance.now()
+        console.log("timeLink", timeLink - time)
+
+        const nodes = linkListToArray(link)
+        const timeFlatten = performance.now()
+        console.log("timeFlatten", timeFlatten - timeLink)
+
+        console.log("lng", nodes.length)
+        // console.table(nodes.map(e => ({
+        //     path: e.paths.join("/"),
+        //     value: String(e.value),
+        //     idx: e.walkUID,
+        // })))
+
+        console.groupEnd()
+        console.log("")
+    }
+}
+
 // console.log(isRef(Symbol("")))
