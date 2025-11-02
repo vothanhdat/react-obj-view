@@ -87,13 +87,7 @@ function initializeNode(
         state.expanded = isExpanded
         state.expandedDepth = expandDepth
 
-        const {
-            clean,
-            mark,
-        } = stateGetter.checkUnusedKeyAndDeletes(...paths)
-
-        current.markUsed = mark
-        current.cleanUnused = clean
+        current.stateCleanUp = stateGetter.checkUnusedKeyAndDeletes(...paths)
 
         //RESET CHILD STAT IN CASE UPDATE
         state.childStats = { ...DEFAULT_CHILD_STATS }
@@ -144,7 +138,7 @@ function iterateThroughNode(
 
     const newStacks: ProcessStack<DataEntry>[] = [];
 
-    const { iterator, paths, depth, state, markUsed } = current;
+    const { iterator, paths, depth, state, stateCleanUp } = current;
 
     let { value: nextChild, done } = iterator.next();
 
@@ -161,7 +155,7 @@ function iterateThroughNode(
             parentContext: state?.childStats!,
         });
 
-        markUsed?.(nextChild.name);
+        stateCleanUp?.mark?.(nextChild.name);
     }
 
     if (done) {
@@ -178,7 +172,7 @@ function finalizeNode(
 ) {
     const {
         data, state, changed, parentContext, hasChild = false,
-        cleanUnused
+        stateCleanUp
     } = current;
 
     parentContext.childCanExpand ||= ((!state?.expanded!) && hasChild)
@@ -190,7 +184,7 @@ function finalizeNode(
     )
 
     if (changed) {
-        cleanUnused?.();
+        stateCleanUp?.clean?.();
         context.cirular.exitNode(data.value)
     }
 

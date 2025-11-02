@@ -36,7 +36,8 @@ export type ProcessStack<T> = {
     context: SharingContext
     hasChild?: boolean
     changed?: boolean
-    parentContext: ChildStats
+    parentContext: ChildStats,
+    stateCleanUp?: {mark:(e: PropertyKey) => void, clean:() => void}
 };
 
 export type SharingContext = {
