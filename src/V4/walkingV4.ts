@@ -25,12 +25,14 @@ const resetChildStats = (stats?: ChildStats): ChildStats => {
 
 function createRootNodeStack({
     value, context, paths, state,
+    enumerable = true,
     linkedList: {
         start: startLink = new LinkingNode<NodeData>(),
         end: endLink = new LinkingNode<NodeData>(),
     } = {} as never,
 }: {
     value: unknown;
+    enumerable?: boolean,
     context: SharingContext,
     paths: PropertyKey[],
     state: WalkingState,
@@ -47,7 +49,7 @@ function createRootNodeStack({
 
 
     const rootNodeStack: ProcessStack<DataEntry> = {
-        data: { value, name: paths.at(-1)!, },
+        data: { value, name: paths.at(-1)!, enumerable },
         iterator: getIterator(value, config),
         paths,
         depth: 0,
@@ -64,7 +66,7 @@ function initializeNode(
     current: ProcessStack<DataEntry> & { stage: Stage.INIT },
     stateGetter: (...params: any[]) => { get(key: any): any; clean(): void; },
 ) {
-    const { data, paths, cursor: cursor, context, depth, state } = current;
+    const { data, paths, cursor, context, depth, state } = current;
 
     const { expandDepth } = context.config
 
@@ -73,6 +75,7 @@ function initializeNode(
     const hasChild = isRef(data.value)
 
     const defaultEnable = hasChild
+        && data.enumerable
         && !isCircular
         && depth < expandDepth
 
@@ -105,6 +108,7 @@ function initializeNode(
         state.inited = true;
         state.forceUpdate = false;
         state.value = data.value;
+        state.enumerable = data.enumerable;
         state.expanded = isExpanded
         state.expandedDepth = expandDepth
 
@@ -122,7 +126,7 @@ function initializeNode(
             new NodeData(
                 paths,
                 data.value,
-                true,
+                data.enumerable,
                 isCircular,
                 context.walkCounter,
                 isExpanded,
@@ -223,13 +227,14 @@ export const walkingFactoryV4 = () => {
     const { stateFactory, getState }: StateGetterV2 = memorizeMapWithWithClean((...paths): WalkingState => ({
         inited: false,
         value: undefined,
+        enumerable: false,
         expanded: false,
         expandedDepth: 0,
     }));
 
 
     const getIterator = (value: any, config: any) => getEntriesOrignal(value, config)
-        .map(({ key: name, value }) => ({ name, value }))
+        .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))
 
     let walkingCounter = 0
 
@@ -261,7 +266,7 @@ export const walkingFactoryV4 = () => {
 
 
 
-    const childWalking = (paths: PropertyKey[], value: unknown, config: WalkingConfig) => {
+    const childWalking = (paths: PropertyKey[], config: WalkingConfig) => {
 
         const context: SharingContext = {
             getIterator,
@@ -272,8 +277,11 @@ export const walkingFactoryV4 = () => {
 
         const state: WalkingState = getState(...paths)
 
+        const value = state.value
+        const enumerable = state.enumerable
+
         const { rootNodeStack } = createRootNodeStack({
-            paths, context, state, value,
+            paths, context, state, value, enumerable,
             linkedList: { start: state.start!, end: state.end! },
         });
 
@@ -304,7 +312,7 @@ export const walkingFactoryV4 = () => {
                 state.userExpanded = !currentExpand;
 
 
-                childWalking(paths, state.value, config)
+                childWalking(paths, config)
 
                 break;
             }

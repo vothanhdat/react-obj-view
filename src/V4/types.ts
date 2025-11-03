@@ -8,6 +8,7 @@ import { NodeData } from "./NodeData";
 export type WalkingState = {
     inited: boolean;
     value: unknown;
+    enumerable: boolean;
     start?: LinkedNode<NodeData>;
     end?: LinkedNode<NodeData>;
 
@@ -21,6 +22,7 @@ export type WalkingState = {
 export type DataEntry = {
     name: PropertyKey;
     value: unknown;
+    enumerable: boolean;
 };
 
 export type ChildStats = {
@@ -38,7 +40,7 @@ type BaseProcessStack<T> = {
     parentContext: ChildStats;
     context: SharingContext;
     state: WalkingState;
-    isCircular?:boolean
+    isCircular?: boolean
 }
 
 type StateHelpers = {
