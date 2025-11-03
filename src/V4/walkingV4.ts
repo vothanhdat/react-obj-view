@@ -87,8 +87,7 @@ function initializeNode(
 
     current.changed = (
         !state.inited
-        || state.forceUpdate
-        || state.value !== data.value
+        || state.data?.value !== data.value
         || state.expanded !== isExpanded
         || (
             isExpanded
@@ -99,6 +98,7 @@ function initializeNode(
             && state.childStats?.childMaxDepth! >= expandDepth
             && state.expandedDepth > expandDepth
         )
+        || state.updateToken !== context.updateToken
     )
 
     if (current.changed) {
@@ -106,11 +106,10 @@ function initializeNode(
         !isCircular && context.cirular.enterNode(data.value)
 
         state.inited = true;
-        state.forceUpdate = false;
-        state.value = data.value;
-        state.enumerable = data.enumerable;
+        state.data = data;
         state.expanded = isExpanded
         state.expandedDepth = expandDepth
+        state.updateToken = context.updateToken;
 
         const { get: stateGet, clean: stateClean } = stateGetter(...paths)
 
@@ -226,8 +225,6 @@ export const walkingFactoryV4 = () => {
 
     const { stateFactory, getState }: StateGetterV2 = memorizeMapWithWithClean((...paths): WalkingState => ({
         inited: false,
-        value: undefined,
-        enumerable: false,
         expanded: false,
         expandedDepth: 0,
     }));
@@ -238,6 +235,13 @@ export const walkingFactoryV4 = () => {
 
     let walkingCounter = 0
 
+    let getUpdateToken = (config: WalkingConfig) => {
+        return (
+            (config.nonEnumerable ? 0 : 1)
+            // | (config.resolver ? 0 : 1)
+        )
+    }
+
     const walking = (value: unknown, config: WalkingConfig, rootName = "") => {
 
         const context: SharingContext = {
@@ -245,6 +249,7 @@ export const walkingFactoryV4 = () => {
             config,
             cirular: new CircularChecking(),
             walkCounter: walkingCounter++,
+            updateToken: getUpdateToken(config),
         }
 
         const { get: stateGet, clean: stateClean } = stateFactory()
@@ -273,12 +278,12 @@ export const walkingFactoryV4 = () => {
             config,
             cirular: new CircularChecking(),
             walkCounter: walkingCounter++,
+            updateToken: getUpdateToken(config),
         }
 
         const state: WalkingState = getState(...paths)
+        const { enumerable, value } = state.data!
 
-        const value = state.value
-        const enumerable = state.enumerable
 
         const { rootNodeStack } = createRootNodeStack({
             paths, context, state, value, enumerable,
@@ -303,7 +308,7 @@ export const walkingFactoryV4 = () => {
             if (!state)
                 throw new Error("State not found")
 
-            state.forceUpdate = true;
+            state.updateToken = 0;
 
             if (i == (paths.length - 1)) {
 

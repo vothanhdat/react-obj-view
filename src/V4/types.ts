@@ -7,16 +7,15 @@ import { NodeData } from "./NodeData";
 
 export type WalkingState = {
     inited: boolean;
-    value: unknown;
-    enumerable: boolean;
+    data?: DataEntry;
     start?: LinkedNode<NodeData>;
     end?: LinkedNode<NodeData>;
 
     expanded: boolean;
-    userExpanded?: boolean
-    forceUpdate?: boolean
+    userExpanded?: boolean;
     expandedDepth: number;
-    childStats?: ChildStats | undefined
+    childStats?: ChildStats | undefined;
+    updateToken?: any
 }
 
 export type DataEntry = {
@@ -79,12 +78,11 @@ export type SharingContext = {
     config: WalkingConfig;
     cirular: CircularChecking,
     walkCounter: number,
+    updateToken: any
 }
 
 
-export enum Stage {
-    INIT, ITERATE, FINAL
-}
+export enum Stage { INIT, ITERATE, FINAL }
 
 export type StateGetter = ReturnType<typeof createMemorizeMap<(...paths: PropertyKey[]) => WalkingState>>;
 export type StateGetterV2 = ReturnType<typeof memorizeMapWithWithClean<(...paths: PropertyKey[]) => WalkingState>>; export type LinkedList<T> = Record<'start' | 'end', LinkingNode<T>>;
