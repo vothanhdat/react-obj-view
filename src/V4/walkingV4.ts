@@ -8,10 +8,19 @@ import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore } from
 import { NodeData } from "./NodeData";
 import { WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats, StateGetterV2 } from "./types";
 
-const getDefaultChildStats = (): ChildStats => ({
+const createChildStats = (): ChildStats => ({
     childMaxDepth: 0,
     childCanExpand: false,
-})
+});
+
+const resetChildStats = (stats?: ChildStats): ChildStats => {
+    if (!stats) {
+        return createChildStats();
+    }
+    stats.childMaxDepth = 0;
+    stats.childCanExpand = false;
+    return stats;
+};
 
 function createRootNodeStack({ rootName, value, context, stateGet }: {
     rootName: PropertyKey;
@@ -37,7 +46,7 @@ function createRootNodeStack({ rootName, value, context, stateGet }: {
         stage: Stage.INIT,
         cursor: endLink,
         context,
-        parentContext: getDefaultChildStats(),
+        parentContext: createChildStats(),
         state: stateGet(rootName)
     };
     return { rootNodeStack, startLink, endLink };
@@ -95,7 +104,7 @@ function initializeNode(
 
 
         //RESET CHILD STAT IN CASE UPDATE
-        state.childStats = getDefaultChildStats()
+        state.childStats = resetChildStats(state.childStats)
 
         const newLink = new LinkedDataNode(
             new NodeData(
@@ -141,36 +150,32 @@ function initializeNode(
 function iterateThroughNode(
     current: ProcessStack<DataEntry> & { stage: Stage.ITERATE },
     context: SharingContext
-): ProcessStack<DataEntry>[] {
+): ProcessStack<DataEntry> | undefined {
     const { config, getIterator } = context
-
-    const newStacks: ProcessStack<DataEntry>[] = [];
 
     const { iterator, paths, depth, state, stateGet } = current;
 
-    let { value: nextChild, done } = iterator.next();
+    const iterationResult = iterator.next();
 
-    if (nextChild) {
-
-        newStacks.push({
-            data: nextChild,
-            iterator: getIterator(nextChild.value, config),
-            paths: [...paths, nextChild.name],
-            depth: depth + 1,
-            stage: Stage.INIT,
-            cursor: state.end!,
-            context,
-            parentContext: state.childStats!,
-            state: stateGet(nextChild.name),
-        });
-    }
-
-    if (done) {
+    if (iterationResult.done) {
         //@ts-ignore
         current.stage = Stage.FINAL;
+        return undefined;
     }
 
-    return newStacks;
+    const nextChild = iterationResult.value;
+
+    return {
+        data: nextChild,
+        iterator: getIterator(nextChild.value, config),
+        paths: [...paths, nextChild.name],
+        depth: depth + 1,
+        stage: Stage.INIT,
+        cursor: state.end!,
+        context,
+        parentContext: state.childStats!,
+        state: stateGet(nextChild.name),
+    };
 }
 
 
@@ -219,9 +224,8 @@ export const walkingFactoryV4 = () => {
         rootName = ""
     ) => {
 
-        let stepCounter = 0;
-
         const stack: ProcessStack<DataEntry>[] = []
+        let stepCounter = 0;
 
         const { get: stateGet, clean: stateClean } = stateGetter()
 
@@ -241,7 +245,7 @@ export const walkingFactoryV4 = () => {
         stack.push(rootNodeStack)
 
         while (stack.length) {
-            const current = stack.at(-1)!;
+            const current = stack[stack.length - 1]!;
             switch (current.stage) {
                 case Stage.INIT: {
                     //@ts-ignore //Typescript Doesn't detech INIT branch
@@ -250,8 +254,10 @@ export const walkingFactoryV4 = () => {
                 }
                 case Stage.ITERATE: {
                     //@ts-ignore //Typescript Doesn't detech ITERATE branch
-                    const newStacks = iterateThroughNode(current, context);
-                    stack.push(...newStacks)
+                    const nextStack = iterateThroughNode(current, context);
+                    if (nextStack) {
+                        stack.push(nextStack);
+                    }
                     break;
                 }
                 case Stage.FINAL: {
@@ -265,7 +271,7 @@ export const walkingFactoryV4 = () => {
         }
 
         console.log("stepCounter %s", stepCounter)
-        
+
         stateClean();
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
