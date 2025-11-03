@@ -1,9 +1,10 @@
 // import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
-import { getEntriesOrignal } from "../V3/getEntries";
+import { getEntries } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
 import { CircularChecking } from "./CircularChecking";
+import { getObjectUniqueId } from "./getObjectUniqueId";
 import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore, linkListToArray } from "./LinkedNode";
 import { NodeData } from "./NodeData";
 import { WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats, StateGetterV2, LinkedList } from "./types";
@@ -230,7 +231,7 @@ export const walkingFactoryV4 = () => {
     }));
 
 
-    const getIterator = (value: any, config: any) => getEntriesOrignal(value, config)
+    const getIterator = (value: any, config: any) => getEntries(value, config)
         .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))
 
     let walkingCounter = 0
@@ -238,7 +239,7 @@ export const walkingFactoryV4 = () => {
     let getUpdateToken = (config: WalkingConfig) => {
         return (
             (config.nonEnumerable ? 0 : 1)
-            // | (config.resolver ? 0 : 1)
+            | (getObjectUniqueId(config.resolver) << 1)
         )
     }
 

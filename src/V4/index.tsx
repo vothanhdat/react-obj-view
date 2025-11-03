@@ -17,7 +17,7 @@ export const V12: React.FC<ObjectViewProps> = ({
     highlightUpdate,
     resolver,
     nonEnumerable = false,
-    preview,
+    preview = true,
 }) => {
 
 
@@ -34,12 +34,13 @@ export const V12: React.FC<ObjectViewProps> = ({
     const nodeRender = useCallback(
         (index: number) => <div style={{ height: "15px" }}>
             <RenderNode
+                enablePreview={preview}
                 resolver={combinedResolver}
                 node={flattenNodes[index]}
                 toggleChildExpand={toggleChildExpand}
                 key={flattenNodes[index].path} />
         </div>,
-        [toggleChildExpand, flattenNodes]
+        [toggleChildExpand, flattenNodes, preview]
     )
 
     const computeItemKey = useCallback(
