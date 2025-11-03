@@ -32,11 +32,15 @@ export const insertNodeBefore = <T>(
     cursor: LinkedNode<T>,
     newNode: LinkedNode<T>
 ) => {
-
-    cursor.prev!.next = newNode;
-    newNode.prev = cursor.prev;
+    const prev = cursor.prev;
 
     newNode.next = cursor;
+    newNode.prev = prev;
+
+    if (prev) {
+        prev.next = newNode;
+    }
+
     cursor.prev = newNode;
 };
 
@@ -45,18 +49,54 @@ export const insertListsBefore = <T>(
     start: LinkedNode<T>,
     end: LinkedNode<T>
 ) => {
-
-    cursor.prev!.next = start;
-    start.prev = cursor.prev;
+    const prev = cursor.prev;
 
     end.next = cursor;
     cursor.prev = end;
+
+    start.prev = prev;
+    if (prev) {
+        prev.next = start;
+    }
+};
+
+
+export const insertNodeAfter = <T>(
+    cursor: LinkedNode<T>,
+    newNode: LinkedNode<T>
+) => {
+    const next = cursor.next;
+
+    newNode.prev = cursor;
+    newNode.next = next;
+
+    if (next) {
+        next.prev = newNode;
+    }
+
+    cursor.next = newNode;
+};
+
+export const insertListsAfter = <T>(
+    cursor: LinkedNode<T>,
+    start: LinkedNode<T>,
+    end: LinkedNode<T>
+) => {
+    const next = cursor.next;
+
+    cursor.next = start;
+    start.prev = cursor;
+
+    end.next = next;
+    if (next) {
+        next.prev = end;
+    }
 };
 
 export const linkListToArray = <T>([start, end]: [LinkedNode<T> | undefined, LinkedNode<T> | undefined]): T[] => {
     let result: T[] = [];
     let current: LinkedNode<T> | undefined = start?.prev ?? start;
-    while (current) {
+    while (current && current != end) {
         current.obj && result.push(current.obj);
         current = current.next;
     }
