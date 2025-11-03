@@ -4,24 +4,26 @@
 export const memorizeMapWithWithClean = <T extends (...param: any[]) => any>(
     onNewEl: T
 ) => {
-    const rootMap = new Map()
+    const rootMap = new Map<any, any>();
     const resultSymbol = Symbol("result")
 
 
     return (...params: any[]) => {
 
-        let current = rootMap,
-            parent = rootMap,
-            lastParam = undefined,
-            newMap = new Map(),
-            cleaned: boolean = false;
+        let current: Map<any, any> = rootMap,
+            parent: Map<any, any> = rootMap,
+            lastParam: any = undefined,
+            cleaned = false;
+
+        const touchedKeys = new Set<any>();
+        let hasNewKey = false;
 
         for (let param of ['@', ...params]) {
             parent = current;
             lastParam = param;
             
             if (!current.has(param))
-                current.set(param, new Map());
+                current.set(param, new Map<any, any>());
             current = current.get(param)
         }
 
@@ -34,17 +36,15 @@ export const memorizeMapWithWithClean = <T extends (...param: any[]) => any>(
                 if (cleaned) {
                     throw new Error("memorizeMapWithWithClean cleaned")
                 }
-                let currentMap: Map<any, any> = undefined as never;
 
-                if (newMap.has(key)) {
-                    currentMap = newMap.get(key)
-                } else if (current.has(key)) {
-                    currentMap = current.get(key)
-                    newMap.set(key, currentMap)
-                } else {
-                    currentMap = new Map()
-                    newMap.set(key, currentMap)
-                    current.set(key, currentMap)
+                touchedKeys.add(key);
+
+                let currentMap = current.get(key);
+
+                if (!currentMap) {
+                    currentMap = new Map<any, any>();
+                    current.set(key, currentMap);
+                    hasNewKey = true;
                 }
 
                 //@ts-ignore
@@ -52,14 +52,28 @@ export const memorizeMapWithWithClean = <T extends (...param: any[]) => any>(
 
             },
             clean() {
-                let d = current.size - newMap.size
-                d >= 100 && console.log("CLEAN size %s => %s", current.size, newMap.size);
-                //@ts-ignore
-                if (!newMap[resultSymbol] && current[resultSymbol]) {
-                    //@ts-ignore
-                    newMap[resultSymbol] = current[resultSymbol]
+                if (cleaned) {
+                    return;
                 }
-                parent.set(lastParam, newMap);
+                let deleted = 0;
+
+                if (!hasNewKey && touchedKeys.size === current.size) {
+                    // fully reused, no pruning needed
+                } else {
+                    for (const key of current.keys()) {
+                        if (!touchedKeys.has(key)) {
+                            current.delete(key);
+                            deleted++;
+                        }
+                    }
+                }
+
+                deleted >= 100 && console.log("CLEAN delete %s current size %s", deleted, current.size);
+
+                if (current.size === 0 && !Object.prototype.hasOwnProperty.call(current, resultSymbol)) {
+                    parent.delete(lastParam);
+                }
+
                 cleaned = true;
                 //@ts-ignore
                 current = null;
