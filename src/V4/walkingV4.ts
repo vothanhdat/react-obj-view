@@ -68,7 +68,7 @@ function initializeNode(
 
     const { expandDepth } = context.config
 
-    const isCircular = context.cirular.checkCircucal(data.value)
+    const isCircular = context.cirular.checkCircular(data.value)
 
     const hasChild = isRef(data.value)
 
@@ -76,10 +76,11 @@ function initializeNode(
         && !isCircular
         && depth < expandDepth
 
-    const isExpanded = state.userExpanded ?? defaultEnable
+    const isExpanded = !isCircular && (state.userExpanded ?? defaultEnable)
 
     current.state = state
     current.hasChild = hasChild
+    current.isCircular = isCircular
 
     current.changed = (
         !state.inited
@@ -99,7 +100,7 @@ function initializeNode(
 
     if (current.changed) {
 
-        context.cirular.enterNode(data.value)
+        !isCircular && context.cirular.enterNode(data.value)
 
         state.inited = true;
         state.forceUpdate = false;
@@ -199,6 +200,7 @@ function finalizeNode(
     const {
         data, state, changed, parentContext, hasChild = false,
         stateClean, context,
+        isCircular
     } = current;
 
     parentContext.childCanExpand ||= ((!state.expanded) && hasChild)
@@ -211,7 +213,7 @@ function finalizeNode(
 
     if (changed) {
         stateClean?.();
-        context.cirular.exitNode(data.value)
+        !isCircular && context.cirular.exitNode(data.value)
     }
 
 }

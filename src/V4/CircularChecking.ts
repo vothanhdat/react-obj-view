@@ -5,7 +5,7 @@ export class CircularChecking {
     checkMap = new WeakSet<any>();
     checkStack: any[] = [];
 
-    checkCircucal(value: unknown): boolean {
+    checkCircular(value: unknown): boolean {
         if (isRef(value)) {
             return this.checkMap.has(value);;
         } {
@@ -15,6 +15,8 @@ export class CircularChecking {
 
     enterNode(value: unknown) {
         if (isRef(value)) {
+            if (this.checkMap.has(value))
+                throw new Error("Node already entered");
             this.checkMap.add(value);
             this.checkStack.push(value);
         } {

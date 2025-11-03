@@ -38,6 +38,7 @@ type BaseProcessStack<T> = {
     parentContext: ChildStats;
     context: SharingContext;
     state: WalkingState;
+    isCircular?:boolean
 }
 
 type StateHelpers = {
