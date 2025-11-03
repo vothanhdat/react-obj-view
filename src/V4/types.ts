@@ -1,4 +1,5 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
+import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { WalkingConfig } from "../V3/NodeData";
 import { CircularChecking } from "./CircularChecking";
 import { LinkedNode } from "./LinkedNode";
@@ -37,30 +38,32 @@ export type ProcessStack<T> = {
     cursor: LinkedNode<NodeData>;
     parentContext: ChildStats;
     context: SharingContext;
+    state: WalkingState;
+
 } & ({
     stage: Stage.INIT
-    state?: WalkingState;
     hasChild?: boolean
-    changed?: boolean
-    stateCleanUp?: StateCleanUp
+    changed?: boolean,
+    stateGet?: (key: any) => WalkingState,
+    stateClean?: () => void,
 } | {
     stage: Stage.ITERATE,
-    state: WalkingState;
     hasChild: boolean
     changed: boolean
-    stateCleanUp: StateCleanUp
+    stateGet: (key: any) => WalkingState,
+    stateClean: () => void,
 } | {
     stage: Stage.FINAL,
-    state?: WalkingState;
     hasChild?: boolean
     changed?: boolean
-    stateCleanUp?: StateCleanUp
+    stateGet?: (key: any) => WalkingState,
+    stateClean?: () => void,
 } | {
     stage: Stage,
     changed: true
-    state: WalkingState;
     hasChild: boolean
-    stateCleanUp: StateCleanUp
+    stateGet: (key: any) => WalkingState,
+    stateClean: () => void,
 })
 
 export type SharingContext = {
@@ -76,3 +79,4 @@ export enum Stage {
 }
 
 export type StateGetter = ReturnType<typeof createMemorizeMap<(...paths: PropertyKey[]) => WalkingState>>;
+export type StateGetterV2 = ReturnType<typeof memorizeMapWithWithClean<(...paths: PropertyKey[]) => WalkingState>>;

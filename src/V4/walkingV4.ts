@@ -1,21 +1,24 @@
-import { createMemorizeMap } from "../utils/createMemorizeMap";
+// import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
+import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { getEntriesOrignal } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
 import { CircularChecking } from "./CircularChecking";
 import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore } from "./LinkedNode";
 import { NodeData } from "./NodeData";
-import { StateGetter, WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats } from "./types";
+import { WalkingState, ProcessStack, DataEntry, Stage, SharingContext, ChildStats, StateGetterV2 } from "./types";
 
 const getDefaultChildStats = (): ChildStats => ({
     childMaxDepth: 0,
     childCanExpand: false,
 })
 
-function createRootNodeStack({ rootName, value, context }: {
+function createRootNodeStack({ rootName, value, context, stateGetter }: {
     rootName: PropertyKey;
     value: unknown;
-    context: SharingContext
+    context: SharingContext,
+    stateGetter: StateGetterV2,
+
 }) {
     const { config, getIterator } = context
     const startLink = new LinkingNode<NodeData>();
@@ -35,19 +38,18 @@ function createRootNodeStack({ rootName, value, context }: {
         cursor: endLink,
         context,
         parentContext: getDefaultChildStats(),
+        state: stateGetter([]).get(rootName)
     };
     return { rootNodeStack, startLink, endLink };
 }
 
 function initializeNode(
     current: ProcessStack<DataEntry> & { stage: Stage.INIT },
-    stateGetter: StateGetter,
+    stateGetter: StateGetterV2,
 ) {
-    const { data, paths, cursor, context, depth, parentContext } = current;
+    const { data, paths, cursor, context, depth, state } = current;
 
     const { expandDepth } = context.config
-
-    const state = stateGetter(...paths);
 
     const isCircular = context.cirular.checkCircucal(data.value)
 
@@ -87,7 +89,11 @@ function initializeNode(
         state.expanded = isExpanded
         state.expandedDepth = expandDepth
 
-        current.stateCleanUp = stateGetter.checkUnusedKeyAndDeletes(...paths)
+        const { get: stateGet, clean: stateClean } = stateGetter(...paths)
+
+        current.stateGet = stateGet
+        current.stateClean = stateClean
+        
 
         //RESET CHILD STAT IN CASE UPDATE
         state.childStats = getDefaultChildStats()
@@ -141,7 +147,7 @@ function iterateThroughNode(
 
     const newStacks: ProcessStack<DataEntry>[] = [];
 
-    const { iterator, paths, depth, state, stateCleanUp } = current;
+    const { iterator, paths, depth, state, stateGet } = current;
 
     let { value: nextChild, done } = iterator.next();
 
@@ -156,9 +162,8 @@ function iterateThroughNode(
             cursor: state.end!,
             context,
             parentContext: state.childStats!,
+            state: stateGet(nextChild.name),
         });
-
-        stateCleanUp.mark(nextChild.name);
     }
 
     if (done) {
@@ -176,7 +181,7 @@ function finalizeNode(
 ) {
     const {
         data, state, changed, parentContext, hasChild = false,
-        stateCleanUp
+        stateClean
     } = current;
 
     parentContext.childCanExpand ||= (!state?.expanded && hasChild)
@@ -188,7 +193,7 @@ function finalizeNode(
     )
 
     if (changed) {
-        stateCleanUp?.clean?.();
+        stateClean?.();
         context.cirular.exitNode(data.value)
     }
 
@@ -196,7 +201,7 @@ function finalizeNode(
 
 export const walkingFactoryV4 = () => {
 
-    const stateGetter: StateGetter = createMemorizeMap((...paths): WalkingState => ({
+    const stateGetter: StateGetterV2 = memorizeMapWithWithClean((...paths): WalkingState => ({
         inited: false,
         value: undefined,
         expanded: false,
@@ -230,7 +235,7 @@ export const walkingFactoryV4 = () => {
             rootNodeStack,
             startLink,
             endLink,
-        } = createRootNodeStack({ rootName, value, context });
+        } = createRootNodeStack({ rootName, value, context, stateGetter });
 
         stack.push(rootNodeStack)
 
@@ -258,7 +263,7 @@ export const walkingFactoryV4 = () => {
             stepCounter++;
         }
 
-        // console.log({ stepCounter })
+        console.log("stepCounter %s", stepCounter)
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }
