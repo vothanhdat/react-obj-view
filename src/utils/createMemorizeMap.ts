@@ -16,10 +16,9 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
             current = current.get(param)
         }
 
-        if (!current.has(resultSymbol))
-            current.set(resultSymbol, onNewEl(...params));
+        //@ts-ignore
+        return (current[resultSymbol] ||= onNewEl(...params));
 
-        return current.get(resultSymbol)
 
     }) as T & { checkUnusedKeyAndDeletes: (...params: any[]) => { mark: any, clean: any } };
 
@@ -36,8 +35,6 @@ export const createMemorizeMap = <T extends (...param: any[]) => any>(
         if (current) {
 
             let keyToDeletes = new Set(current.keys())
-
-            keyToDeletes.delete(resultSymbol);
 
             return {
                 mark(key: any) {
