@@ -149,11 +149,11 @@ function initializeNode(
 
 function iterateThroughNode(
     current: ProcessStack<DataEntry> & { stage: Stage.ITERATE },
-    context: SharingContext
 ): ProcessStack<DataEntry> | undefined {
-    const { config, getIterator } = context
 
-    const { iterator, paths, depth, state, stateGet } = current;
+    const { iterator, paths, depth, state, stateGet, context } = current;
+
+    const { config, getIterator } = context
 
     const iterationResult = iterator.next();
 
@@ -181,11 +181,10 @@ function iterateThroughNode(
 
 function finalizeNode(
     current: ProcessStack<DataEntry> & { stage: Stage.FINAL },
-    context: SharingContext,
 ) {
     const {
         data, state, changed, parentContext, hasChild = false,
-        stateClean
+        stateClean, context,
     } = current;
 
     parentContext.childCanExpand ||= ((!state.expanded) && hasChild)
@@ -224,8 +223,6 @@ export const walkingFactoryV4 = () => {
         rootName = ""
     ) => {
 
-        const stack: ProcessStack<DataEntry>[] = []
-        let stepCounter = 0;
 
         const { get: stateGet, clean: stateClean } = stateGetter()
 
@@ -242,42 +239,67 @@ export const walkingFactoryV4 = () => {
             endLink,
         } = createRootNodeStack({ rootName, value, context, stateGet });
 
-        stack.push(rootNodeStack)
+        traverseNodeGraph(rootNodeStack, stateGetter);
 
-        while (stack.length) {
-            const current = stack[stack.length - 1]!;
-            switch (current.stage) {
-                case Stage.INIT: {
-                    //@ts-ignore //Typescript Doesn't detech INIT branch
-                    initializeNode(current, stateGetter);
-                    break;
-                }
-                case Stage.ITERATE: {
-                    //@ts-ignore //Typescript Doesn't detech ITERATE branch
-                    const nextStack = iterateThroughNode(current, context);
-                    if (nextStack) {
-                        stack.push(nextStack);
-                    }
-                    break;
-                }
-                case Stage.FINAL: {
-                    //@ts-ignore //Typescript Doesn't detech FINAL branch
-                    finalizeNode(current, context);
-                    stack.pop();
-                    break;
-                }
-            }
-            stepCounter++;
-        }
-
-        console.log("stepCounter %s", stepCounter)
 
         stateClean();
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }
 
+
+
+    const toggleExpand = (
+        paths: PropertyKey[],
+        config: WalkingConfig
+    ) => {
+
+
+    };
+
+
     return {
-        walking
+        walking,
+        toggleExpand,
     }
 }
+function traverseNodeGraph(
+    rootNodeStack: ProcessStack<DataEntry>,
+    stateGetter: (...params: any[]) => { get(key: any): any; clean(): void; }
+) {
+
+    const stack: ProcessStack<DataEntry>[] = [
+        rootNodeStack
+    ];
+
+    let stepCounter = 0;
+
+    while (stack.length) {
+        const current = stack[stack.length - 1]!;
+        switch (current.stage) {
+            case Stage.INIT: {
+                //@ts-ignore //Typescript Doesn't detech INIT branch
+                initializeNode(current, stateGetter);
+                break;
+            }
+            case Stage.ITERATE: {
+                //@ts-ignore //Typescript Doesn't detech ITERATE branch
+                const nextStack = iterateThroughNode(current);
+                if (nextStack) {
+                    stack.push(nextStack);
+                }
+                break;
+            }
+            case Stage.FINAL: {
+                //@ts-ignore //Typescript Doesn't detech FINAL branch
+                finalizeNode(current);
+                stack.pop();
+                break;
+            }
+        }
+        stepCounter++;
+    }
+
+    console.log("stepCounter %s", stepCounter)
+}
+
