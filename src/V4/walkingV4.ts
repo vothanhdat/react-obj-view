@@ -13,11 +13,11 @@ const getDefaultChildStats = (): ChildStats => ({
     childCanExpand: false,
 })
 
-function createRootNodeStack({ rootName, value, context, stateGetter }: {
+function createRootNodeStack({ rootName, value, context, stateGet }: {
     rootName: PropertyKey;
     value: unknown;
     context: SharingContext,
-    stateGetter: StateGetterV2,
+    stateGet: (key: any) => any,
 
 }) {
     const { config, getIterator } = context
@@ -38,7 +38,7 @@ function createRootNodeStack({ rootName, value, context, stateGetter }: {
         cursor: endLink,
         context,
         parentContext: getDefaultChildStats(),
-        state: stateGetter([]).get(rootName)
+        state: stateGet(rootName)
     };
     return { rootNodeStack, startLink, endLink };
 }
@@ -63,7 +63,6 @@ function initializeNode(
 
     current.state = state
     current.hasChild = hasChild
-
 
     current.changed = (
         !state.inited
@@ -93,7 +92,7 @@ function initializeNode(
 
         current.stateGet = stateGet
         current.stateClean = stateClean
-        
+
 
         //RESET CHILD STAT IN CASE UPDATE
         state.childStats = getDefaultChildStats()
@@ -184,12 +183,12 @@ function finalizeNode(
         stateClean
     } = current;
 
-    parentContext.childCanExpand ||= (!state?.expanded && hasChild)
-    parentContext.childCanExpand ||= state?.childStats!.childCanExpand!;
+    parentContext.childCanExpand ||= ((!state.expanded) && hasChild)
+    parentContext.childCanExpand ||= state.childStats!.childCanExpand!;
 
     parentContext.childMaxDepth = Math.max(
         parentContext.childMaxDepth,
-        state!.childStats!.childMaxDepth + 1,
+        state.childStats!.childMaxDepth + 1,
     )
 
     if (changed) {
@@ -224,6 +223,8 @@ export const walkingFactoryV4 = () => {
 
         const stack: ProcessStack<DataEntry>[] = []
 
+        const { get: stateGet, clean: stateClean } = stateGetter()
+
         const context: SharingContext = {
             getIterator,
             config,
@@ -235,7 +236,7 @@ export const walkingFactoryV4 = () => {
             rootNodeStack,
             startLink,
             endLink,
-        } = createRootNodeStack({ rootName, value, context, stateGetter });
+        } = createRootNodeStack({ rootName, value, context, stateGet });
 
         stack.push(rootNodeStack)
 
@@ -264,6 +265,8 @@ export const walkingFactoryV4 = () => {
         }
 
         console.log("stepCounter %s", stepCounter)
+        
+        stateClean();
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }

@@ -17,10 +17,11 @@ export const memorizeMapWithWithClean = <T extends (...param: any[]) => any>(
             cleaned: boolean = false;
 
         for (let param of ['@', ...params]) {
-            if (!current.has(param))
-                current.set(param, new Map());
             parent = current;
             lastParam = param;
+            
+            if (!current.has(param))
+                current.set(param, new Map());
             current = current.get(param)
         }
 
@@ -46,17 +47,17 @@ export const memorizeMapWithWithClean = <T extends (...param: any[]) => any>(
                     current.set(key, currentMap)
                 }
 
-                if (!currentMap.has(resultSymbol)) {
-                    currentMap.set(resultSymbol, onNewEl(...params, key))
-                }
+                //@ts-ignore
+                return (currentMap[resultSymbol] ||= onNewEl(...params, key))
 
-                return currentMap.get(resultSymbol)
             },
             clean() {
                 let d = current.size - newMap.size
                 d >= 100 && console.log("CLEAN size %s => %s", current.size, newMap.size);
-                if (!newMap.has(resultSymbol) && current.has(resultSymbol)) {
-                    newMap.set(resultSymbol, current.get(resultSymbol))
+                //@ts-ignore
+                if (!newMap[resultSymbol] && current[resultSymbol]) {
+                    //@ts-ignore
+                    newMap[resultSymbol] = current[resultSymbol]
                 }
                 parent.set(lastParam, newMap);
                 cleaned = true;
