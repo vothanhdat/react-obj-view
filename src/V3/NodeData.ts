@@ -23,7 +23,8 @@ type NodeWalkState = {
     start?: LinkList<NodeData>;
     end?: LinkList<NodeData>;
     isExpanded: boolean;
-    expandState?: ExpandState;
+    userExpanded?: boolean;
+    forceUpdate?: boolean;
     config: WalkingConfig;
 };
 
@@ -34,7 +35,6 @@ type NodeContext = {
     isExpanded: boolean;
     enumerable: boolean;
     isRefObject: boolean;
-    expandState: ExpandState;
     config: WalkingConfig;
 };
 
@@ -83,28 +83,17 @@ export const walkingFactory = () => {
         first: true,
         object: undefined,
         config: defaultConfig,
-        isExpanded: true,
-        expandState: undefined,
+        isExpanded: false,
     }));
 
-
-    let currentExpandMap: ExpandTree = {};
-
     const visiting = new WeakSet<object>();
-
-    const getChildExpandState = (state: ExpandState, key: PropertyKey): ExpandState => {
-        if (state && typeof state === "object") {
-            return state[key] ?? undefined;
-        }
-        return undefined;
-    };
 
     const hydrateState = (state: NodeWalkState, meta: NodeContext,) => {
         state.first = false;
         state.object = meta.object;
         state.isExpanded = meta.isExpanded;
         state.config = meta.config;
-        state.expandState = meta.expandState;
+        state.forceUpdate = false
 
         state.start = state.end = new LinkList<NodeData>(
             new NodeData(
@@ -134,7 +123,6 @@ export const walkingFactory = () => {
                     enumerable,
                     meta.config,
                     [...meta.paths, key],
-                    getChildExpandState(meta.expandState, key),
                     getState(key),
                 );
 
@@ -163,7 +151,7 @@ export const walkingFactory = () => {
         || state.object !== snapshot.object
         || state.isExpanded !== snapshot.isExpanded
         || state.config !== snapshot.config
-        || state.expandState !== snapshot.expandState;
+        || state.forceUpdate;
 
     const collectAncestorRefs = (paths: PropertyKey[]): object[] => {
         const ancestors: object[] = [];
@@ -179,22 +167,11 @@ export const walkingFactory = () => {
         return ancestors;
     };
 
-    const resolveExpandState = (paths: PropertyKey[]): ExpandState => {
-        let branch: ExpandState = currentExpandMap;
-
-        for (const segment of paths) {
-            branch = getChildExpandState(branch, segment);
-        }
-
-        return branch;
-    };
-
     const walkingInternal = (
         object: unknown,
         enumerable: boolean,
         config: WalkingConfig,
         paths: PropertyKey[],
-        expandState: ExpandState,
         state: NodeWalkState,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
         const { expandDepth, nonEnumerable, resolver } = config
@@ -208,7 +185,7 @@ export const walkingFactory = () => {
 
         const isDefaultExpand = isRefObject && enumerable && !isCircular && expandDepth > paths.length;
 
-        const isExpanded = !isCircular && !!(expandState ?? isDefaultExpand);
+        const isExpanded = !isCircular && (state.userExpanded ?? isDefaultExpand);
 
         const nodeContext: NodeContext = {
             object,
@@ -216,9 +193,9 @@ export const walkingFactory = () => {
             isCircular,
             isExpanded,
             config,
-            expandState: isExpanded ? expandState : undefined,
             enumerable,
             isRefObject,
+
         };
 
 
@@ -255,7 +232,6 @@ export const walkingFactory = () => {
             true,
             config,
             ["ROOT"],
-            currentExpandMap,
             get("ROOT"),
         )
         clean();
@@ -289,7 +265,6 @@ export const walkingFactory = () => {
                 state.start.obj.enumerable,
                 config,
                 paths,
-                resolveExpandState(paths),
                 state,
             );
 
@@ -323,11 +298,12 @@ export const walkingFactory = () => {
         config: WalkingConfig
     ) => {
 
-        currentExpandMap = immutableNestedUpdate(
-            currentExpandMap,
-            expand => !(expand ?? getState(...paths).isExpanded),
-            paths,
-        ) as ExpandTree;
+        for (let i = 1; i < paths.length; i++) {
+            getState(...paths.slice(0, i)).forceUpdate = true;
+        }
+        let state: NodeWalkState = getState(...paths)
+
+        state.userExpanded = !(state.userExpanded ?? state.isExpanded ?? false);
 
         walkingSwap(paths, config);
 
