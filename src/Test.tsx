@@ -7,6 +7,7 @@ import "./Test.css";
 import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
 import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
 import { V8 } from './V3';
+import { V12 } from './V4';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -28,7 +29,7 @@ class APIEndpoint {
 const pickEntries = (entries: Entry[], keys: Array<string>): Entry[] => {
     const picked: Entry[] = [];
     for (const key of keys) {
-        const index = entries.findIndex(entry => String(entry.name) === key);
+        const index = entries.findIndex(entry => String(entry.key) === key);
         if (index !== -1) {
             const [entry] = entries.splice(index, 1);
             if (entry) {
@@ -43,15 +44,15 @@ const userResolver: ResolverFn = function* (user: User, iterator, isPreview) {
     const entries = [...iterator];
     if (isPreview) {
         yield {
-            name: 'summary',
-            data: `${user.name} • ${user.email}`,
-            isNonenumerable: false,
+            key: 'summary',
+            value: `${user.name} • ${user.email}`,
+            enumerable: true,
         };
         if (user.role !== 'user') {
             yield {
-                name: 'role',
-                data: user.role,
-                isNonenumerable: false,
+                key: 'role',
+                value: user.role,
+                enumerable: true,
             };
         }
         return;
@@ -64,9 +65,9 @@ const userResolver: ResolverFn = function* (user: User, iterator, isPreview) {
 
     if (user.role !== 'user') {
         yield {
-            name: 'badge',
-            data: `⭐ ${user.role.toUpperCase()}`,
-            isNonenumerable: false,
+            key: 'badge',
+            value: `⭐ ${user.role.toUpperCase()}`,
+            enumerable: true,
         };
     }
 
@@ -79,14 +80,14 @@ const apiEndpointResolver: ResolverFn = function* (endpoint: APIEndpoint, iterat
     const entries = [...iterator];
     if (isPreview) {
         yield {
-            name: 'request',
-            data: `${endpoint.method} ${endpoint.url}`,
-            isNonenumerable: false,
+            key: 'request',
+            value: `${endpoint.method} ${endpoint.url}`,
+            enumerable: true,
         };
         yield {
-            name: 'status',
-            data: endpoint.status,
-            isNonenumerable: false,
+            key: 'status',
+            value: endpoint.status,
+            enumerable: true,
         };
         return;
     }
@@ -97,9 +98,9 @@ const apiEndpointResolver: ResolverFn = function* (endpoint: APIEndpoint, iterat
     if (statusEntry) yield statusEntry;
 
     yield {
-        name: 'responseTimeLabel',
-        data: `${endpoint.responseTime}ms`,
-        isNonenumerable: false,
+        key: 'responseTimeLabel',
+        value: `${endpoint.responseTime}ms`,
+        enumerable: true,
     };
 
     if (responseTimeEntry) yield responseTimeEntry;
@@ -610,7 +611,7 @@ export const Test = () => {
                         }}
                     >
 
-                        <V8
+                        <V12
                             value={getCurrentData()}
                             name="testData"
                             expandLevel={expandLevel}
