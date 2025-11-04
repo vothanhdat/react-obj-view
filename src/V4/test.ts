@@ -100,38 +100,38 @@ if (false) {
         }
     }
 
-    for (let data of [arr2]) {
-        for (let depth of [0, 1, 3, 5, 10]) {
-            console.group("DEPTH", depth)
-            const time = performance.now()
+    // for (let data of [arr2]) {
+    //     for (let depth of [0, 1, 3, 5, 10]) {
+    //         console.group("DEPTH", depth)
+    //         const time = performance.now()
 
-            const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined })
-            const timeLink = performance.now()
-            console.log("timeLink", timeLink - time)
+    //         const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined })
+    //         const timeLink = performance.now()
+    //         console.log("timeLink", timeLink - time)
 
-            const nodes = linkListToArray(link)
-            const timeFlatten = performance.now()
-            console.log("timeFlatten", timeFlatten - timeLink)
+    //         const nodes = linkListToArray(link)
+    //         const timeFlatten = performance.now()
+    //         console.log("timeFlatten", timeFlatten - timeLink)
 
-            console.log("lng", nodes.length)
+    //         console.log("lng", nodes.length)
 
-            console.table({
-                uid: nodes.reduce(
-                    (current, e) => (current[e.walkUID] = (current[e.walkUID] ?? 0) + 1, current),
-                    {} as any
-                )
-            })
+    //         console.table({
+    //             uid: nodes.reduce(
+    //                 (current, e) => (current[e.walkUID] = (current[e.walkUID] ?? 0) + 1, current),
+    //                 {} as any
+    //             )
+    //         })
 
-            // console.table(nodes.map(e => ({
-            //     path: e.paths.join("/"),
-            //     value: String(e.value),
-            //     idx: e.walkUID,
-            // })))
+    //         // console.table(nodes.map(e => ({
+    //         //     path: e.paths.join("/"),
+    //         //     value: String(e.value),
+    //         //     idx: e.walkUID,
+    //         // })))
 
-            console.groupEnd()
-            console.log("")
-        }
-    }
+    //         console.groupEnd()
+    //         console.log("")
+    //     }
+    // }
 
     // console.log(isRef(Symbol("")))
 

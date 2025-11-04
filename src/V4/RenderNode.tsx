@@ -9,9 +9,10 @@ import { getEntries } from "../V3/getEntries";
 
 export const RenderNode: React.FC<{
     node: NodeData;
+    enablePreview: boolean;
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeData) => void
-}> = ({ node, toggleChildExpand, resolver }) => {
+}> = ({ node, toggleChildExpand, resolver, enablePreview = true }) => {
 
     const isExpanded = node.expanded
 
@@ -19,7 +20,7 @@ export const RenderNode: React.FC<{
 
     const hasChild = isRef(node.value);
 
-    const isPreview = hasChild && !isExpanded && typeof node.value != "function"
+    const isPreview = enablePreview && hasChild && !isExpanded && typeof node.value != "function"
 
     return <div className="node-container" data-level={node.depth}>
         <div

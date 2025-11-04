@@ -29,8 +29,8 @@ export type ObjectRenderProps = {
     traces: any[],
 };
 export type Entry = {
-    name: any;
-    data: any;
-    isNonenumerable: any;
+    key: any;
+    value: any;
+    enumerable: any;
 };
 

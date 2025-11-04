@@ -18,8 +18,8 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
                 ? []
                 : [...resolver(value, createIterator(true, false)(value), false)];
             return [
-                all.filter(e => !e.isNonenumerable),
-                all.filter(e => e.isNonenumerable),
+                all.filter(e => !e.enumerable),
+                all.filter(e => e.enumerable),
             ];
         },
         [value, resolver]
@@ -49,7 +49,7 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
 
     return <>
         {entries
-            .map(({ name, data, isNonenumerable }) => <ObjectRenderWrapper
+            .map(({ key: name, value: data, enumerable: isNonenumerable }) => <ObjectRenderWrapper
                 key={path + "." + String(name)}
                 {...{
                     name,

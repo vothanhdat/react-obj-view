@@ -43,7 +43,7 @@ const arr = performanceTestData.suppersupperLarge
 
 const arr2 = arr.map((e, i) => i % 5 == 0 ? ({ ...e, }) : e)
 
-const flattenFn2 = walkingFactoryV4()
+const flattenFn2 = walkingFactory()
 
 console.log("-------------------------------")
 // for (let data of [obj, obj2, obj3]) {

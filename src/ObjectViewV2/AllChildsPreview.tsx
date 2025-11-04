@@ -27,7 +27,7 @@ export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSPropertie
         {value instanceof Array ? "[" : "{"}
         {allIterators
             .slice(0, 5)
-            .map(({ name, data, isNonenumerable }, index) => <Fragment key={name}>
+            .map(({ key: name, value: data, enumerable: isNonenumerable }, index) => <Fragment key={name}>
                 {index > 0 ? ", " : ""}
                 {renderName && <><NameRender name={name} />: </>}
                 <ValueInline value={data} context={context} isPreview />

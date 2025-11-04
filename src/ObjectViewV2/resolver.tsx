@@ -16,18 +16,18 @@ const promiseResolver: ResolverFn = function* (promise: Promise<any>, entriesIte
     }
 
     yield {
-        name: isPreview ? "status" : "[[PromiseState]]",
-        data: new PromiseWrapper(result.then(e => e.status)),
-        isNonenumerable: false,
+        key: isPreview ? "status" : "[[PromiseState]]",
+        value: new PromiseWrapper(result.then(e => e.status)),
+        enumerable: false,
     };
     yield {
-        name: isPreview ? "result" : "[[PromiseResult]]",
-        data: new PromiseWrapper(
+        key: isPreview ? "result" : "[[PromiseResult]]",
+        value: new PromiseWrapper(
             result.then(e => e.status == "resolved" ? e.result
                 : e.status == "rejected" ? e.reason
                     : undefined)
         ),
-        isNonenumerable: false,
+        enumerable: false,
     };
 };
 
@@ -35,31 +35,31 @@ const errorResolver: ResolverFn = function* (error: Error, entriesIterator: Gene
 
 
     for (let entry of entriesIterator) {
-        if (entry.name != "message") {
+        if (entry.key != "message") {
             yield entry;
         }
     }
 
     if (error instanceof Error) {
         error.name && (yield {
-            name: "name",
-            data: error.name,
-            isNonenumerable: false,
+            key: "name",
+            value: error.name,
+            enumerable: false,
         })
         yield {
-            name: isPreview ? "msg" : "message",
-            data: error.message,
-            isNonenumerable: false,
+            key: isPreview ? "msg" : "message",
+            value: error.message,
+            enumerable: false,
         };
         yield {
-            name: "stack",
-            data: error.stack,
-            isNonenumerable: false,
+            key: "stack",
+            value: error.stack,
+            enumerable: false,
         };
         error.cause && (yield {
-            name: "cause",
-            data: error.cause,
-            isNonenumerable: false,
+            key: "cause",
+            value: error.cause,
+            enumerable: false,
         })
     }
 
