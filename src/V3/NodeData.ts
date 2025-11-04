@@ -1,5 +1,7 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
+import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
+import { WalkingState } from "../V4/types";
 import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
@@ -75,14 +77,16 @@ export class NodeData {
 
 export const walkingFactory = () => {
 
-    const stateGetter = createMemorizeMap((...paths): NodeWalkState => ({
+    const defaultConfig = { expandDepth: 0, nonEnumerable: false, resolver: undefined }
+
+    const { stateFactory, getState } = memorizeMapWithWithClean((...paths): NodeWalkState => ({
         first: true,
         object: undefined,
-        // path: path.join("."),
-        config: { expandDepth: 0, nonEnumerable: false, resolver: undefined },
+        config: defaultConfig,
         isExpanded: true,
         expandState: undefined,
     }));
+
 
     let currentExpandMap: ExpandTree = {};
 
@@ -119,11 +123,11 @@ export const walkingFactory = () => {
     ) => {
         const startNode = state.start!;
         let currentLink = startNode;
-        const { mark, clean } = stateGetter.checkUnusedKeyAndDeletes(...meta.paths);
+        const { get: getState, clean: cleanState } = stateFactory(...meta.paths);
 
         if (!meta.isCircular && meta.isExpanded && meta.isRefObject) {
             for (let { key, value, enumerable } of getEntries(meta.object, meta.config)) {
-                mark(key);
+                // mark(key);
 
                 const [childStart, childEnd] = walkingInternal(
                     value,
@@ -131,6 +135,7 @@ export const walkingFactory = () => {
                     meta.config,
                     [...meta.paths, key],
                     getChildExpandState(meta.expandState, key),
+                    getState(key),
                 );
 
                 if (!childStart || !childEnd) {
@@ -144,7 +149,7 @@ export const walkingFactory = () => {
             }
         }
 
-        clean();
+        cleanState();
 
         state.end = currentLink;
 
@@ -162,9 +167,9 @@ export const walkingFactory = () => {
 
     const collectAncestorRefs = (paths: PropertyKey[]): object[] => {
         const ancestors: object[] = [];
-        let current: unknown = stateGetter().object;
+        let current: unknown = getState("ROOT").object;
 
-        for (const segment of paths) {
+        for (const segment of paths.slice(1)) {
             if (isRef(current)) {
                 ancestors.push(current as object);
             }
@@ -190,6 +195,7 @@ export const walkingFactory = () => {
         config: WalkingConfig,
         paths: PropertyKey[],
         expandState: ExpandState,
+        state: NodeWalkState,
     ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
         const { expandDepth, nonEnumerable, resolver } = config
         if (expandDepth < 0) {
@@ -203,8 +209,6 @@ export const walkingFactory = () => {
         const isDefaultExpand = isRefObject && enumerable && !isCircular && expandDepth > paths.length;
 
         const isExpanded = !isCircular && !!(expandState ?? isDefaultExpand);
-
-        const state = stateGetter(...paths);
 
         const nodeContext: NodeContext = {
             object,
@@ -244,19 +248,25 @@ export const walkingFactory = () => {
     const walking = (
         object: unknown,
         config: WalkingConfig
-    ) => walkingInternal(
-        object,
-        true,
-        config,
-        [],
-        currentExpandMap,
-    );
+    ) => {
+        let { get, clean } = stateFactory()
+        let r = walkingInternal(
+            object,
+            true,
+            config,
+            ["ROOT"],
+            currentExpandMap,
+            get("ROOT"),
+        )
+        clean();
+        return r
+    };
 
     const walkingSwap = (
         paths: PropertyKey[] = [],
         config: WalkingConfig
     ) => {
-        const state = stateGetter(...paths);
+        const state = getState(...paths);
 
         if (!state.start || !state.end) {
             throw new Error("Invalid state: missing start or end nodes");
@@ -280,6 +290,7 @@ export const walkingFactory = () => {
                 config,
                 paths,
                 resolveExpandState(paths),
+                state,
             );
 
             if (!startAfter || !endAfter) {
@@ -314,7 +325,7 @@ export const walkingFactory = () => {
 
         currentExpandMap = immutableNestedUpdate(
             currentExpandMap,
-            expand => !(expand ?? stateGetter(...paths).isExpanded),
+            expand => !(expand ?? getState(...paths).isExpanded),
             paths,
         ) as ExpandTree;
 
