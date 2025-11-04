@@ -42,11 +42,13 @@ type NodeContext = {
 export class NodeData {
 
     constructor(
+        public readonly paths: PropertyKey[],
         public readonly value: any,
         public readonly enumerable: boolean,
-        public readonly paths: PropertyKey[],
         public readonly isCircular: boolean,
-        public readonly walkState: NodeWalkState,
+        public readonly walkUID: number,
+        public readonly expanded: boolean,
+
     ) { }
 
     get hasChild() {
@@ -97,11 +99,12 @@ export const walkingFactory = () => {
 
         state.start = state.end = new LinkList<NodeData>(
             new NodeData(
+                meta.paths,
                 meta.object,
                 meta.enumerable,
-                meta.paths,
                 meta.isCircular,
-                state,
+                0,
+                state.isExpanded
             )
         );
     };
@@ -224,15 +227,16 @@ export const walkingFactory = () => {
 
     const walking = (
         object: unknown,
-        config: WalkingConfig
+        config: WalkingConfig,
+        rootName = ""
     ) => {
         let { get, clean } = stateFactory()
         let r = walkingInternal(
             object,
             true,
             config,
-            ["ROOT"],
-            get("ROOT"),
+            [rootName],
+            get(rootName),
         )
         clean();
         return r

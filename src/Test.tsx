@@ -8,6 +8,7 @@ import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
 import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
 import { V8 } from './V3';
 import { V12 } from './V4';
+import { ObjectViewVirtualize } from './Virtualize';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -611,7 +612,7 @@ export const Test = () => {
                         }}
                     >
 
-                        <V12
+                        <ObjectViewVirtualize
                             value={getCurrentData()}
                             name="testData"
                             expandLevel={expandLevel}
