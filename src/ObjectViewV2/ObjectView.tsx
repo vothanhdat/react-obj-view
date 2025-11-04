@@ -23,6 +23,7 @@ export type ObjectViewProps = {
     highlightUpdate?: boolean
     preview?: boolean,
     nonEnumerable?: boolean,
+    showLineNumbers?: boolean,
 };
 
 
@@ -38,7 +39,7 @@ export const ObjectViewV2: React.FC<ObjectViewProps> = ({
 
     const expandLevelRef = useRef(expandLevel)
     const expandRef = useRef<Record<string, boolean>>({})
-    if(expandLevelRef.current != expandLevel){
+    if (expandLevelRef.current != expandLevel) {
         expandLevelRef.current = expandLevel;
         expandRef.current = {};
     }
