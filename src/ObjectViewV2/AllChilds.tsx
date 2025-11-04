@@ -18,8 +18,8 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
                 ? []
                 : [...resolver(value, createIterator(true, false)(value), false)];
             return [
-                all.filter(e => !e.enumerable),
                 all.filter(e => e.enumerable),
+                all.filter(e => !e.enumerable),
             ];
         },
         [value, resolver]
@@ -34,10 +34,12 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
         [enumrables, groupSize, value]
     );
 
+    // console.log({ renderObject })
+
     const entries = useMemo(
         () => [
             ...Object.entries(renderObject)
-                .map(([name, data]) => ({ name, data, isNonenumerable: false })),
+                .map(([key, value]) => ({ key, value, enumerable: true })),
             ...context.nonEnumerable ? noneEnumerables : []
         ], [renderObject, noneEnumerables, context.nonEnumerable]
     );
@@ -49,12 +51,12 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
 
     return <>
         {entries
-            .map(({ key: name, value: data, enumerable: isNonenumerable }) => <ObjectRenderWrapper
+            .map(({ key: name, value: data, enumerable }) => <ObjectRenderWrapper
                 key={path + "." + String(name)}
                 {...{
                     name,
                     value: data,
-                    isNonenumerable,
+                    isNonenumerable: !enumerable,
                     path: path + "." + String(name),
                     level: level + 1,
                     traces: traceFactory(data),

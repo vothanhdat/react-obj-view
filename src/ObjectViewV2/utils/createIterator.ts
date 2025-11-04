@@ -36,16 +36,16 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
                 if (Array.isArray(entry) && entry.length === 2) {
                     const [k, v] = entry;
                     yield {
-                        name: k,
-                        data: v,
-                        isNonenumerable: false,
+                        key: k,
+                        value: v,
+                        enumerable: true,
 
                     };
                 } else {
                     yield {
-                        name: i.toString(),
-                        data: entry,
-                        isNonenumerable: false,
+                        key: i.toString(),
+                        value: entry,
+                        enumerable: true,
 
                     };
                 }
@@ -64,9 +64,9 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
                 if (propertyIsEnumerable.call(data, propertyName)) {
                     const propertyValue = getPropertyValue(data, propertyName);
                     yield {
-                        name: propertyName || `""`,
-                        data: propertyValue,
-                        isNonenumerable: false,
+                        key: propertyName || `""`,
+                        value: propertyValue,
+                        enumerable: true,
                     };
                 } else if (showNonenumerable) {
                     // To work around the error (happens some time when propertyName === 'caller' || propertyName === 'arguments')
@@ -82,9 +82,9 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
 
                     if (propertyValue !== undefined) {
                         yield {
-                            name: propertyName,
-                            data: propertyValue,
-                            isNonenumerable: true,
+                            key: propertyName,
+                            value: propertyValue,
+                            enumerable: false,
                         };
                     }
                 }
@@ -95,9 +95,9 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
             if (showNonenumerable && data !== Object.prototype /* already added */) {
                 // if (showNonenumerable && data !== Object.prototype /* already added */) {
                 yield {
-                    name: '__proto__',
-                    data: Object.getPrototypeOf(data),
-                    isNonenumerable: true,
+                    key: '__proto__',
+                    value: Object.getPrototypeOf(data),
+                    enumerable: false,
                 };
             }
         }

@@ -1,8 +1,11 @@
 export class GroupedProxy { }
 
-export const getObjectGroupProxyEntries = (iterators: { name: string, data: any }[], maxSize: number = 10) => {
+export const getObjectGroupProxyEntries = (
+    iterators: { key: string, value: any }[],
+    maxSize: number = 10
+) => {
 
-    const indexed = new Map(iterators.map(e => [e.name, e.data]))
+    const indexed = new Map(iterators.map(e => [e.key, e.value]))
 
     const keySize = iterators.length;
 
@@ -39,7 +42,7 @@ export const getObjectGroupProxyEntries = (iterators: { name: string, data: any 
                 {
                     ownKeys: () => Array(size).fill(0)
                         .map((_, i) => from + i)
-                        .map(index => String(iterators[index].name)),
+                        .map(index => String(iterators[index].key)),
 
                     getOwnPropertyDescriptor(_, key) {
                         return {
