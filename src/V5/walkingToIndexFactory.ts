@@ -15,6 +15,7 @@ export type WalkingResult = {
     count: number,
     enumerable: boolean,
     maxDepth: number,
+    expandedDepth: number,
     expanded: boolean,
     isCircular: boolean,
     childCanExpand: boolean,
@@ -37,6 +38,7 @@ export const walkingToIndexFactory = () => {
         keys: [],
         name: "",
         maxDepth: 0,
+        expandedDepth: 0,
         enumerable: false,
         childCanExpand: false,
         expanded: false,
@@ -49,12 +51,6 @@ export const walkingToIndexFactory = () => {
     const stateRead = getStateOnly(rootMapState)
 
     const cirularChecking = new CircularChecking()
-
-    const shouldUpdate = (state: WalkingResult, config: WalkingConfig, value: unknown) => {
-        if (state.value !== value)
-            return true
-        return false
-    }
 
     const getUpdateToken = (config: WalkingConfig) => {
         return (
@@ -72,23 +68,40 @@ export const walkingToIndexFactory = () => {
         name: PropertyKey,
         enumerable: boolean,
         updateToken = getUpdateToken(config),
-        depth = 0,
+        depth = 1,
         { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult>> = stateRoot,
     ): WalkingResult => {
 
-        if (shouldUpdate(state, config, value)) {
+        let count = 1;
+        let maxDepth = depth
+        let hasChild = objectHasChild(value)
+        let isCircular = cirularChecking.checkCircular(value)
+        let canExpand = hasChild && !isCircular
+        let defaultExpanded = enumerable && depth <= config.expandDepth
+        let isExpand = canExpand && (state.userExpand ?? defaultExpanded)
+        let childCanExpand = canExpand && !isExpand;
+        
+
+        let shoudUpdate = (
+            state.value !== value
+            || state.expanded != isExpand
+            || state.updateToken != updateToken
+            || (isExpand
+                && state.expandedDepth < config.expandDepth
+                && state.childCanExpand
+            ) || (isExpand
+                && state.maxDepth >= config.expandDepth
+                && state.expandedDepth > config.expandDepth
+            )
+        )
 
 
-            let count = 1;
+        if (shoudUpdate) {
+
+
             let cumulate = [count];
             let keys = []
-            let maxDepth = depth
-            let childCanExpand = false;
-            let hasChild = objectHasChild(value)
-            let canExpand = hasChild
-            let defaultExpanded = enumerable && depth <= config.expandDepth
-            let isExpand = canExpand && (state.userExpand ?? defaultExpanded)
-            let isCircular = cirularChecking.checkCircular(value)
+
 
             if (hasChild && isExpand) {
 
@@ -125,6 +138,7 @@ export const walkingToIndexFactory = () => {
             state.maxDepth = maxDepth
             state.childCanExpand = childCanExpand
             state.expanded = isExpand
+            state.expandedDepth = config.expandDepth
             state.isCircular = isCircular
             state.name = name;
             state.keys = keys;
