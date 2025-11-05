@@ -38,15 +38,18 @@ console.log("re-walking time %s ms", t3 - t2)
 
 const t4 = performance.now()
 
-let preGetNodes = new Array(30)
-    .fill(0).map((_, i) => walking.getNode(+i + 1000000, config))
+let preGetNodes = new Array(40)
+    .fill(0).map((_, i) => i + (r2.count >> 1))
+    .map((i) => [i, walking.getNode(i, config)])
 
 const t5 = performance.now()
 
 console.log("generate nodes %s ms", t5 - t4)
+console.log("-----------------------------")
 
-preGetNodes.forEach(e => {
+preGetNodes.forEach(([i, e]) => {
     console.log(
+        ("#" + i).padEnd(6, " "),
         "  ".repeat(e.depth),
         e.name,
         ":",
