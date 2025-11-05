@@ -1,6 +1,7 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
 import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
+import { getObjectUniqueId } from "../V4/getObjectUniqueId";
 import { WalkingState } from "../V4/types";
 import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
@@ -17,16 +18,22 @@ export type WalkingConfig = {
 }
 
 type NodeWalkState = {
-    // path: string;
-    first: boolean;
+    inited: boolean;
     object: unknown;
     start?: LinkList<NodeData>;
     end?: LinkList<NodeData>;
     isExpanded: boolean;
     userExpanded?: boolean;
-    forceUpdate?: boolean;
-    config: WalkingConfig;
+    expandedDepth: number;
+    updateToken?: any
+    childStats: ChildStats;
 };
+
+export type ChildStats = {
+    childMaxDepth: number,
+    childCanExpand: boolean,
+}
+
 
 type NodeContext = {
     object: unknown;
@@ -35,7 +42,10 @@ type NodeContext = {
     isExpanded: boolean;
     enumerable: boolean;
     isRefObject: boolean;
+    canExpand: boolean;
     config: WalkingConfig;
+    updateToken?: any
+    expandDepth: number
 };
 
 
@@ -82,20 +92,30 @@ export const walkingFactory = () => {
     const defaultConfig = { expandDepth: 0, nonEnumerable: false, resolver: undefined }
 
     const { stateFactory, getState } = memorizeMapWithWithClean((...paths): NodeWalkState => ({
-        first: true,
+        inited: false,
         object: undefined,
-        config: defaultConfig,
         isExpanded: false,
+        childStats: { childCanExpand: false, childMaxDepth: 0 },
+        expandedDepth: 0,
     }));
 
     const visiting = new WeakSet<object>();
 
+    let getUpdateToken = (config: WalkingConfig) => {
+        return (
+            (config.nonEnumerable ? 0 : 1)
+            | (getObjectUniqueId(config.resolver) << 1)
+        )
+    }
+
     const hydrateState = (state: NodeWalkState, meta: NodeContext,) => {
-        state.first = false;
+        state.inited = true;
         state.object = meta.object;
         state.isExpanded = meta.isExpanded;
-        state.config = meta.config;
-        state.forceUpdate = false
+        state.updateToken = meta.updateToken;
+        state.expandedDepth = meta.expandDepth
+        state.childStats.childMaxDepth = 0
+        state.childStats.childCanExpand = meta.canExpand && !meta.isExpanded
 
         state.start = state.end = new LinkList<NodeData>(
             new NodeData(
@@ -121,12 +141,13 @@ export const walkingFactory = () => {
             for (let { key, value, enumerable } of getEntries(meta.object, meta.config)) {
                 // mark(key);
 
-                const [childStart, childEnd] = walkingInternal(
+                const { start: childStart, end: childEnd, stats } = walkingInternal(
                     value,
                     enumerable,
                     meta.config,
                     [...meta.paths, key],
                     getState(key),
+                    state.updateToken,
                 );
 
                 if (!childStart || !childEnd) {
@@ -137,6 +158,12 @@ export const walkingFactory = () => {
                 childStart.prev = currentLink;
 
                 currentLink = childEnd;
+
+                state.childStats.childCanExpand ||= stats.childCanExpand
+                state.childStats.childMaxDepth = Math.max(
+                    state.childStats.childMaxDepth,
+                    stats.childMaxDepth + 1,
+                )
             }
         }
 
@@ -150,11 +177,20 @@ export const walkingFactory = () => {
     };
 
     const shouldRefreshState = (state: NodeWalkState, snapshot: NodeContext,) =>
-        state.first
+        !state.inited
         || state.object !== snapshot.object
         || state.isExpanded !== snapshot.isExpanded
-        || state.config !== snapshot.config
-        || state.forceUpdate;
+        || state.updateToken !== snapshot.updateToken
+        || (
+            state.isExpanded
+            && state.childStats.childCanExpand
+            && state.expandedDepth < snapshot.expandDepth
+        ) || (
+            state.isExpanded
+            && state.childStats.childMaxDepth >= snapshot.expandDepth
+            && state.expandedDepth > snapshot.expandDepth
+        )
+
 
     const collectAncestorRefs = (paths: PropertyKey[]): object[] => {
         const ancestors: object[] = [];
@@ -170,25 +206,39 @@ export const walkingFactory = () => {
         return ancestors;
     };
 
+    //        const updateToken = getUpdateToken(config)
+
     const walkingInternal = (
         object: unknown,
         enumerable: boolean,
         config: WalkingConfig,
         paths: PropertyKey[],
         state: NodeWalkState,
-    ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
+        updateToken?: any
+    ): {
+        start: LinkList<NodeData> | undefined,
+        end: LinkList<NodeData> | undefined,
+        stats: ChildStats
+    } => {
+
         const { expandDepth, nonEnumerable, resolver } = config
+
         if (expandDepth < 0) {
             throw new Error("expandDepth must be non-negative");
         }
 
         const isRefObject = isRef(object);
+
         const isCircular = isRefObject && visiting.has(object as object);
+
         const shouldTrackCircular = isRefObject && !isCircular;
 
         const isDefaultExpand = isRefObject && enumerable && !isCircular && expandDepth > paths.length;
 
+        const canExpand = isRefObject && !isCircular;
+
         const isExpanded = !isCircular && (state.userExpanded ?? isDefaultExpand);
+
 
         const nodeContext: NodeContext = {
             object,
@@ -198,7 +248,9 @@ export const walkingFactory = () => {
             config,
             enumerable,
             isRefObject,
-
+            updateToken,
+            canExpand,
+            expandDepth,
         };
 
 
@@ -217,9 +269,9 @@ export const walkingFactory = () => {
 
             }
 
-            return [state.start, state.end];
+            return { start: state.start, end: state.end, stats: state.childStats };
         } else if (state.start && state.end) {
-            return [state.start, state.end];
+            return { start: state.start, end: state.end, stats: state.childStats };
         } else {
             throw new Error("Invalid Walk Into");
         }
@@ -231,15 +283,16 @@ export const walkingFactory = () => {
         rootName = ""
     ) => {
         let { get, clean } = stateFactory()
-        let r = walkingInternal(
+        let { start, end } = walkingInternal(
             object,
             true,
             config,
             [rootName],
             get(rootName),
+            getUpdateToken(config),
         )
         clean();
-        return r
+        return [start, end]
     };
 
     const walkingSwap = (
@@ -264,7 +317,7 @@ export const walkingFactory = () => {
                 throw new Error("Invalid state: missing list boundaries");
             }
 
-            const [startAfter, endAfter] = walkingInternal(
+            const { start: startAfter, end: endAfter } = walkingInternal(
                 state.object,
                 state.start.obj.enumerable,
                 config,

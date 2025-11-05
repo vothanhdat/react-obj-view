@@ -99,7 +99,7 @@ function useFlattenObjectView(
 
     const [reload, setReload] = useState(0);
 
-    const { refWalk, linkToArray } = useWalkingFn("v4");
+    const { refWalk, linkToArray } = useWalkingFn("v3");
 
     const linkList = useMemo(
         () => {
