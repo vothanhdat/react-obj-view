@@ -101,7 +101,7 @@ function useFlattenObjectView(
 
     const refWalkResult = useMemo(
         () => {
-            console.log("walking config", config)
+            // console.log("walking config", config)
             console.time("walking")
             const result = refWalk.current!.walking(
                 value,
@@ -112,19 +112,18 @@ function useFlattenObjectView(
             console.timeEnd("walking")
             return result;
         },
-        [refWalk.current, value, name, config]
+        [refWalk.current, value, name, config, reload]
     );
 
 
     const toggleChildExpand = useCallback(
         (node: NodeData) => {
-            // console.log({ node })
-            // console.time("toggleExpand")
-            // refWalk.current?.toggleExpand(node.paths, config)
-            // console.timeEnd("toggleExpand")
-            // setReload(e => e + 1);
+            console.time("toggleExpand")
+            refWalk.current?.toggleExpand(node.paths, config)
+            console.timeEnd("toggleExpand");
+            setReload(e => e + 1);
         },
-        [refWalk, config]
+        [refWalk.current, config]
     );
 
     const getNodeByIndex = useMemo(
@@ -148,8 +147,10 @@ function useFlattenObjectView(
                 return data
             }
         },
-        [refWalk.current, config]
+        [refWalk.current, config, refWalkResult.count, reload]
     )
+
+    // console.log("COUNT", refWalkResult.count)
 
     return {
         toggleChildExpand,

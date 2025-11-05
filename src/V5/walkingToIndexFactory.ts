@@ -80,7 +80,7 @@ export const walkingToIndexFactory = () => {
         let defaultExpanded = enumerable && depth <= config.expandDepth
         let isExpand = canExpand && (state.userExpand ?? defaultExpanded)
         let childCanExpand = canExpand && !isExpand;
-        
+
 
         let shoudUpdate = (
             state.value !== value
@@ -202,8 +202,29 @@ export const walkingToIndexFactory = () => {
         }
     }
 
+
+    const toggleExpand = (
+        paths: PropertyKey[],
+        config: WalkingConfig,
+        { state, getChildOnly } = stateRead,
+    ) => {
+        console.log(paths)
+        state.updateToken = -1;
+        if (paths.length == 0) {
+            const currentExpand = state.userExpand ?? state.expanded
+            state.userExpand = !currentExpand
+        } else {
+            toggleExpand(
+                paths.slice(1),
+                config,
+                getChildOnly(paths.at(0)!)
+            )
+        }
+    }
+
     return {
         walking,
         getNode,
+        toggleExpand,
     }
 }

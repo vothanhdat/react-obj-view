@@ -47,14 +47,16 @@ const cleanChildFn = <T>(
     currentMap: StateMap<T>,
     state: StateDiff
 ) => () => {
-
     if (!state.isDiff) {
         return;
     }
     let touchedValue = state.touchedValue
     for (const [key, value] of currentMap) {
+        // console.log("cleanChildFn", value[touchedSymbol], touchedValue)
+
         if (value[touchedSymbol] !== touchedValue) {
             currentMap.delete(key);
+            // console.log("delete", key)
         }
     }
     state.isDiff = false;
