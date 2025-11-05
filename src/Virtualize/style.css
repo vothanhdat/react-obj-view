@@ -35,7 +35,8 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        padding-left: calc(1.5 * attr(data-level em) + var(--padding-left, 0em) + 1em);
+        /* padding-left: calc(1.5 * attr(data-level em) + var(--padding-left, 0em) + 1em);
+        padding-left: calc(1.5 * attr(data-level em) + var(--padding-left, 0em) + 1em); */
     }
 
     .node-default {

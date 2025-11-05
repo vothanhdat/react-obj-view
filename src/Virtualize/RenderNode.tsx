@@ -24,7 +24,7 @@ export const RenderNode: React.FC<{
 
     const isPreview = enablePreview && hasChild && !isExpanded && typeof node.value != "function"
 
-    return <div className="node-container" data-level={node.depth - 1}>
+    return <div className="node-container" style={{paddingLeft:`${(node.depth - 1) * 1.5}em`}}>
         <div
             className="node-default"
             data-child={hasChild}
