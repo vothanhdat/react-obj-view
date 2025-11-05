@@ -10,9 +10,8 @@ export const StateFactory = <T>(onNew: () => T) => {
 
     const getState = (currentMap: typeof rootMap = rootMap) => {
 
-        const state = currentMap[stateSymbol] ||= onNew();
-
-        let touchedValue = Date.now()
+        let touchedValue = Math.random()
+        
         let isDiff = false
 
         const getChild = (key: PropertyKey) => {
@@ -48,7 +47,7 @@ export const StateFactory = <T>(onNew: () => T) => {
         };
 
         return {
-            state,
+            state: currentMap[stateSymbol] ||= onNew(),
             getChild,
             cleanChild,
         };
