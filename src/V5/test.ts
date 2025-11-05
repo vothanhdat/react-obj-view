@@ -9,7 +9,7 @@ const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
 const walking = walkingToIndexFactory()
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const config = { expandDepth: 10, nonEnumerable: false, resolver: undefined as any }
 
 const t1 = performance.now()
 
@@ -39,7 +39,7 @@ console.log("re-walking time %s ms", t3 - t2)
 const t4 = performance.now()
 
 let preGetNodes = new Array(30)
-    .fill(0).map((_, i) => walking.getNode(+i + 2000000, config))
+    .fill(0).map((_, i) => walking.getNode(+i + 1000000, config))
 
 const t5 = performance.now()
 

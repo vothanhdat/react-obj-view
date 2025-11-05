@@ -45,8 +45,10 @@ export const walkingToIndexFactory = () => {
         isCircular: false,
     }))
 
-    const stateRoot = stateFactory()
-    const stateRead = getStateOnly()
+    const rootMapState: any = new Map<any, any>()
+
+    const stateRoot = stateFactory(rootMapState)
+    const stateRead = getStateOnly(rootMapState)
 
     const cirularChecking = new CircularChecking()
 
@@ -64,6 +66,8 @@ export const walkingToIndexFactory = () => {
     }
 
 
+
+
     const walking = (
         value: unknown,
         config: WalkingConfig,
@@ -71,8 +75,7 @@ export const walkingToIndexFactory = () => {
         enumerable: boolean,
         updateToken = getUpdateToken(config),
         depth = 0,
-        //@ts-ignore
-        { state, cleanChild, getChild }: GetStateFn<WalkingResult> = stateRoot,
+        { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult>> = stateRoot,
     ): WalkingResult => {
 
         if (shouldUpdate(state, config, value)) {
@@ -94,6 +97,7 @@ export const walkingToIndexFactory = () => {
                 isCircular || cirularChecking.enterNode(value)
 
                 for (let entry of getEntries(value, config)) {
+                    
                     const { key, value, enumerable } = entry
 
                     const result = walking(
@@ -126,6 +130,7 @@ export const walkingToIndexFactory = () => {
             state.isCircular = isCircular
             state.name = name;
             state.keys = keys;
+            state.updateToken = updateToken;
 
             cleanChild()
 
@@ -135,9 +140,6 @@ export const walkingToIndexFactory = () => {
         }
 
     }
-
-
-
 
 
     const getNode = (
@@ -176,7 +178,6 @@ export const walkingToIndexFactory = () => {
             return getNode(
                 index - cumulate[start],
                 config,
-                //@ts-ignore
                 getChildOnly(keyNames),
                 depth + 1,
             )

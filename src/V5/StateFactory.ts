@@ -9,19 +9,19 @@ type StateMap<T> = Map<PropertyKey, StateMap<T>> & {
     [touchedSymbol]: number
 }
 
-export type GetStateFn<T> = (map?: StateMap<T>) => ({
+export type GetStateFn<T> = (currentMap: StateMap<T>) => {
+    state: T;
+    getChild: (key: PropertyKey) => any;
+    cleanChild: () => void;
+}
+
+export type GetStateOnlyFn<T> = (map: StateMap<T>) => ({
     state: T
-    getChild: (key: PropertyKey) => GetStateFn<T>
-    cleanChild: () => void
+    getChildOnly: (key: PropertyKey) => any
 })
 
-export type GetStateOnlyFn<T> = (map?: StateMap<T>) => ({
-    state: T
-    getChildOnly: (key: PropertyKey) => GetStateOnlyFn<T>
-})
 
-
-const getChild = <T>(
+const getChildFn = <T>(
     getState: GetStateFn<T>,
     currentMap: StateMap<T>,
     state: StateDiff
@@ -41,7 +41,7 @@ const getChild = <T>(
     return getState(map);
 };
 
-const cleanChild = <T>(
+const cleanChildFn = <T>(
     currentMap: StateMap<T>,
     state: StateDiff
 ) => () => {
@@ -50,7 +50,7 @@ const cleanChild = <T>(
         return;
     }
     let touchedValue = state.touchedValue
-    for (const [key, value] of currentMap.entries()) {
+    for (const [key, value] of currentMap) {
         if (value[touchedSymbol] !== touchedValue) {
             currentMap.delete(key);
         }
@@ -63,7 +63,6 @@ const getChildOnly = <T>(
     getState: GetStateOnlyFn<T>,
     currentMap: StateMap<T>,
 ) => (key: PropertyKey) => {
-    // console.log(key)
     return getState(currentMap.get(key)!)
 }
 
@@ -71,24 +70,22 @@ const getChildOnly = <T>(
 
 export const StateFactory = <T>(onNew: () => T) => {
 
-    const rootMap: StateMap<T> = new Map() as any;
-
-    //@ts-ignore
-    const stateFactory: GetStateFn<T> = (currentMap: StateMap<T> = rootMap) => {
+    const stateFactory: GetStateFn<T> = (currentMap: StateMap<T>) => {
         if (!currentMap) {
             throw new Error("currentMap not found")
         }
         const state: StateDiff = { isDiff: false, touchedValue: Math.random() }
         return {
             state: currentMap[stateSymbol] ||= onNew(),
-            getChild: getChild(stateFactory, currentMap, state),
-            cleanChild: cleanChild(currentMap, state),
-            // getState: getStateOnly(getState, currentMap),
+            getChild: getChildFn(stateFactory, currentMap, state),
+            cleanChild: cleanChildFn(currentMap, state),
         };
     };
 
-    //@ts-ignore
-    const getStateOnly: GetStateOnlyFn<T> = (currentMap: StateMap<T> = rootMap) => {
+    const getStateOnly: GetStateOnlyFn<T> = (currentMap: StateMap<T>) => {
+        if (!currentMap) {
+            throw new Error("currentMap not found")
+        }
         return {
             state: currentMap[stateSymbol],
             getChildOnly: getChildOnly(getStateOnly, currentMap)
