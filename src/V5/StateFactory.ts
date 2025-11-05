@@ -20,10 +20,9 @@ export const StateFactory = <T>(onNew: () => T) => {
             if (!map) {
                 map = new Map();
                 currentMap.set(key, map);
-                isDiff = true;
             }
 
-            isDiff ||= (map[touchedSymbol] != touchedValue);
+            isDiff ||= (map[touchedSymbol] !== touchedValue);
 
             map[touchedSymbol] = touchedValue;
 
