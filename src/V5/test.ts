@@ -10,12 +10,13 @@ const arr2 = arr.map((e, i) => i % 5 == 0 ? ({ ...e, }) : e)
 
 const walking = walkingToIndexFactory()
 
+const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
 
 const t1 = performance.now()
 
-walking.walking(
+let r1 = walking.walking(
     arr,
-    { expandDepth: 10, nonEnumerable: false, resolver: undefined as any },
+    config,
     "root",
     true,
 )
@@ -24,12 +25,14 @@ const t2 = performance.now()
 console.log("walking time %s ms", t2 - t1)
 
 
-walking.walking(
+let r2 = walking.walking(
     arr2,
-    { expandDepth: 10, nonEnumerable: false, resolver: undefined as any },
+    config,
     "root",
     true
 )
 
 const t3 = performance.now()
 console.log("re-walking time %s ms", t3 - t2)
+
+console.table([r1, r2],["count","maxDepth","updateToken"])
