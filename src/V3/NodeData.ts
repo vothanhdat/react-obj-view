@@ -281,7 +281,7 @@ export const walkingFactory = () => {
         object: unknown,
         config: WalkingConfig,
         rootName = ""
-    ) => {
+    ): [LinkList<NodeData> | undefined, LinkList<NodeData> | undefined] => {
         let { get, clean } = stateFactory()
         let { start, end } = walkingInternal(
             object,
