@@ -1,4 +1,4 @@
-import { walkingToIndexFactory } from ".";
+import { walkingToIndexFactory } from "./walkingToIndexFactory";
 import { performanceTestData } from "../exampleData";
 
 
@@ -34,7 +34,6 @@ let r2 = walking.walking(
 const t3 = performance.now()
 console.log("re-walking time %s ms", t3 - t2)
 
-// console.table([r1, r2], ["count", "maxDepth", "updateToken"])
 
 const t4 = performance.now()
 

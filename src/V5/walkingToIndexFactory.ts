@@ -1,10 +1,8 @@
 import { isRef } from "../utils/isRef";
-import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { getEntries } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData"
 import { CircularChecking } from "../V4/CircularChecking";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";
-import { StateGetterV2 } from "../V4/types";
 import { GetStateFn, StateFactory } from "./StateFactory";
 
 
@@ -17,7 +15,7 @@ export type WalkingResult = {
     count: number,
     enumerable: boolean,
     maxDepth: number,
-    isExpand: boolean,
+    expanded: boolean,
     isCircular: boolean,
     childCanExpand: boolean,
     userExpand?: boolean,
@@ -41,7 +39,7 @@ export const walkingToIndexFactory = () => {
         maxDepth: 0,
         enumerable: false,
         childCanExpand: false,
-        isExpand: false,
+        expanded: false,
         isCircular: false,
     }))
 
@@ -97,7 +95,7 @@ export const walkingToIndexFactory = () => {
                 isCircular || cirularChecking.enterNode(value)
 
                 for (let entry of getEntries(value, config)) {
-                    
+
                     const { key, value, enumerable } = entry
 
                     const result = walking(
@@ -126,7 +124,7 @@ export const walkingToIndexFactory = () => {
             state.enumerable = enumerable
             state.maxDepth = maxDepth
             state.childCanExpand = childCanExpand
-            state.isExpand = isExpand
+            state.expanded = isExpand
             state.isCircular = isCircular
             state.name = name;
             state.keys = keys;
@@ -146,20 +144,20 @@ export const walkingToIndexFactory = () => {
         index: number,
         config: WalkingConfig,
         { state, getChildOnly } = stateRead,
-        depth = 0
+        depth = 1,
+        paths: PropertyKey[] = [],
     ) => {
 
         if (index == 0 || depth >= 20) {
             return {
                 name: state.name,
-                value: String(state.value)
-                    .slice(0, 20)?.split("\n")
-                    .at(0),
+                value: state.value,
                 depth,
                 state,
+                paths,
             }
         } else {
-            const { cumulate } = state;
+            const { cumulate, value } = state;
 
             let start = 0, end = cumulate.length - 1
             let c = 0
@@ -173,6 +171,9 @@ export const walkingToIndexFactory = () => {
                 }
             }
 
+
+            // let keyNames = getEntries(value, config).drop(start).next()?.value?.key!
+
             let keyNames = state.keys[start]
 
             return getNode(
@@ -180,6 +181,7 @@ export const walkingToIndexFactory = () => {
                 config,
                 getChildOnly(keyNames),
                 depth + 1,
+                [...paths, keyNames]
             )
 
 

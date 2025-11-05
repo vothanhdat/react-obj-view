@@ -5,8 +5,9 @@ import { isRef } from "../utils/isRef";
 import { getEntries } from "../V3/getEntries";
 import { NodeData as NodeV4 } from "../V4/NodeData";
 import { NodeData as NodeV3 } from "../V3/NodeData";
+import { WalkingResult } from "../V5/walkingToIndexFactory";
 
-export type NodeData = NodeV3 | NodeV4
+export type NodeData = NodeV3 | NodeV4 | (WalkingResult & {depth:number})
 
 
 export const RenderNode: React.FC<{

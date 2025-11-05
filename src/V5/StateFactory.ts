@@ -9,6 +9,8 @@ type StateMap<T> = Map<PropertyKey, StateMap<T>> & {
     [touchedSymbol]: number
 }
 
+let touchedCounter = 1
+
 export type GetStateFn<T> = (currentMap: StateMap<T>) => {
     state: T;
     getChild: (key: PropertyKey) => any;
@@ -56,7 +58,7 @@ const cleanChildFn = <T>(
         }
     }
     state.isDiff = false;
-    state.touchedValue = Math.random()
+    state.touchedValue = touchedCounter++;
 };
 
 const getChildOnly = <T>(
