@@ -3,6 +3,7 @@ import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { getEntries } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData"
 import { StateGetterV2 } from "../V4/types";
+import { StateFactory } from "./StateFactory";
 
 
 
@@ -10,56 +11,9 @@ import { StateGetterV2 } from "../V4/types";
 
 export type WalkingResult = {
     count: number,
-    cumulate: number[],
     value: unknown,
-}
-
-const StateFactory = <T>(onNew: () => T) => {
-
-    const stateSymbol = Symbol()
-    const rootMap: Map<any, any> & { [stateSymbol]: T } = new Map() as any
-
-    const getState = (currentMap: typeof rootMap = rootMap) => {
-
-        const state = currentMap[stateSymbol] ||= onNew()
-
-        const touchedKeys = new Set<PropertyKey>();
-
-        let hasNewKey = false;
-
-        const getChild = (key: PropertyKey) => {
-            touchedKeys.add(key);
-            let map = currentMap.get(key);
-            if (!map) {
-                map = new Map()
-                currentMap.set(key, map);
-                hasNewKey = true;
-            }
-            return getState(map)
-        }
-
-        const cleanChild = () => {
-            if (!hasNewKey && touchedKeys.size === currentMap.size) {
-                // fully reused, no pruning needed
-            } else {
-                for (const key of currentMap.keys()) {
-                    if (!touchedKeys.has(key)) {
-                        currentMap.delete(key);
-                    }
-                }
-            }
-            hasNewKey = false;
-            touchedKeys.clear()
-        }
-
-        return {
-            state,
-            getChild, cleanChild
-        }
-    }
-
-    return getState
-
+    cumulate: number[],
+    enumerable: boolean
 }
 
 export const walkingToIndexFactory = () => {
@@ -68,7 +22,8 @@ export const walkingToIndexFactory = () => {
     const getStateRoot = StateFactory(() => ({
         count: 0,
         cumulate: [],
-        value: undefined
+        value: undefined,
+        enumerable: false
     } as WalkingResult))
 
     const hasChild = (e: unknown) => {
@@ -85,6 +40,7 @@ export const walkingToIndexFactory = () => {
         value: unknown,
         config: WalkingConfig,
         name: PropertyKey,
+        enumerable: boolean,
         depth = 0,
         { state, cleanChild, getChild } = getStateRoot(),
     ): WalkingResult => {
@@ -98,7 +54,7 @@ export const walkingToIndexFactory = () => {
                     const { key, value, enumerable } = entry
 
                     const result = walking(
-                        value, config, key, depth + 1,
+                        value, config, key, enumerable, depth + 1,
                         getChild(key),
                     );
 
@@ -113,6 +69,7 @@ export const walkingToIndexFactory = () => {
             state.count = count
             state.cumulate = cumulate
             state.value = value
+            state.enumerable = enumerable
 
             return state
         } else {
