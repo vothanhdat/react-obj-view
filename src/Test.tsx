@@ -613,7 +613,7 @@ export const Test = () => {
                         }}
                     >
 
-                        <ObjectViewVirtualize
+                        <V5Index
                             value={getCurrentData()}
                             name="testData"
                             expandLevel={expandLevel}
