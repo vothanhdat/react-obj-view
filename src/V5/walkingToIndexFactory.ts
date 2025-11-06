@@ -99,13 +99,6 @@ export const walkingToIndexFactory = () => {
         )
     }
 
-    // const getKeyCaching = (
-    //     id: number,
-    //     iterator: Generator<>
-    // ) => {
-
-    // }
-
 
 
     const walking = (
@@ -150,7 +143,7 @@ export const walkingToIndexFactory = () => {
 
             if (hasChild && isExpand) {
 
-                cumulate = [];
+                cumulate = [count];
                 keys = []
 
                 isCircular || cirularChecking.enterNode(value)
@@ -212,13 +205,12 @@ export const walkingToIndexFactory = () => {
         paths: PropertyKey[] = [],
     ): NodeResult => {
 
-        if (index == 0 || !state.cumulate || !state.keys || depth >= 100) {
-            return new NodeResult(
-                state,
-                depth,
-                paths,
-            )
+        if (index == 0 || depth >= 100) {
+            return new NodeResult(state, depth, paths)
         } else {
+            if (!state.cumulate || !state.keys) {
+                throw new Error("Wrong state")
+            }
             const { cumulate, value } = state;
 
             let start = 0, end = cumulate.length - 1
