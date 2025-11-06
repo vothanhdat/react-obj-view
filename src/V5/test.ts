@@ -37,7 +37,7 @@ console.log("re-walking time %s ms", t3 - t2)
 
 const t4 = performance.now()
 
-let preGetNodes = new Array(50)
+let preGetNodes = new Array(20)
     .fill(0).map((_, i) => i + (r2.count >> 1))
     .map((i) => [i, walking.getNode(i, config)]) as [number, NodeResult][]
 
@@ -58,8 +58,8 @@ preGetNodes.forEach(([i, e]) => {
     console.log(
         ("#" + i).padEnd(6, " "),
         "  ".repeat(e.depth),
-        e.state.name,
+        e.name,
         ":",
-        String(e.state.value)
+        String(e.value)
     )
 })
