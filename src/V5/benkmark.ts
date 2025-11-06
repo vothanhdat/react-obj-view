@@ -10,8 +10,8 @@ const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as an
 
 
 let times = {
-    first: [],
-    update: []
+    first: [] as number[],
+    update: [] as number[]
 }
 
 for (let i = 0; i < 10; i++) {
@@ -60,33 +60,3 @@ console.table({
     update_avg: times.update.reduce((e, f) => e + f, 0) / times.first.length,
 })
 
-
-
-// const t4 = performance.now()
-
-// let preGetNodes = new Array(20)
-//     .fill(0).map((_, i) => i + (r2.count >> 1))
-//     .map((i) => [i, walking.getNode(i, config)]) as [number, NodeResult][]
-
-// const t5 = performance.now()
-
-// console.log("generate nodes %s ms", t5 - t4)
-// console.log("-----------------------------")
-// const mem = process.memoryUsage();
-// console.log("Memory: ", {
-//     rss: (mem.rss / 1024 / 1024).toFixed(2) + ' MB',
-//     heapTotal: (mem.heapTotal / 1024 / 1024).toFixed(2) + ' MB',
-//     heapUsed: (mem.heapUsed / 1024 / 1024).toFixed(2) + ' MB',
-//     external: (mem.external / 1024 / 1024).toFixed(2) + ' MB',
-// });
-// console.log("-----------------------------")
-
-// preGetNodes.forEach(([i, e]) => {
-//     console.log(
-//         ("#" + i).padEnd(6, " "),
-//         "  ".repeat(e.depth),
-//         e.name,
-//         ":",
-//         String(e.value)
-//     )
-// })
