@@ -87,7 +87,7 @@ export const walkingToIndexFactory = () => {
         isCircular: false,
     }))
 
-    const rootMapState: any = new Map<any, any>()
+    const rootMapState: any = {}
 
     const stateRoot = stateFactory(rootMapState)
     const stateRead = getStateOnly(rootMapState)

@@ -92,8 +92,6 @@ export class NodeData {
 
 export const walkingFactory = () => {
 
-    const defaultConfig = { expandDepth: 0, nonEnumerable: false, resolver: undefined }
-
 
     const { stateFactory, getStateOnly } = StateFactory<NodeWalkState>(() => ({
         inited: false,

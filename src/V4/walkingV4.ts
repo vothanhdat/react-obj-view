@@ -1,8 +1,7 @@
-// import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { isRef } from "../utils/isRef";
-import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { getEntries } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
+import { GetStateFn, StateFactory } from "../V5/StateFactory";
 import { CircularChecking } from "./CircularChecking";
 import { getObjectUniqueId } from "./getObjectUniqueId";
 import { LinkingNode, LinkedDataNode, insertNodeBefore, insertListsBefore, linkListToArray } from "./LinkedNode";
@@ -25,7 +24,8 @@ const resetChildStats = (stats?: ChildStats): ChildStats => {
 
 
 function createRootNodeStack({
-    value, context, paths, state,
+    value, context, paths,
+    stateMgr: { state, getChild, cleanChild },
     enumerable = true,
     linkedList: {
         start: startLink = new LinkingNode<NodeData>(),
@@ -36,7 +36,7 @@ function createRootNodeStack({
     enumerable?: boolean,
     context: SharingContext,
     paths: PropertyKey[],
-    state: WalkingState,
+    stateMgr: ReturnType<GetStateFn<WalkingState>>,
     linkedList?: LinkedList<NodeData>
 }) {
     if (!(paths.length >= 1)) {
@@ -59,15 +59,16 @@ function createRootNodeStack({
         context,
         parentContext: createChildStats(),
         state,
+        getChild,
+        cleanChild,
     };
     return { rootNodeStack, startLink, endLink };
 }
 
 function initializeNode(
     current: ProcessStack<DataEntry> & { stage: Stage.INIT },
-    stateGetter: (...params: any[]) => { get(key: any): any; clean(): void; },
 ) {
-    const { data, paths, cursor, context, depth, state } = current;
+    const { data, paths, cursor, context, depth, state, cleanChild, getChild } = current;
 
     const { expandDepth } = context.config
 
@@ -82,7 +83,6 @@ function initializeNode(
 
     const isExpanded = !isCircular && (state.userExpanded ?? defaultEnable)
 
-    current.state = state
     current.hasChild = hasChild
     current.isCircular = isCircular
 
@@ -102,6 +102,7 @@ function initializeNode(
         || state.updateToken !== context.updateToken
     )
 
+
     if (current.changed) {
 
         !isCircular && context.cirular.enterNode(data.value)
@@ -111,12 +112,6 @@ function initializeNode(
         state.expanded = isExpanded
         state.expandedDepth = expandDepth
         state.updateToken = context.updateToken;
-
-        const { get: stateGet, clean: stateClean } = stateGetter(...paths)
-
-        current.stateGet = stateGet
-        current.stateClean = stateClean
-
 
         //RESET CHILD STAT IN CASE UPDATE
         state.childStats = resetChildStats(state.childStats)
@@ -170,7 +165,7 @@ function iterateThroughNode(
     current: ProcessStack<DataEntry> & { stage: Stage.ITERATE },
 ): ProcessStack<DataEntry> | undefined {
 
-    const { iterator, paths, depth, state, stateGet, context } = current;
+    const { iterator, paths, depth, state, getChild, context } = current;
 
     const { config, getIterator } = context
 
@@ -184,6 +179,8 @@ function iterateThroughNode(
 
     const nextChild = iterationResult.value;
 
+    const stateMGr = getChild(nextChild.name)
+
     return {
         data: nextChild,
         iterator: getIterator(nextChild.value, config),
@@ -193,7 +190,9 @@ function iterateThroughNode(
         cursor: state.end!,
         context,
         parentContext: state.childStats!,
-        state: stateGet(nextChild.name),
+        state: stateMGr.state,
+        getChild: stateMGr.getChild,
+        cleanChild: stateMGr.cleanChild,
     };
 }
 
@@ -203,7 +202,7 @@ function finalizeNode(
 ) {
     const {
         data, state, changed, parentContext, hasChild = false,
-        stateClean, context,
+        cleanChild, context,
         isCircular
     } = current;
 
@@ -216,7 +215,7 @@ function finalizeNode(
     )
 
     if (changed) {
-        stateClean?.();
+        cleanChild?.();
         !isCircular && context.cirular.exitNode(data.value)
     }
 
@@ -224,12 +223,16 @@ function finalizeNode(
 
 export const walkingFactoryV4 = () => {
 
-    const { stateFactory, getState }: StateGetterV2 = memorizeMapWithWithClean((...paths): WalkingState => ({
+    const { stateFactory, getStateOnly } = StateFactory<WalkingState>(() => ({
         inited: false,
         expanded: false,
         expandedDepth: 0,
-    }));
+    }))
 
+    const rootMapState: any = {}
+
+    const stateRoot = stateFactory(rootMapState)
+    const stateRead = getStateOnly(rootMapState)
 
     const getIterator = (value: any, config: any) => getEntries(value, config)
         .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))
@@ -253,19 +256,20 @@ export const walkingFactoryV4 = () => {
             updateToken: getUpdateToken(config),
         }
 
-        const { get: stateGet, clean: stateClean } = stateFactory()
-
-        const state = stateGet(rootName)
+        const { cleanChild } = stateRoot
 
         const {
             rootNodeStack,
             startLink,
             endLink,
-        } = createRootNodeStack({ paths: [rootName], value, context, state });
+        } = createRootNodeStack({
+            paths: [rootName], value, context,
+            stateMgr: stateRoot.getChild(rootName)
+        });
 
-        traverseNodeGraph(rootNodeStack, stateFactory);
+        traverseNodeGraph(rootNodeStack);
 
-        stateClean();
+        cleanChild();
 
         return [startLink, endLink,] as [LinkingNode<NodeData>, LinkingNode<NodeData>]
     }
@@ -282,16 +286,22 @@ export const walkingFactoryV4 = () => {
             updateToken: getUpdateToken(config),
         }
 
-        const state: WalkingState = getState(...paths)
+        const stateMgr = paths.reduce(
+            ({ getChild }, path) => getChild(path),
+            stateRoot
+        )
+        console.log({ paths, stateMgr })
+
+        const state = stateMgr.state
         const { enumerable, value } = state.data!
 
 
         const { rootNodeStack } = createRootNodeStack({
-            paths, context, state, value, enumerable,
+            paths, context, stateMgr, value, enumerable,
             linkedList: { start: state.start!, end: state.end! },
         });
 
-        traverseNodeGraph(rootNodeStack, stateFactory);
+        traverseNodeGraph(rootNodeStack);
 
 
     }
@@ -302,27 +312,24 @@ export const walkingFactoryV4 = () => {
         paths: PropertyKey[],
         config: WalkingConfig
     ) => {
+        console.log(paths, rootMapState)
+        const { state } = paths.reduce(
+            ({ getChildOnly, state }, path) => {
+                state.updateToken = 0;
+                return getChildOnly(path)
+            },
+            stateRead
+        ) ?? {} as never
 
-        for (let i = 0; i < paths.length; i++) {
-            let state: WalkingState = getState(...paths.slice(0, i + 1))
+        if (!state)
+            throw new Error("State not found")
 
-            if (!state)
-                throw new Error("State not found")
+        const currentExpand = state.userExpanded ?? state.expanded
 
-            state.updateToken = 0;
+        state.userExpanded = !currentExpand;
 
-            if (i == (paths.length - 1)) {
+        childWalking(paths, config)
 
-                const currentExpand = state.userExpanded ?? state.expanded
-
-                state.userExpanded = !currentExpand;
-
-
-                childWalking(paths, config)
-
-                break;
-            }
-        }
 
     };
 
@@ -335,7 +342,6 @@ export const walkingFactoryV4 = () => {
 
 function traverseNodeGraph(
     rootNodeStack: ProcessStack<DataEntry>,
-    stateGetter: (...params: any[]) => { get(key: any): any; clean(): void; }
 ) {
 
     const stack: ProcessStack<DataEntry>[] = [
@@ -349,7 +355,7 @@ function traverseNodeGraph(
         switch (current.stage) {
             case Stage.INIT: {
                 //@ts-ignore //Typescript Doesn't detech INIT branch
-                initializeNode(current, stateGetter);
+                initializeNode(current);
                 break;
             }
             case Stage.ITERATE: {

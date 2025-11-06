@@ -1,6 +1,7 @@
 import { createMemorizeMap } from "../utils/createMemorizeMap";
 import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { WalkingConfig } from "../V3/NodeData";
+import { GetStateFn } from "../V5/StateFactory";
 import { CircularChecking } from "./CircularChecking";
 import { LinkedNode, LinkingNode } from "./LinkedNode";
 import { NodeData } from "./NodeData";
@@ -43,8 +44,8 @@ type BaseProcessStack<T> = {
 }
 
 type StateHelpers = {
-    stateGet: (key: any) => WalkingState;
-    stateClean: () => void;
+    getChild: (key: any) => ReturnType<GetStateFn<WalkingState>>;
+    cleanChild: () => void;
 }
 
 type InitStage = {

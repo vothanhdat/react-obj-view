@@ -35,7 +35,7 @@ if (false) {
 
 
     console.log("-------------------------------")
-    for (let data of [allExamples.objects.circular]) {
+    for (let data of [obj, {...obj}]) {
         for (let depth of [4]) {
             console.group("DEPTH", depth)
             const time = performance.now()
@@ -56,7 +56,7 @@ if (false) {
 
             console.table(nodes.map(e => ({
                 path: e.paths.join("/"),
-                cur: e.isCircular ? "TRUE" : "",
+                // cur: e.isCircular ? "TRUE" : "",
                 value: String(e.value),
                 idx: e.walkUID,
             })))
