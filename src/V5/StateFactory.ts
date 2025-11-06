@@ -1,12 +1,14 @@
 export const stateSymbol = Symbol("state");
 export const touchedSymbol = Symbol("touched");
+export const mapSymbol = Symbol("touched");
 
 
 type StateDiff = { touchedValue: any, isDiff: boolean }
 
-type StateMap<T> = Map<PropertyKey, StateMap<T>> & {
+type StateMap<T> = {
     [stateSymbol]: T;
-    [touchedSymbol]: number
+    [touchedSymbol]: number,
+    [mapSymbol]: Map<PropertyKey, StateMap<T>>
 }
 
 let touchedCounter = 1
@@ -29,18 +31,22 @@ const getChildFn = <T>(
     state: StateDiff
 ) => (key: PropertyKey) => {
 
-    let map = currentMap.get(key)!;
-
-    if (!map) {
-        map = (new Map()) as any as StateMap<T>;
-        currentMap.set(key, map);
+    if (!currentMap[mapSymbol]) {
+        currentMap[mapSymbol] = new Map()
     }
 
-    state.isDiff ||= (map[touchedSymbol] !== state.touchedValue);
+    let childMap = currentMap[mapSymbol].get(key)!;
 
-    map[touchedSymbol] = state.touchedValue;
+    if (!childMap) {
+        childMap = {} as any as StateMap<T>;
+        currentMap[mapSymbol].set(key, childMap);
+    }
 
-    return getState(map);
+    state.isDiff ||= (childMap[touchedSymbol] !== state.touchedValue);
+
+    childMap[touchedSymbol] = state.touchedValue;
+
+    return getState(childMap);
 };
 
 const cleanChildFn = <T>(
@@ -51,12 +57,11 @@ const cleanChildFn = <T>(
         return;
     }
     let touchedValue = state.touchedValue
-    for (const [key, value] of currentMap) {
-        // console.log("cleanChildFn", value[touchedSymbol], touchedValue)
+    let map = currentMap[mapSymbol]
+    for (const [key, value] of map) {
 
         if (value[touchedSymbol] !== touchedValue) {
-            currentMap.delete(key);
-            // console.log("delete", key)
+            map.delete(key);
         }
     }
     state.isDiff = false;
@@ -67,7 +72,7 @@ const getChildOnly = <T>(
     getState: GetStateOnlyFn<T>,
     currentMap: StateMap<T>,
 ) => (key: PropertyKey) => {
-    return getState(currentMap.get(key)!)
+    return getState(currentMap[mapSymbol].get(key)!)
 }
 
 
