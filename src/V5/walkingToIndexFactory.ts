@@ -162,7 +162,7 @@ export const walkingToIndexFactory = () => {
         paths: PropertyKey[] = [],
     ) => {
 
-        if (index == 0 || depth >= 20) {
+        if (index == 0 || depth >= 100) {
             return {
                 name: state.name,
                 value: state.value,

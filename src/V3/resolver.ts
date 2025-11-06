@@ -114,26 +114,6 @@ const setResolver: ResolverFn = function* (
 }
 
 
-const functionResolver: ResolverFn = function* (
-    e: Function,
-    entries: Generator<Entry, any, any>,
-    isPreview: boolean
-) {
-    yield {
-        key: "name",
-        value: e.name,
-        enumerable: false
-    }
-    yield {
-        key: "length",
-        value: e.length,
-        enumerable: false
-    }
-    for (let e of entries) {
-        yield e
-    }
-}
-
 
 const errorResolver: ResolverFn = function* (
     e: Error,
@@ -165,7 +145,6 @@ const errorResolver: ResolverFn = function* (
 
 export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn>([
     [Error, errorResolver],
-    [Function, functionResolver],
     [Map, mapResolver],
     [Set, setResolver],
     [CustomIterator, iteraterResolver],
