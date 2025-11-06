@@ -23,6 +23,48 @@ export type WalkingResult = {
     updateToken?: number,
 }
 
+// export type NodeResult = {
+//     state: WalkingResult,
+//     depth: number,
+//     paths: PropertyKey[],
+// }
+
+export class NodeResult implements WalkingResult {
+    value!: unknown
+    cumulate!: number[]
+    name!: PropertyKey
+    keys!: PropertyKey[]
+    count!: number
+    enumerable!: boolean
+    maxDepth!: number
+    expandedDepth!: number
+    expanded!: boolean
+    isCircular!: boolean
+    childCanExpand!: boolean
+    userExpand?: boolean
+    updateToken?: number
+
+    constructor(
+        state: WalkingResult,
+        public depth: number,
+        public paths: PropertyKey[],
+    ) {
+        Object.assign(this, state)
+    }
+
+    public get path(): string {
+        return this.paths
+            .map(e => {
+                try {
+                    return String(e);
+                } catch (error) {
+                    return "";
+                }
+            }).join(".");
+    }
+
+}
+
 const objectHasChild = (e: unknown) => {
     return isRef(e) && !(e instanceof Date)
 }
@@ -160,16 +202,14 @@ export const walkingToIndexFactory = () => {
         { state, getChildOnly } = stateRead,
         depth = 1,
         paths: PropertyKey[] = [],
-    ) => {
+    ): NodeResult => {
 
         if (index == 0 || depth >= 100) {
-            return {
-                name: state.name,
-                value: state.value,
-                depth,
+            return new NodeResult(
                 state,
+                depth,
                 paths,
-            }
+            )
         } else {
             const { cumulate, value } = state;
 

@@ -134,14 +134,7 @@ function useFlattenObjectView(
                 let data = m.get(index);
 
                 if (!data) {
-                    let parse = refWalk.current?.getNode(index, config)!;
-                    data = {
-                        ...parse.state,
-                        paths: parse.paths,
-                        path: parse.paths.join("."),
-                        depth: parse.depth,
-                    };
-                    m.set(index, data);
+                    m.set(index, data = refWalk.current?.getNode(index, config)!);
                 }
 
                 return data
