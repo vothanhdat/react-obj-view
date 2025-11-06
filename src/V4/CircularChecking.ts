@@ -3,7 +3,8 @@ import { isRef } from "../utils/isRef";
 export class CircularChecking {
 
     checkMap = new WeakSet<any>();
-    checkStack: any[] = [];
+    checkStack: any[] = new Array(200).fill(0);
+    stack = 0
 
     checkCircular(value: unknown): boolean {
         if (isRef(value)) {
@@ -18,7 +19,7 @@ export class CircularChecking {
             if (this.checkMap.has(value))
                 throw new Error("Node already entered");
             this.checkMap.add(value);
-            this.checkStack.push(value);
+            this.checkStack[++this.stack] = value
         } {
             return false;
         }
@@ -26,9 +27,9 @@ export class CircularChecking {
 
     exitNode(value: unknown) {
         if (isRef(value)) {
-            if (this.checkStack.at(-1) == value) {
+            if (this.checkStack[this.stack] === value) {
                 this.checkMap.delete(value);
-                this.checkStack.pop();
+                this.stack--;
             } else {
                 throw new Error("Exit wrong node");
             }
