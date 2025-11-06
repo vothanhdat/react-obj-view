@@ -6,26 +6,31 @@ import { getEntries } from "../V3/getEntries";
 import { NodeData as NodeV4 } from "../V4/NodeData";
 import { NodeData as NodeV3 } from "../V3/NodeData";
 import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
+import { withPromiseWrapper } from "./PromiseWrapper";
+import { CustomEntry, CustomIterator } from "../V3/resolver";
 
-export type NodeData = NodeV3 | NodeV4 | (WalkingResult & {depth:number})
+export type NodeData = NodeV3 | NodeV4 | (WalkingResult & { depth: number })
 
 
-export const RenderNode: React.FC<{
+
+
+const NodeRenderDefault: React.FC<{
     node: NodeData;
     enablePreview: boolean;
+    value: unknown,
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeData) => void
-}> = ({ node, toggleChildExpand, resolver, enablePreview = true }) => {
+}> = ({ node, value, toggleChildExpand, resolver, enablePreview = true }) => {
 
     const isExpanded = node.expanded
 
     const isCircular = node.isCircular;
 
-    const hasChild = objectHasChild(node.value);
+    const hasChild = objectHasChild(value);
 
-    const isPreview = enablePreview && hasChild && !isExpanded && typeof node.value != "function"
+    const isPreview = enablePreview && hasChild && !isExpanded && typeof value != "function"
 
-    return <div className="node-container" style={{paddingLeft:`${(node.depth - 1) * 1.5}em`}}>
+    return <div className="node-container" style={{ paddingLeft: `${(node.depth - 1) * 1.5}em` }}>
         <div
             className="node-default"
             data-child={hasChild}
@@ -46,7 +51,7 @@ export const RenderNode: React.FC<{
             {isCircular ? <span className="tag-circular">CIRCULAR</span> : <></>}
 
             <RenderValue {...{
-                value: node.value,
+                value: value,
                 isPreview,
                 enumrable: node.enumerable,
                 resolver,
@@ -54,7 +59,19 @@ export const RenderNode: React.FC<{
 
         </div>
     </div>;
-};
+}
+
+const RenderNodeInternal = withPromiseWrapper(NodeRenderDefault)
+
+export const RenderNode: React.FC<{
+    node: NodeData;
+    enablePreview: boolean;
+    resolver?: Map<any, ResolverFn>
+    toggleChildExpand: (node: NodeData) => void
+}> = (props) => {
+    return <RenderNodeInternal {...props} value={props.node.value} />
+}
+
 
 export const RenderName: React.FC<{ depth?: number, name: string }> = ({ depth = undefined, name }) => {
     return <span className="name">
@@ -62,31 +79,29 @@ export const RenderName: React.FC<{ depth?: number, name: string }> = ({ depth =
     </span>
 }
 
-export const RenderValue: React.FC<{
-    value: any,
-    isPreview: boolean,
-    resolver?: Map<any, ResolverFn>,
-    depth?: number,
-}> = ({ value, isPreview, resolver, depth = 0 }) => {
-    return <span className={joinClasses(
-        "value",
-        `type-${typeof value}`,
-        isPreview && 'value-preview',
-        value == null && 'type-null',
-        value?.constructor?.name ? `type-object-${value?.constructor?.name}`?.toLowerCase() : ``
-    )}>
-        {
-            isPreview
-                ? <RenderPreview value={value} resolver={resolver} depth={depth} />
-                : <RenderRawValue value={value} depth={depth} />
-        }
-    </span>
-}
+
+
+export const RenderValue: React.FC<{ value: any, isPreview: boolean, resolver?: Map<any, ResolverFn>, depth?: number, }> = withPromiseWrapper(
+    ({ value, isPreview, resolver, depth = 0 }) => {
+        return <span className={joinClasses(
+            "value",
+            `type-${typeof value}`,
+            isPreview && 'value-preview',
+            value == null && 'type-null',
+            value?.constructor?.name ? `type-object-${value?.constructor?.name}`?.toLowerCase() : ``
+        )}>
+            {
+                isPreview
+                    ? <RenderPreview value={value} resolver={resolver} depth={depth} />
+                    : <RenderRawValue value={value} depth={depth} />
+            }
+        </span>
+    }
+
+)
 
 
 export const RenderRawValue: React.FC<{ value: any, depth: any }> = ({ value, depth }) => {
-
-
 
     switch (typeof value) {
         case "boolean":
@@ -122,6 +137,11 @@ export const RenderRawValue: React.FC<{ value: any, depth: any }> = ({ value, de
             if (value instanceof Array) return `Array(${value.length})`
             if (value instanceof Map) return `Map(${value.size})`
             if (value instanceof Set) return `Set(${value.size})`;
+            if (value instanceof CustomEntry) return <>
+                <RenderValue {...{ value: value.key, isPreview: false, depth: depth + 1 }} />
+                {" => "}
+                <RenderValue {...{ value: value.value, isPreview: false, depth: depth + 1 }} />
+            </>
 
             const renderType = value
                 && value.constructor != Object
@@ -141,32 +161,48 @@ export const RenderPreview: React.FC<{
 
     let iterator = useMemo(
         () => [
-            ...getEntries(value, { expandDepth: 0, nonEnumerable: false, resolver }, true)
+            ...getEntries(value, { expandDepth: 0, nonEnumerable: false, resolver, symbol: false }, true)
                 .take(6)
         ],
-        [resolver]
+        [resolver, value]
     )
 
     let isArray = Array.isArray(value)
+
+    let hideKey = isArray
+        || value instanceof Set
+        || value instanceof Map
+        || value instanceof CustomIterator
+        || value instanceof CustomEntry
+        || value instanceof Promise
 
     const renderType = value
         && value.constructor != Object
         && value.constructor != Array
         ? value.constructor?.name : "";
 
+    const customSeperator = value instanceof CustomEntry ? " => "
+        : value instanceof Promise ? ":"
+            : ", "
+
+    const wrappSymbol = value instanceof CustomEntry ? "  "
+        : isArray ? "[]"
+            : "{}"
+
+
     return <>
-        {renderType} {isArray ? "[" : "{"}
+        {renderType} {wrappSymbol.at(0)}
         {iterator
             .filter(e => e.enumerable)
             .map(({ key, value }, index) => <>
-                {index > 0 ? ", " : ""}
-                {!isArray && <><RenderName name={String(key)} />: </>}
+                {index > 0 ? customSeperator : ""}
+                {!hideKey && <><RenderName name={String(key)} />: </>}
                 <RenderValue {...{ value, resolver, isPreview: false, depth: depth + 1 }} />
             </>)}
 
         {iterator.length >= 5 ? ",…" : ""}
 
-        {isArray ? "]" : "}"}
+        {wrappSymbol.at(1)}
 
     </>
 }

@@ -3,7 +3,7 @@ import { Entry, JSONViewCtx, ResolverFn } from "./types";
 
 const MapIterater = Object.getPrototypeOf(new Map().entries())
 
-class CustomIterator {
+export class CustomIterator {
     static name = ""
 
     constructor(
@@ -13,6 +13,56 @@ class CustomIterator {
 
     toString() {
         return ""
+    }
+}
+
+export class CustomEntry {
+    static name = ""
+
+    constructor(
+        public key: any,
+        public value: any
+    ) { }
+    toString() {
+        return ""
+    }
+}
+
+const weakMapCache = <T extends (e: any) => any>(fn: T) => {
+
+    let cache = new WeakMap()
+
+
+    return ((e: any) => {
+        if (!cache.has(e)) {
+            cache.set(e, fn(e))
+        }
+
+        return cache.get(e)
+
+    }) as T
+}
+
+
+export class InternalPromise {
+
+    static #cache = new WeakMap()
+
+    static getInstance(e: Promise<any>) {
+        if (!this.#cache.has(e)) {
+            this.#cache.set(e, new InternalPromise(e))
+        }
+        return this.#cache.get(e)
+    }
+
+    private constructor(
+        public promise: Promise<any>,
+        public value: any = undefined
+
+    ) {
+        promise
+            .then(r => this.value = r)
+            .catch(() => { })
     }
 }
 
@@ -26,10 +76,12 @@ const iteraterResolver: ResolverFn = function* (
     let iterator = e.iterator()
 
     if (Object.getPrototypeOf(iterator) == MapIterater) {
+        let index = 0
+
         for (let [key, value] of iterator) {
             yield {
-                key,
-                value,
+                key: index++,
+                value: new CustomEntry(key, value),
                 enumerable: true
             }
         }
@@ -53,10 +105,11 @@ const mapResolver: ResolverFn = function* (
     isPreview: boolean
 ) {
     if (isPreview) {
+        let index = 0
         for (let [key, value] of map.entries()) {
             yield {
-                key,
-                value,
+                key: index++,
+                value: new CustomEntry(key, value),
                 enumerable: true
             }
         }
@@ -85,9 +138,10 @@ const setResolver: ResolverFn = function* (
     isPreview: boolean
 ) {
     if (isPreview) {
-        for (let [key, value] of set.entries()) {
+        for (let value of set.values()) {
+            let index = 0
             yield {
-                key,
+                key: index++,
                 value,
                 enumerable: true
             }
@@ -113,41 +167,56 @@ const setResolver: ResolverFn = function* (
     }
 }
 
+const PendingSymbol = Symbol("Pending")
 
+const getPromiseStatus = weakMapCache(
+    (e: Promise<any>) => {
+        let p = Promise
+            .race([e, Promise.resolve(PendingSymbol)])
+            .then(
+                (result) => (console.log({ result }), result) == PendingSymbol
+                    ? ({ status: "pending" })
+                    : ({ status: "resolved", result }),
+                (error) => ({ status: "rejected", result: error }),
+            )
 
-const errorResolver: ResolverFn = function* (
-    e: Error,
+        return {
+            status: p.then(e => e.status),
+            result: p.then(e => e.result),
+        }
+    }
+)
+
+const promiseResolver: ResolverFn = function* (
+    e: Promise<any>,
     entries: Generator<Entry, any, any>,
     isPreview: boolean
 ) {
-    yield {
-        key: "name",
-        value: e.name,
-        enumerable: false
-    }
-    yield {
-        key: "message",
-        value: e.message,
-        enumerable: false
-    }
+    let { result, status } = getPromiseStatus(e)
 
     yield {
-        key: "stack",
-        value: e.stack,
-        enumerable: false
+        key: "[[status]]",
+        value: InternalPromise.getInstance(status),
+        enumerable: isPreview
     }
+    yield {
+        key: "[[result]]",
+        value: InternalPromise.getInstance(result),
+        enumerable: isPreview
+    }
+
     for (let e of entries) {
         yield e
     }
 }
 
 
-
 export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn>([
-    [Error, errorResolver],
+    // [Error, errorResolver],
     [Map, mapResolver],
     [Set, setResolver],
     [CustomIterator, iteraterResolver],
+    [Promise, promiseResolver],
 ]);
 
 

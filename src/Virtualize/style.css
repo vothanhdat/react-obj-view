@@ -90,6 +90,7 @@
     }
 
     .value {
+
         &.type-boolean {
             --color: #08f;
         }
@@ -150,7 +151,7 @@
             --color: red;
         }
 
-
+        
         &.value-preview {
             --color: var(--bigobjview-color);
 
@@ -161,6 +162,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+
     }
 
     .name {}

@@ -4,7 +4,7 @@ import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
 import { WalkingConfig, walkingFactory } from "../V3/NodeData";
-import { walkingToIndexFactory } from "./walkingToIndexFactory";
+import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
 import { NodeData } from "../V4/NodeData";
 import "../Virtualize/style.css"
@@ -45,7 +45,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                 enablePreview={preview}
                 resolver={combinedResolver}
                 node={getNodeByIndex(index)}
-                toggleChildExpand={toggleChildExpand}
+                toggleChildExpand={toggleChildExpand as any}
                 key={getNodeByIndex(index).path} />
         </div>,
         [getNodeByIndex, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
@@ -117,7 +117,7 @@ function useFlattenObjectView(
 
 
     const toggleChildExpand = useCallback(
-        (node: NodeData) => {
+        (node: NodeResult) => {
             console.time("toggleExpand")
             refWalk.current?.toggleExpand(node.paths, config)
             console.timeEnd("toggleExpand");
@@ -140,7 +140,7 @@ function useFlattenObjectView(
                 return data
             }
         },
-        [refWalk.current, config, refWalkResult.count, reload]
+        [refWalk.current, config, refWalkResult.count, reload, refWalkResult.value]
     )
 
     // console.log("COUNT", refWalkResult.count)
