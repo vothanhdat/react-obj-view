@@ -60,13 +60,15 @@ export class NodeResult implements WalkingResult {
                 } catch (error) {
                     return "";
                 }
-            }).join(".");
+            }).join("/");
     }
 
 }
 
-const objectHasChild = (e: unknown) => {
-    return isRef(e) && !(e instanceof Date)
+export const objectHasChild = (e: unknown) => {
+    return isRef(e)
+        && !(e instanceof Date)
+        && !(e instanceof RegExp)
 }
 
 
@@ -250,12 +252,15 @@ export const walkingToIndexFactory = () => {
     ) => {
 
         for (let path of paths) {
+            if (!currentState) {
+                throw new Error("State Error: Paths not inited")
+            }
             currentState.state.updateToken = -1;
             currentState = currentState.getChildOnly(path)
         }
         const currentExpand = currentState.state.userExpand
             ?? currentState.state.expanded
-            
+
         currentState.state.userExpand = !currentExpand
     }
 

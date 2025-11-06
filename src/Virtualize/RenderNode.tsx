@@ -5,7 +5,7 @@ import { isRef } from "../utils/isRef";
 import { getEntries } from "../V3/getEntries";
 import { NodeData as NodeV4 } from "../V4/NodeData";
 import { NodeData as NodeV3 } from "../V3/NodeData";
-import { WalkingResult } from "../V5/walkingToIndexFactory";
+import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
 
 export type NodeData = NodeV3 | NodeV4 | (WalkingResult & {depth:number})
 
@@ -21,7 +21,7 @@ export const RenderNode: React.FC<{
 
     const isCircular = node.isCircular;
 
-    const hasChild = isRef(node.value);
+    const hasChild = objectHasChild(node.value);
 
     const isPreview = enablePreview && hasChild && !isExpanded && typeof node.value != "function"
 
@@ -111,7 +111,7 @@ export const RenderRawValue: React.FC<{ value: any, depth: any }> = ({ value, de
             let addChar = preview.length > max ? '…' : ''
             return depth > 0
                 ? "'" + preview.slice(1, -1).slice(0, max) + addChar + "'"
-                : preview.slice(0, max) + addChar + "\""
+                : preview.slice(0, max) + addChar
         }
         case "object": {
             if (!value)
@@ -164,7 +164,7 @@ export const RenderPreview: React.FC<{
                 <RenderValue {...{ value, resolver, isPreview: false, depth: depth + 1 }} />
             </>)}
 
-        {iterator.length > 5 ? ",…" : ""}
+        {iterator.length >= 5 ? ",…" : ""}
 
         {isArray ? "]" : "}"}
 

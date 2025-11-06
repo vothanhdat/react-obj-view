@@ -2,7 +2,7 @@ import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { performanceTestData } from "../exampleData";
 
 
-const arr = performanceTestData.suppersupperLarge
+const arr = performanceTestData.supperLarge
 
 const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
@@ -37,9 +37,14 @@ console.log("re-walking time %s ms", t3 - t2)
 
 const t4 = performance.now()
 
-let preGetNodes = new Array(20)
-    .fill(0).map((_, i) => i + (r2.count >> 1))
-    .map((i) => [i, walking.getNode(i, config)]) as [number, NodeResult][]
+let preGetNodes = [
+    ...new Array(5)
+        .fill(0).map((_, i) => i),
+    ...new Array(5)
+        .fill(0).map((_, i) => i + (r2.count >> 1)),
+    ...new Array(5)
+        .fill(0).map((_, i) => r2.count - 5 + i),
+].map((i) => [i, walking.getNode(i, config)]) as [number, NodeResult][]
 
 const t5 = performance.now()
 
@@ -60,6 +65,6 @@ preGetNodes.forEach(([i, e]) => {
         "  ".repeat(e.depth),
         e.name,
         ":",
-        String(e.value)
+        String(e.value)?.slice(0, 50)
     )
 })
