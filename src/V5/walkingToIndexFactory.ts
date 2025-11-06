@@ -217,7 +217,7 @@ export const walkingToIndexFactory = () => {
             let c = 0
 
             while (start + 1 < end && c++ < 50) {
-                let mid = ((start + end) >> 1);
+                let mid = (start + end) >> 1
                 if (index >= cumulate[mid]) {
                     start = mid
                 } else {
@@ -246,20 +246,17 @@ export const walkingToIndexFactory = () => {
     const toggleExpand = (
         paths: PropertyKey[],
         config: WalkingConfig,
-        { state, getChildOnly } = stateRead,
+        currentState = stateRead,
     ) => {
-        console.log(paths)
-        state.updateToken = -1;
-        if (paths.length == 0) {
-            const currentExpand = state.userExpand ?? state.expanded
-            state.userExpand = !currentExpand
-        } else {
-            toggleExpand(
-                paths.slice(1),
-                config,
-                getChildOnly(paths.at(0)!)
-            )
+
+        for (let path of paths) {
+            currentState.state.updateToken = -1;
+            currentState = currentState.getChildOnly(path)
         }
+        const currentExpand = currentState.state.userExpand
+            ?? currentState.state.expanded
+            
+        currentState.state.userExpand = !currentExpand
     }
 
     return {
