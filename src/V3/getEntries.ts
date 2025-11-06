@@ -1,5 +1,6 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
 import type { WalkingConfig } from "./NodeData";
+import { InternalPromise } from "./resolver";
 
 export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
@@ -27,6 +28,16 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
         }
     }
 
+    if (config.symbol) {
+        for (var symbol of Object.getOwnPropertySymbols(value)) {
+            yield {
+                key: symbol,
+                value: getPropertyValue(value, symbol),
+                enumerable: propertyIsEnumerable.call(value, symbol),
+            };
+        }
+    }
+
     if (config.nonEnumerable && value !== Object.prototype /* already added */) {
         yield {
             key: '[[Prototype]]',
@@ -49,6 +60,9 @@ export const getEntries = function (value: any, config: WalkingConfig, isPreview
 
         if (iterator)
             return iterator;
+    }
+    if (value instanceof InternalPromise) {
+        return getEntries(value.value, config, isPreview)
     }
     return getEntriesOrignal(value, config)
 
