@@ -1,14 +1,10 @@
-export const stateSymbol = Symbol("state");
-export const touchedSymbol = Symbol("touched");
-export const mapSymbol = Symbol("touched");
-
 
 type StateDiff = { touchedValue: any, isDiff: boolean }
 
 type StateMap<T> = {
-    [stateSymbol]: T;
-    [touchedSymbol]: number,
-    [mapSymbol]: Map<PropertyKey, StateMap<T>>
+    state: T;
+    touched: number,
+    childs: Map<PropertyKey, StateMap<T>>
 }
 
 let touchedCounter = 1
@@ -31,20 +27,20 @@ const getChildFn = <T>(
     state: StateDiff
 ) => (key: PropertyKey) => {
 
-    if (!currentMap[mapSymbol]) {
-        currentMap[mapSymbol] = new Map()
+    if (!currentMap.childs) {
+        currentMap.childs = new Map()
     }
 
-    let childMap = currentMap[mapSymbol].get(key)!;
+    let childMap = currentMap.childs.get(key)!;
 
     if (!childMap) {
-        childMap = {} as any as StateMap<T>;
-        currentMap[mapSymbol].set(key, childMap);
+        childMap = { state: undefined, touched: undefined, childs: undefined } as any as StateMap<T>;
+        currentMap.childs.set(key, childMap);
     }
 
-    state.isDiff ||= (childMap[touchedSymbol] !== state.touchedValue);
+    state.isDiff ||= (childMap.touched !== state.touchedValue);
 
-    childMap[touchedSymbol] = state.touchedValue;
+    childMap.touched = state.touchedValue;
 
     return getState(childMap);
 };
@@ -57,10 +53,10 @@ const cleanChildFn = <T>(
         return;
     }
     let touchedValue = state.touchedValue
-    let map = currentMap[mapSymbol]
+    let map = currentMap.childs
     for (const [key, value] of map) {
 
-        if (value[touchedSymbol] !== touchedValue) {
+        if (value.touched !== touchedValue) {
             map.delete(key);
         }
     }
@@ -72,7 +68,7 @@ const getChildOnly = <T>(
     getState: GetStateOnlyFn<T>,
     currentMap: StateMap<T>,
 ) => (key: PropertyKey) => {
-    return getState(currentMap[mapSymbol].get(key)!)
+    return getState(currentMap.childs.get(key)!)
 }
 
 
@@ -85,7 +81,7 @@ export const StateFactory = <T>(onNew: () => T) => {
         }
         const state: StateDiff = { isDiff: false, touchedValue: touchedCounter++ }
         return {
-            state: currentMap[stateSymbol] ||= onNew(),
+            state: currentMap.state ||= onNew(),
             getChild: getChildFn(stateFactory, currentMap, state),
             cleanChild: cleanChildFn(currentMap, state),
         };
@@ -96,7 +92,7 @@ export const StateFactory = <T>(onNew: () => T) => {
             throw new Error("currentMap not found")
         }
         return {
-            state: currentMap[stateSymbol],
+            state: currentMap.state,
             getChildOnly: getChildOnly(getStateOnly, currentMap)
         }
     }
