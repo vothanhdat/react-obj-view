@@ -78,7 +78,7 @@ export const StateFactory = <T>(onNew: () => T) => {
         if (!currentMap) {
             throw new Error("currentMap not found")
         }
-        const state: StateDiff = { isDiff: false, touchedValue: Math.random() }
+        const state: StateDiff = { isDiff: false, touchedValue: touchedCounter++ }
         return {
             state: currentMap[stateSymbol] ||= onNew(),
             getChild: getChildFn(stateFactory, currentMap, state),
