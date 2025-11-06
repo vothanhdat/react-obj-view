@@ -9,9 +9,9 @@ import { GetStateFn, StateFactory } from "./StateFactory";
 
 export type WalkingResult = {
     value: unknown,
-    cumulate: number[],
+    cumulate?: number[],
     name: PropertyKey,
-    keys: PropertyKey[],
+    keys?: PropertyKey[],
     count: number,
     enumerable: boolean,
     maxDepth: number,
@@ -76,8 +76,6 @@ export const walkingToIndexFactory = () => {
     const { stateFactory, getStateOnly } = StateFactory<WalkingResult>(() => ({
         value: undefined,
         count: 0,
-        cumulate: [],
-        keys: [],
         name: "",
         maxDepth: 0,
         expandedDepth: 0,
@@ -101,6 +99,12 @@ export const walkingToIndexFactory = () => {
         )
     }
 
+    // const getKeyCaching = (
+    //     id: number,
+    //     iterator: Generator<>
+    // ) => {
+
+    // }
 
 
 
@@ -141,15 +145,19 @@ export const walkingToIndexFactory = () => {
         if (shoudUpdate) {
 
 
-            let cumulate = [count];
-            let keys = []
-
+            let cumulate = undefined
+            let keys = undefined
 
             if (hasChild && isExpand) {
 
+                cumulate = [];
+                keys = []
+
                 isCircular || cirularChecking.enterNode(value)
 
-                for (let entry of getEntries(value, config)) {
+                let entries = getEntries(value, config)
+
+                for (let entry of entries) {
 
                     const { key, value, enumerable } = entry
 
@@ -204,7 +212,7 @@ export const walkingToIndexFactory = () => {
         paths: PropertyKey[] = [],
     ): NodeResult => {
 
-        if (index == 0 || depth >= 100) {
+        if (index == 0 || !state.cumulate || !state.keys || depth >= 100) {
             return new NodeResult(
                 state,
                 depth,
