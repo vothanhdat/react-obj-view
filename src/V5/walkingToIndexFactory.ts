@@ -53,15 +53,23 @@ export class NodeResult implements WalkingResult {
         Object.assign(this, state)
     }
 
+    private _path?: string;
+
     public get path(): string {
-        return this.paths
+        if (this._path !== undefined) {
+            return this._path;
+        }
+
+        this._path = this.paths
             .map(e => {
                 try {
                     return String(e);
-                } catch (error) {
+                } catch {
                     return "";
                 }
             }).join("/");
+
+        return this._path;
     }
 
 }
@@ -402,13 +410,17 @@ export const walkingToIndexFactory = () => {
         paths: PropertyKey[] = [],
     ): NodeResult => {
 
+        if (depth === 1) {
+            paths.length = 0;
+        }
+
         if (index == 0 || depth >= 100) {
-            return new NodeResult(state, depth, paths)
+            return new NodeResult(state, depth, paths.slice())
         } else {
             if (!state.cumulate || !state.keys) {
                 throw new Error("Wrong state")
             }
-            const { cumulate, value } = state;
+            const { cumulate } = state;
 
             let start = 0, end = cumulate.length - 1
             let c = 0
@@ -422,18 +434,20 @@ export const walkingToIndexFactory = () => {
                 }
             }
 
+            const keyNames = state.keys[start]
+            paths.push(keyNames)
 
-            // let keyNames = getEntries(value, config).drop(start).next()?.value?.key!
-
-            let keyNames = state.keys[start]
-
-            return getNode(
+            const result = getNode(
                 index - cumulate[start],
                 config,
                 getChildOnly(keyNames),
                 depth + 1,
-                [...paths, keyNames]
+                paths,
             )
+
+            paths.pop()
+
+            return result
 
 
         }

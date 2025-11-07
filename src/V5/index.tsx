@@ -21,7 +21,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 }) => {
 
 
-    const { getNodeByIndex, toggleChildExpand, combinedResolver, size } = useFlattenObjectView(
+    const { getNodeByIndex, toggleChildExpand, combinedResolver, size, listVersion } = useFlattenObjectView(
         value,
         name,
         typeof expandLevel == 'boolean'
@@ -57,8 +57,8 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     )
 
     const computeItemKey = useCallback(
-        (index: number) => getNodeByIndex(index).path,
-        [getNodeByIndex]
+        (index: number) => `${listVersion}:${index}`,
+        [listVersion]
     )
 
     return <>
@@ -204,11 +204,17 @@ function useFlattenObjectView(
 
     // console.log("COUNT", refWalkResult.count)
 
+    const listVersion = useMemo(
+        () => `${reload}:${refWalkResult.updateToken ?? 0}:${refWalkResult.count}`,
+        [reload, refWalkResult.updateToken, refWalkResult.count]
+    );
+
     return {
         toggleChildExpand,
         combinedResolver,
         getNodeByIndex,
         size: refWalkResult.count,
+        listVersion,
     };
 }
 
