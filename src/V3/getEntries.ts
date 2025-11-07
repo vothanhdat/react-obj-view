@@ -1,8 +1,9 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
 import type { WalkingConfig } from "./NodeData";
 import { InternalPromise } from "./resolver";
+import type { Entry } from "./types";
 
-export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
+export const getEntriesOrignal = function* (value: any, config: WalkingConfig): Generator<Entry, void, unknown> {
 
     const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
 
@@ -49,7 +50,11 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
 
 
-export const getEntries = function (value: any, config: WalkingConfig, isPreview = false) {
+export const getEntries = function (
+    value: any,
+    config: WalkingConfig,
+    isPreview = false,
+): Generator<Entry, void, unknown> {
     const prototype = value?.constructor
     if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
         let iterator = config.resolver?.get(value?.constructor)?.(

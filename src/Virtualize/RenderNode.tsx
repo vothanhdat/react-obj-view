@@ -9,7 +9,7 @@ import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
 import { withPromiseWrapper } from "./PromiseWrapper";
 import { CustomEntry, CustomIterator } from "../V3/resolver";
 
-export type NodeData = NodeV3 | NodeV4 | (WalkingResult & { depth: number })
+export type NodeData = NodeV3 | NodeV4 | (WalkingResult & { depth: number; paths: PropertyKey[] })
 
 
 

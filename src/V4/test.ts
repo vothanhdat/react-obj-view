@@ -42,7 +42,7 @@ if (false) {
 
             const link = flattenFn2.walking(
                 data,
-                { expandDepth: depth, nonEnumerable: false, resolver: undefined },
+                { expandDepth: depth, nonEnumerable: false, resolver: undefined, symbol: false },
                 "root"
             )
             const timeLink = performance.now()
@@ -80,7 +80,7 @@ if (false) {
             console.group("DEPTH", depth)
             const time = performance.now()
 
-            const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined })
+            const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined, symbol: false })
             const timeLink = performance.now()
             console.log("timeLink", timeLink - time)
 

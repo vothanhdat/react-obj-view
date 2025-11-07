@@ -1,13 +1,13 @@
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
-import { WalkingConfig, walkingFactory } from "../V3/NodeData";
-import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { WalkingConfig } from "../V3/NodeData";
+import { NodeResult, WalkingResult, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
-import { NodeData } from "../V4/NodeData";
 import "../Virtualize/style.css"
+import { getObjectUniqueId } from "../V4/getObjectUniqueId";
 
 export const V5Index: React.FC<ObjectViewProps> = ({
     value,
@@ -71,6 +71,22 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
 
 
+const WALK_CACHE_CAPACITY = 2;
+const WALK_RESULT_CACHE = new WeakMap<object, Map<string, WalkingResult>>();
+
+const getConfigCacheKey = (
+    config: Pick<WalkingConfig, "expandDepth" | "nonEnumerable" | "resolver">,
+    reload: number,
+) => {
+    const resolverId = getObjectUniqueId(config.resolver ?? DEFAULT_RESOLVER);
+    return [
+        reload,
+        config.expandDepth,
+        config.nonEnumerable ? 1 : 0,
+        resolverId,
+    ].join(":");
+};
+
 function useFlattenObjectView(
     value: any,
     name: string | undefined,
@@ -83,7 +99,7 @@ function useFlattenObjectView(
         () => new Map([
             ...DEFAULT_RESOLVER,
             ...resolver ?? [],
-        ]), [resolver, DEFAULT_RESOLVER]
+        ]), [resolver]
     )
 
     const config = useMemo(
@@ -91,6 +107,7 @@ function useFlattenObjectView(
             expandDepth,
             resolver: combinedResolver,
             nonEnumerable,
+            symbol: false,
         }) as WalkingConfig,
         [nonEnumerable, expandDepth, combinedResolver]
     )
@@ -101,18 +118,44 @@ function useFlattenObjectView(
 
     const refWalkResult = useMemo(
         () => {
-            // console.log("walking config", config)
-            console.time("walking")
+            const isCacheable = typeof value === "object" && value !== null;
+            const cacheKey = getConfigCacheKey(config, reload);
+
+            if (isCacheable) {
+                const cachedMap = WALK_RESULT_CACHE.get(value as object);
+                const cachedResult = cachedMap?.get(cacheKey);
+                if (cachedResult) {
+                    return cachedResult;
+                }
+            }
+
+            console.time("walking");
             const result = refWalk.current!.walking(
                 value,
                 config,
                 "ROOT",
                 true,
             );
-            console.timeEnd("walking")
+            console.timeEnd("walking");
+
+            if (isCacheable) {
+                let cachedMap = WALK_RESULT_CACHE.get(value as object);
+                if (!cachedMap) {
+                    cachedMap = new Map();
+                    WALK_RESULT_CACHE.set(value as object, cachedMap);
+                }
+                cachedMap.set(cacheKey, result);
+                if (cachedMap.size > WALK_CACHE_CAPACITY) {
+                    const oldestEntry = cachedMap.keys().next();
+                    if (!oldestEntry.done) {
+                        cachedMap.delete(oldestEntry.value);
+                    }
+                }
+            }
+
             return result;
         },
-        [refWalk.current, value, name, config, reload]
+        [refWalk, value, config, reload]
     );
 
 
@@ -123,7 +166,7 @@ function useFlattenObjectView(
             console.timeEnd("toggleExpand");
             setReload(e => e + 1);
         },
-        [refWalk.current, config]
+        [refWalk, config]
     );
 
     const getNodeByIndex = useMemo(
@@ -140,7 +183,7 @@ function useFlattenObjectView(
                 return data
             }
         },
-        [refWalk.current, config, refWalkResult.count, reload, refWalkResult.value]
+        [refWalk, config, refWalkResult.count, reload, refWalkResult.value]
     )
 
     // console.log("COUNT", refWalkResult.count)

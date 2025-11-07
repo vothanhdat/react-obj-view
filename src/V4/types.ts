@@ -75,7 +75,7 @@ type ChangedStage = {
 export type ProcessStack<T> = BaseProcessStack<T> & (InitStage | IterateStage | FinalStage | ChangedStage);
 
 export type SharingContext = {
-    getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
+    getIterator: (value: unknown, config: WalkingConfig) => Iterator<DataEntry, void, unknown>;
     config: WalkingConfig;
     cirular: CircularChecking,
     walkCounter: number,

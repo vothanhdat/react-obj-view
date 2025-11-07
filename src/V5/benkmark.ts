@@ -6,7 +6,7 @@ const arr = performanceTestData.suppersupperLarge
 
 const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any, symbol: false }
 
 
 let times = {

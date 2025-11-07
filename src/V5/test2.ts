@@ -21,7 +21,7 @@ let data2 = {
     },
 }
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any, symbol: false }
 
 const walking = walkingToIndexFactory()
 

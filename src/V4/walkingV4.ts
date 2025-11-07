@@ -1,6 +1,7 @@
 import { isRef } from "../utils/isRef";
 import { getEntries } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
+import type { Entry } from "../V3/types";
 import { GetStateFn, StateFactory } from "../V5/StateFactory";
 import { CircularChecking } from "./CircularChecking";
 import { getObjectUniqueId } from "./getObjectUniqueId";
@@ -234,8 +235,13 @@ export const walkingFactoryV4 = () => {
     const stateRoot = stateFactory(rootMapState)
     const stateRead = getStateOnly(rootMapState)
 
-    const getIterator = (value: any, config: any) => getEntries(value, config)
-        .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))
+    const mapEntry = ({ key, value, enumerable }: Entry): DataEntry => ({ name: key, value, enumerable });
+
+    const getIterator = (value: unknown, config: WalkingConfig) => (function* () {
+        for (const entry of getEntries(value, config)) {
+            yield mapEntry(entry);
+        }
+    })();
 
     let walkingCounter = 0
 

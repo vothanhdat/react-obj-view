@@ -84,7 +84,7 @@ function useFlattenObjectView(
         () => new Map([
             ...DEFAULT_RESOLVER,
             ...resolver ?? [],
-        ]), [resolver, DEFAULT_RESOLVER]
+        ]), [resolver]
     )
 
     const config = useMemo(
@@ -92,6 +92,7 @@ function useFlattenObjectView(
             expandDepth,
             resolver: combinedResolver,
             nonEnumerable,
+            symbol: false,
         }) as WalkingConfig,
         [nonEnumerable, expandDepth, combinedResolver]
     )
@@ -130,7 +131,9 @@ function useFlattenObjectView(
         (node: NodeData) => {
             console.log({ node })
             console.time("toggleExpand")
-            refWalk.current?.toggleExpand(node.paths, config)
+            if ('paths' in node) {
+                refWalk.current?.toggleExpand(node.paths, config)
+            }
             console.timeEnd("toggleExpand")
             setReload(e => e + 1);
         },

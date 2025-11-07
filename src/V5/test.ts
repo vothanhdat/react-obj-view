@@ -9,7 +9,7 @@ const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
 const walking = walkingToIndexFactory()
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any, symbol: false }
 
 const t1 = performance.now()
 

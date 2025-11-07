@@ -6,8 +6,6 @@ import './style.css';
 import "./Test.css";
 import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
 import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
-import { V8 } from './V3';
-import { V12 } from './V4';
 import { ObjectViewVirtualize } from './Virtualize';
 import { V5Index } from './V5';
 
