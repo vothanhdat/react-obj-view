@@ -103,38 +103,24 @@ function useFlattenObjectView(
     const { refWalk, linkToArray } = useWalkingFn("v4");
 
     const linkList = useMemo(
-        () => {
-            console.log("walking config", config)
-            console.time("walking")
-            const result = refWalk.current!.walking(
-                value,
-                config,
-                "ROOT"
-            );
-            console.timeEnd("walking")
-            return result;
-        },
+        () => refWalk.current!.walking(
+            value,
+            config,
+            "ROOT"
+        ),
         [refWalk.current, value, name, config]
     );
 
     const flattenNodes = useMemo(
-        () => {
-            console.time("linkListToArray")
-            let r = linkToArray(linkList);
-            console.timeEnd("linkListToArray")
-            return r;
-        },
+        () => linkToArray(linkList),
         [linkList, linkToArray, reload]
     );
 
     const toggleChildExpand = useCallback(
         (node: NodeData) => {
-            console.log({ node })
-            console.time("toggleExpand")
             if ('paths' in node) {
                 refWalk.current?.toggleExpand(node.paths, config)
             }
-            console.timeEnd("toggleExpand")
             setReload(e => e + 1);
         },
         [refWalk, config]
