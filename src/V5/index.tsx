@@ -79,6 +79,12 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 const WALK_CACHE_CAPACITY = 2;
 const WALK_RESULT_CACHE = new WeakMap<object, Map<string, WalkingResult>>();
 
+type WalkMemoEntry = {
+    target: object;
+    cacheKey: string;
+    result: WalkingResult;
+};
+
 const getConfigCacheKey = (
     config: Pick<WalkingConfig, "expandDepth" | "nonEnumerable" | "resolver">,
     reload: number,
@@ -132,27 +138,37 @@ function useFlattenObjectView(
 
     const { refWalk } = useWalkingFn("v3");
 
+    const lastWalkResultRef = useRef<WalkMemoEntry | null>(null);
+
     const refWalkResult = useMemo(
         () => {
             const isCacheable = typeof value === "object" && value !== null;
             const cacheKey = getConfigCacheKey(config, reload);
 
             if (isCacheable) {
+                const lastEntry = lastWalkResultRef.current;
+                if (lastEntry && lastEntry.target === value && lastEntry.cacheKey === cacheKey) {
+                    return lastEntry.result;
+                }
+
                 const cachedMap = WALK_RESULT_CACHE.get(value as object);
                 const cachedResult = cachedMap?.get(cacheKey);
                 if (cachedResult) {
+                    lastWalkResultRef.current = {
+                        target: value as object,
+                        cacheKey,
+                        result: cachedResult,
+                    };
                     return cachedResult;
                 }
             }
 
-            console.time("walking");
             const result = refWalk.current!.walking(
                 value,
                 config,
                 "ROOT",
                 true,
             );
-            console.timeEnd("walking");
 
             if (isCacheable) {
                 let cachedMap = WALK_RESULT_CACHE.get(value as object);
@@ -167,6 +183,14 @@ function useFlattenObjectView(
                         cachedMap.delete(oldestEntry.value);
                     }
                 }
+
+                lastWalkResultRef.current = {
+                    target: value as object,
+                    cacheKey,
+                    result,
+                };
+            } else {
+                lastWalkResultRef.current = null;
             }
 
             return result;
@@ -177,9 +201,7 @@ function useFlattenObjectView(
 
     const toggleChildExpand = useCallback(
         (node: NodeResult) => {
-            console.time("toggleExpand")
             refWalk.current?.toggleExpand(node.paths, config)
-            console.timeEnd("toggleExpand");
             setReload(e => e + 1);
         },
         [refWalk, config]
