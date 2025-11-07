@@ -1,5 +1,6 @@
 import { isRef } from "../utils/isRef";
 import { getEntries } from "../V3/getEntries";
+import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
 import { WalkingConfig } from "../V3/NodeData"
 import { CircularChecking } from "../V4/CircularChecking";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";
@@ -145,30 +146,196 @@ export const walkingToIndexFactory = () => {
 
             if (hasChild && isExpand) {
 
-                cumulate = [count];
-                keys = []
-
                 isCircular || cirularChecking.enterNode(value)
 
-                let entries = getEntries(value, config)
+                const resolverForCtor = value && typeof value === "object"
+                    ? config.resolver?.get((value as any)?.constructor)
+                    : undefined;
 
-                for (let entry of entries) {
+                const canUseArrayFastPath = Array.isArray(value)
+                    && !(config.resolver?.has(Array));
 
-                    const { key, value, enumerable } = entry
+                const canUsePlainObjectFastPath = !canUseArrayFastPath
+                    && resolverForCtor === undefined
+                    && typeof value === "object"
+                    && value !== null
+                    && Object.getPrototypeOf(value) === Object.prototype;
 
-                    const result = walking(
-                        value, config, key, enumerable,
-                        updateToken,
-                        depth + 1,
-                        getChild(key),
-                    );
+                if (canUseArrayFastPath) {
+                    const arrayValue = value as unknown[];
+                    const length = arrayValue.length;
 
-                    count += result.count;
-                    maxDepth = Math.max(maxDepth, result.maxDepth)
-                    childCanExpand ||= result.childCanExpand;
-                    keys.push(key)
-                    cumulate.push(count);
+                    keys = new Array<PropertyKey>(length);
+                    cumulate = new Array<number>(length + 1);
+                    cumulate[0] = count;
 
+                    for (let index = 0; index < length; index++) {
+                        const childValue = arrayValue[index];
+
+                        const result = walking(
+                            childValue,
+                            config,
+                            index,
+                            true,
+                            updateToken,
+                            depth + 1,
+                            getChild(index),
+                        );
+
+                        count += result.count;
+                        if (result.maxDepth > maxDepth) {
+                            maxDepth = result.maxDepth;
+                        }
+                        if (result.childCanExpand) {
+                            childCanExpand = true;
+                        }
+                        keys[index] = index;
+                        cumulate[index + 1] = count;
+                    }
+                } else if (canUsePlainObjectFastPath) {
+                    const objectValue = value as Record<PropertyKey, unknown>;
+                    const includeNonEnumerable = config.nonEnumerable;
+                    const stringKeys = includeNonEnumerable
+                        ? Object.getOwnPropertyNames(objectValue)
+                        : Object.keys(objectValue);
+                    const symbolKeys = config.symbol
+                        ? Object.getOwnPropertySymbols(objectValue)
+                        : undefined;
+                    const includePrototype = includeNonEnumerable && objectValue !== Object.prototype;
+                    const totalKeys = stringKeys.length
+                        + (symbolKeys?.length ?? 0)
+                        + (includePrototype ? 1 : 0);
+
+                    keys = new Array<PropertyKey>(totalKeys);
+                    cumulate = new Array<number>(totalKeys + 1);
+                    cumulate[0] = count;
+
+                    let writeIndex = 0;
+
+                    for (let i = 0; i < stringKeys.length; i++, writeIndex++) {
+                        const key = stringKeys[i];
+                        const enumerable = includeNonEnumerable
+                            ? propertyIsEnumerable.call(objectValue, key)
+                            : true;
+
+                        let childValue: unknown;
+                        if (!includeNonEnumerable || enumerable) {
+                            try {
+                                childValue = (objectValue as Record<string, unknown>)[key];
+                            } catch {
+                                childValue = getPropertyValue(objectValue, key);
+                            }
+                        } else {
+                            childValue = getPropertyValue(objectValue, key);
+                        }
+
+                        const result = walking(
+                            childValue,
+                            config,
+                            key,
+                            enumerable,
+                            updateToken,
+                            depth + 1,
+                            getChild(key),
+                        );
+
+                        count += result.count;
+                        if (result.maxDepth > maxDepth) {
+                            maxDepth = result.maxDepth;
+                        }
+                        if (result.childCanExpand) {
+                            childCanExpand = true;
+                        }
+                        keys[writeIndex] = key;
+                        cumulate[writeIndex + 1] = count;
+                    }
+
+                    if (symbolKeys) {
+                        for (let i = 0; i < symbolKeys.length; i++, writeIndex++) {
+                            const symbolKey = symbolKeys[i];
+                            const enumerable = propertyIsEnumerable.call(objectValue, symbolKey);
+
+                            let childValue: unknown;
+                            if (enumerable) {
+                                try {
+                                    childValue = (objectValue as Record<symbol, unknown>)[symbolKey];
+                                } catch {
+                                    childValue = getPropertyValue(objectValue, symbolKey);
+                                }
+                            } else {
+                                childValue = getPropertyValue(objectValue, symbolKey);
+                            }
+
+                            const result = walking(
+                                childValue,
+                                config,
+                                symbolKey,
+                                enumerable,
+                                updateToken,
+                                depth + 1,
+                                getChild(symbolKey),
+                            );
+
+                            count += result.count;
+                            if (result.maxDepth > maxDepth) {
+                                maxDepth = result.maxDepth;
+                            }
+                            if (result.childCanExpand) {
+                                childCanExpand = true;
+                            }
+                            keys[writeIndex] = symbolKey;
+                            cumulate[writeIndex + 1] = count;
+                        }
+                    }
+
+                    if (includePrototype) {
+                        const protoKey = "[[Prototype]]" as const;
+                        const protoValue = Object.getPrototypeOf(objectValue);
+
+                        const result = walking(
+                            protoValue,
+                            config,
+                            protoKey,
+                            false,
+                            updateToken,
+                            depth + 1,
+                            getChild(protoKey),
+                        );
+
+                        count += result.count;
+                        if (result.maxDepth > maxDepth) {
+                            maxDepth = result.maxDepth;
+                        }
+                        if (result.childCanExpand) {
+                            childCanExpand = true;
+                        }
+                        keys[writeIndex] = protoKey;
+                        cumulate[writeIndex + 1] = count;
+                    }
+                } else {
+                    cumulate = [count];
+                    keys = [];
+
+                    let entries = getEntries(value, config)
+
+                    for (let entry of entries) {
+
+                        const { key, value, enumerable } = entry
+
+                        const result = walking(
+                            value, config, key, enumerable,
+                            updateToken,
+                            depth + 1,
+                            getChild(key),
+                        );
+
+                        count += result.count;
+                        maxDepth = Math.max(maxDepth, result.maxDepth)
+                        childCanExpand ||= result.childCanExpand;
+                        keys.push(key)
+                        cumulate.push(count);
+
+                    }
                 }
 
                 isCircular || cirularChecking.exitNode(value)
