@@ -66,6 +66,22 @@ export class NodeResult implements WalkingResult {
 
 }
 
+const reuseKeyBuffer = (buffer: PropertyKey[] | undefined, size: number) => {
+    if (buffer) {
+        buffer.length = size;
+        return buffer;
+    }
+    return new Array<PropertyKey>(size);
+};
+
+const reuseNumberBuffer = (buffer: number[] | undefined, size: number) => {
+    if (buffer) {
+        buffer.length = size;
+        return buffer;
+    }
+    return new Array<number>(size);
+};
+
 export const objectHasChild = (e: unknown) => {
     return isRef(e)
         && !(e instanceof Date)
@@ -141,8 +157,8 @@ export const walkingToIndexFactory = () => {
         if (shoudUpdate) {
 
 
-            let cumulate = undefined
-            let keys = undefined
+            let cumulate: number[] | undefined = undefined
+            let keys: PropertyKey[] | undefined = undefined
 
             if (hasChild && isExpand) {
 
@@ -165,9 +181,9 @@ export const walkingToIndexFactory = () => {
                     const arrayValue = value as unknown[];
                     const length = arrayValue.length;
 
-                    keys = new Array<PropertyKey>(length);
-                    cumulate = new Array<number>(length + 1);
-                    cumulate[0] = count;
+                    const keyBuffer = reuseKeyBuffer(state.keys, length);
+                    const cumulateBuffer = reuseNumberBuffer(state.cumulate, length + 1);
+                    cumulateBuffer[0] = count;
 
                     for (let index = 0; index < length; index++) {
                         const childValue = arrayValue[index];
@@ -189,9 +205,12 @@ export const walkingToIndexFactory = () => {
                         if (result.childCanExpand) {
                             childCanExpand = true;
                         }
-                        keys[index] = index;
-                        cumulate[index + 1] = count;
+                        keyBuffer[index] = index;
+                        cumulateBuffer[index + 1] = count;
                     }
+
+                    keys = keyBuffer;
+                    cumulate = cumulateBuffer;
                 } else if (canUsePlainObjectFastPath) {
                     const objectValue = value as Record<PropertyKey, unknown>;
                     const includeNonEnumerable = config.nonEnumerable;
@@ -206,9 +225,9 @@ export const walkingToIndexFactory = () => {
                         + (symbolKeys?.length ?? 0)
                         + (includePrototype ? 1 : 0);
 
-                    keys = new Array<PropertyKey>(totalKeys);
-                    cumulate = new Array<number>(totalKeys + 1);
-                    cumulate[0] = count;
+                    const keyBuffer = reuseKeyBuffer(state.keys, totalKeys);
+                    const cumulateBuffer = reuseNumberBuffer(state.cumulate, totalKeys + 1);
+                    cumulateBuffer[0] = count;
 
                     let writeIndex = 0;
 
@@ -246,8 +265,8 @@ export const walkingToIndexFactory = () => {
                         if (result.childCanExpand) {
                             childCanExpand = true;
                         }
-                        keys[writeIndex] = key;
-                        cumulate[writeIndex + 1] = count;
+                        keyBuffer[writeIndex] = key;
+                        cumulateBuffer[writeIndex + 1] = count;
                     }
 
                     if (symbolKeys) {
@@ -283,8 +302,8 @@ export const walkingToIndexFactory = () => {
                             if (result.childCanExpand) {
                                 childCanExpand = true;
                             }
-                            keys[writeIndex] = symbolKey;
-                            cumulate[writeIndex + 1] = count;
+                            keyBuffer[writeIndex] = symbolKey;
+                            cumulateBuffer[writeIndex + 1] = count;
                         }
                     }
 
@@ -309,12 +328,18 @@ export const walkingToIndexFactory = () => {
                         if (result.childCanExpand) {
                             childCanExpand = true;
                         }
-                        keys[writeIndex] = protoKey;
-                        cumulate[writeIndex + 1] = count;
+                        keyBuffer[writeIndex] = protoKey;
+                        cumulateBuffer[writeIndex + 1] = count;
                     }
+
+                    keys = keyBuffer;
+                    cumulate = cumulateBuffer;
                 } else {
-                    cumulate = [count];
-                    keys = [];
+                    const keyBuffer = reuseKeyBuffer(state.keys, 0);
+                    keyBuffer.length = 0;
+                    const cumulateBuffer = reuseNumberBuffer(state.cumulate, 0);
+                    cumulateBuffer.length = 0;
+                    cumulateBuffer.push(count);
 
                     let entries = getEntries(value, config)
 
@@ -332,10 +357,13 @@ export const walkingToIndexFactory = () => {
                         count += result.count;
                         maxDepth = Math.max(maxDepth, result.maxDepth)
                         childCanExpand ||= result.childCanExpand;
-                        keys.push(key)
-                        cumulate.push(count);
+                        keyBuffer.push(key)
+                        cumulateBuffer.push(count);
 
                     }
+
+                    keys = keyBuffer;
+                    cumulate = cumulateBuffer;
                 }
 
                 isCircular || cirularChecking.exitNode(value)

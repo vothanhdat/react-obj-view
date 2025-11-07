@@ -34,21 +34,26 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     const dataPLeft = String(size).length
 
     const nodeRender = useCallback(
-        (index: number) => <div style={{
-            height: "14px",
-            borderBottom: "solid 1px #8881",
-        }} data-p-left={showLineNumbers ? dataPLeft : 0}>
-            {showLineNumbers &&
-                <span className="index-counter">{String(index).padStart(dataPLeft, " ")}
-                </span>}
-            <RenderNode
-                enablePreview={preview}
-                resolver={combinedResolver}
-                node={getNodeByIndex(index)}
-                toggleChildExpand={toggleChildExpand as any}
-                key={getNodeByIndex(index).path} />
-        </div>,
-        [getNodeByIndex, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
+        (index: number) => {
+            const node = getNodeByIndex(index);
+            const padding = showLineNumbers ? dataPLeft : 0;
+
+            return <div style={{
+                height: "14px",
+                borderBottom: "solid 1px #8881",
+            }} data-p-left={padding}>
+                {showLineNumbers &&
+                    <span className="index-counter">{String(index).padStart(dataPLeft, " ")}
+                    </span>}
+                <RenderNode
+                    enablePreview={preview}
+                    resolver={combinedResolver}
+                    node={node}
+                    toggleChildExpand={toggleChildExpand as any}
+                    key={node.path} />
+            </div>
+        },
+        [getNodeByIndex, toggleChildExpand, preview, showLineNumbers, dataPLeft]
     )
 
     const computeItemKey = useCallback(
