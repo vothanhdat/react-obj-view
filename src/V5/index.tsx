@@ -95,12 +95,23 @@ function useFlattenObjectView(
     resolver: Map<any, ResolverFn> | undefined,
 ) {
 
-    const combinedResolver = useMemo(
-        () => new Map([
-            ...DEFAULT_RESOLVER,
-            ...resolver ?? [],
-        ]), [resolver]
-    )
+    const resolverRef = useRef<Map<any, ResolverFn> | undefined>(undefined);
+    const resolverInputRef = useRef<typeof resolver>(undefined);
+
+    if (!resolverRef.current || resolverInputRef.current !== resolver) {
+        resolverInputRef.current = resolver;
+
+        const merged = new Map(DEFAULT_RESOLVER);
+        if (resolver) {
+            for (const [key, value] of resolver) {
+                merged.set(key, value);
+            }
+        }
+
+        resolverRef.current = merged;
+    }
+
+    const combinedResolver = resolverRef.current!;
 
     const config = useMemo(
         () => ({
