@@ -3,19 +3,17 @@ import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
 import { Entry, ResolverFn } from "../V3/types";
 import { getEntriesCb } from "../V3/getEntries";
 
-import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
+import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
 import { withPromiseWrapper } from "./PromiseWrapper";
 import { CustomEntry, CustomIterator } from "../V3/resolver";
 
-export type NodeData = (WalkingResult & { depth: number, path: string })
-
 
 const NodeRenderDefault: React.FC<{
-    nodeData: NodeData;
+    nodeData: NodeResultData;
     enablePreview: boolean;
     value: unknown,
     resolver?: Map<any, ResolverFn>
-    toggleChildExpand: (node: NodeData) => void
+    toggleChildExpand: (node: NodeResultData) => void
 }> = ({ nodeData, value, toggleChildExpand, resolver, enablePreview = true }) => {
 
     const isExpanded = nodeData.expanded
@@ -60,10 +58,10 @@ const NodeRenderDefault: React.FC<{
 const RenderNodeInternal = withPromiseWrapper(NodeRenderDefault)
 
 export const RenderNode: React.FC<{
-    nodeData: NodeData;
+    nodeData: NodeResultData;
     enablePreview: boolean;
     resolver?: Map<any, ResolverFn>
-    toggleChildExpand: (node: NodeData) => void
+    toggleChildExpand: (node: NodeResultData) => void
 }> = (props) => {
     return <RenderNodeInternal {...props} value={props.nodeData.value} />
 }

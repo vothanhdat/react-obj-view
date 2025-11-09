@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from 'react-virtuoso'
-import { ObjectViewProps } from "../ObjectViewV2/ObjectViewProps";
+import { ObjectViewProps } from "../V3/types";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
 import { WalkingConfig } from "../V3/types";
@@ -42,17 +42,14 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                 [nodeResult.state.updateStamp]
             )
 
-            return <div style={{
-                height: "14px",
-                borderBottom: "solid 1px #8881",
-            }} data-p-left={showLineNumbers ? dataPLeft : 0}>
+            return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
                 {showLineNumbers &&
                     <span className="index-counter">
                         {String(index).padStart(dataPLeft, " ")}
-                    </span>}
+                    </span>
+                }
                 <RenderNode
-                    {...{ enablePreview, resolver, toggleChildExpand }}
-                    nodeData={nodeData}
+                    {...{ enablePreview, resolver, toggleChildExpand, nodeData }}
                     key={nodeData.path} />
             </div>
         },
@@ -145,7 +142,7 @@ function useFlattenObjectView(
     );
 
     const toggleChildExpand = useCallback(
-        (node: NodeResult) => {
+        (node: NodeResultData) => {
             console.time("toggleExpand")
             refWalk.current?.toggleExpand(node.paths, config)
             console.timeEnd("toggleExpand");

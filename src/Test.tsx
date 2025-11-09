@@ -4,12 +4,9 @@ import React, { useMemo, useState } from 'react';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
 import './style.css';
 import "./Test.css";
-import { ObjectViewV2 } from './ObjectViewV2/ObjectView';
-import type { Constructor, ResolverFn, Entry } from './ObjectViewV2/types';
-import { V8 } from './V3';
-import { V12 } from './V4';
-import { ObjectViewVirtualize } from './Virtualize';
+import type { Constructor, Entry } from './ObjectViewV2/types';
 import { V5Index } from './V5';
+import { ResolverFn } from './V3/types';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -307,7 +304,7 @@ export const Test = () => {
         }
         return () => selectedData.value;
     }, [customDataParsed, invalidCustomData, isCustomMode, selectedData]);
-    
+
 
     const currentLabel = useMemo(() => {
         if (isCustomMode) {

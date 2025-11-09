@@ -15,14 +15,6 @@
     background-color: var(--bg-color);
     color: var(--color);
 
-    [data-p-left] {
-        --padding-left: calc(0.5 * attr(data-p-left em));
-    }
-
-    /* [data-item-index]{
-        background-color: color-mix(in srgb, #888 calc((attr(data-index type(<number>)) % 2) * 100%), color transparent);
-    } */
-
 
     .index-counter {
         opacity: 0.5;
