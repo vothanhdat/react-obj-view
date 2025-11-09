@@ -1,4 +1,4 @@
-import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
+import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/object";
 import { WalkingConfig } from "./types";
 
 
