@@ -110,19 +110,23 @@ export const getEntriesCbOriginal = (
         }
 
     } else {
-        const nonEnumerable = config.nonEnumerable
 
-        const keys = nonEnumerable
-            ? Object.getOwnPropertyNames(value)
-            : Object.keys(value)
-
-        for (let key of keys) {
-            const enumerable = config.nonEnumerable ? propertyIsEnumerable.call(value, key) : true
-            if (cb(
-                key,
-                enumerable ? value[key] : getPropertyValue(value, key),
-                enumerable,
-            )) return;
+        if (config.nonEnumerable) {
+            for (let key of Object.getOwnPropertyNames(value)) {
+                if (cb(
+                    key,
+                    value[key],
+                    propertyIsEnumerable.call(value,key),
+                )) return;
+            }
+        } else {
+            for (let key in value) {
+                if (cb(
+                    key,
+                    (value as any)[key],
+                    true,
+                )) return;
+            }
         }
 
     }
