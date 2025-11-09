@@ -35,7 +35,7 @@ if (false) {
 
 
     console.log("-------------------------------")
-    for (let data of [obj, {...obj}]) {
+    for (let data of [obj, { ...obj }]) {
         for (let depth of [4]) {
             console.group("DEPTH", depth)
             const time = performance.now()
@@ -80,7 +80,10 @@ if (false) {
             console.group("DEPTH", depth)
             const time = performance.now()
 
-            const link = flattenFn2.walking(data, { expandDepth: depth, nonEnumerable: false, resolver: undefined })
+            const link = flattenFn2.walking(
+                data,
+                { expandDepth: depth, nonEnumerable: false, resolver: undefined }
+            )
             const timeLink = performance.now()
             console.log("timeLink", timeLink - time)
 
