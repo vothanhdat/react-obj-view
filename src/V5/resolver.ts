@@ -96,7 +96,6 @@ const iteraterResolver: ResolverFn<CustomIterator> = (
         }
     }
 
-    next(e);
 }
 
 const mapResolver: ResolverFn<Map<any, any>> = (
