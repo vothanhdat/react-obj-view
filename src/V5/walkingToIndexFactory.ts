@@ -1,5 +1,5 @@
 import { isRef } from "../utils/isRef";
-import { getEntries, getEntriesCb } from "../V3/getEntries";
+import { getEntriesCb } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData"
 import { CircularChecking } from "../V4/CircularChecking";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";

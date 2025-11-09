@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from 'react-virtuoso'
-import { ObjectViewProps } from "../ObjectViewV2/ObjectView";
+import { ObjectViewProps } from "../ObjectViewV2/ObjectViewProps";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
 import { WalkingConfig, walkingFactory } from "../V3/NodeData";
