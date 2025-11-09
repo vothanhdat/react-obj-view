@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
-import { ResolverFn } from "../V3/types";
-import { isRef } from "../utils/isRef";
-import { getEntries } from "../V3/getEntries";
+import { Entry, ResolverFn } from "../V3/types";
+import { getEntriesCb } from "../V3/getEntries";
 import { NodeData as NodeV4 } from "../V4/NodeData";
 import { NodeData as NodeV3 } from "../V3/NodeData";
 import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
@@ -160,11 +159,20 @@ export const RenderPreview: React.FC<{
 }> = ({ value, resolver, depth = 0 }) => {
 
     let iterator = useMemo(
-        () => getEntries(
-            value,
-            { expandDepth: 0, nonEnumerable: false, resolver, symbol: false },
-            true
-        ).slice(0, 6),
+        () => {
+            let list: Entry[] = []
+            getEntriesCb(
+                value,
+                { expandDepth: 0, nonEnumerable: false, resolver, symbol: false },
+                true,
+                (key, value, enumerable) => {
+                    list.push({ key, value, enumerable });
+                    return list.length < 6
+                }
+            )
+
+            return list
+        },
         [resolver, value]
     )
 

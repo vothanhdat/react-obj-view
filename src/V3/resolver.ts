@@ -1,4 +1,4 @@
-import { Entry, JSONViewCtx, ResolverFn } from "./types";
+import { JSONViewCtx, ResolverFn } from "./types";
 
 
 const MapIterater = Object.getPrototypeOf(new Map().entries())
@@ -66,105 +66,100 @@ export class InternalPromise {
     }
 }
 
-const iteraterResolver: ResolverFn = (
-    e: CustomIterator,
-    _entries: Entry[],
-    _isPreview: boolean
+const iteraterResolver: ResolverFn<CustomIterator> = (
+    e,
+    cb,
+    next,
+    _isPreview,
 ) => {
     const iterator = e.iterator()
-    const entries: Entry[] = []
 
     if (Object.getPrototypeOf(iterator) == MapIterater) {
         let index = 0
 
         for (let [key, value] of iterator) {
-            entries.push({
-                key: index++,
-                value: new CustomEntry(key, value),
-                enumerable: true
-            })
+            if (cb(
+                index++,
+                new CustomEntry(key, value),
+                true
+            )) return
         }
     } else {
         let index = 0
 
         for (let entry of iterator) {
-            entries.push({
-                key: index++,
-                value: entry,
-                enumerable: true
-            })
+            if (cb(
+                index++,
+                entry,
+                true
+            )) return;
         }
     }
 
-    return entries
+    next(e);
 }
 
-const mapResolver: ResolverFn = (
-    map: Map<any, any>,
-    entries: Entry[],
-    isPreview: boolean
+const mapResolver: ResolverFn<Map<any, any>> = (
+    map,
+    cb,
+    next,
+    isPreview,
 ) => {
-    const resolvedEntries: Entry[] = []
     if (isPreview) {
         let index = 0
         for (let [key, value] of map.entries()) {
-            resolvedEntries.push({
-                key: index++,
-                value: new CustomEntry(key, value),
-                enumerable: true
-            })
+            cb(
+                index++,
+                new CustomEntry(key, value),
+                true
+            )
         }
     } else {
-        resolvedEntries.push({
-            key: "[[Entries]]",
-            value: new CustomIterator(() => map.entries(), map.size),
-            enumerable: false
-        })
+        cb(
+            "[[Entries]]",
+            new CustomIterator(() => map.entries(), map.size),
+            false
+        )
 
-        resolvedEntries.push({
-            key: "size",
-            value: map.size,
-            enumerable: true
-        })
+        cb(
+            "size",
+            map.size,
+            true
+        )
     }
 
-    resolvedEntries.push(...entries)
-    return resolvedEntries
+    next(map)
+
 }
 
-const setResolver: ResolverFn = (
+const setResolver: ResolverFn<Set<any>> = (
     set: Set<any>,
-    entries: Entry[],
-    isPreview: boolean
+    cb,
+    next,
+    isPreview,
 ) => {
-    const resolvedEntries: Entry[] = []
     if (isPreview) {
         let index = 0
-        for (let value of set.values()) {
-            resolvedEntries.push({
-                key: index++,
-                value,
-                enumerable: true
-            })
-        }
+        for (let value of set.values()) cb(
+            index++,
+            value,
+            true
+        )
+
     } else {
+        cb(
+            "[[Entries]]",
+            new CustomIterator(() => set.values(), set.size),
+            false
+        )
 
-        resolvedEntries.push({
-            key: "[[Entries]]",
-            value: new CustomIterator(() => set.values(), set.size),
-            enumerable: false
-        })
-
-        resolvedEntries.push({
-            key: "size",
-            value: set.size,
-            enumerable: true
-        })
+        cb(
+            "size",
+            set.size,
+            true
+        )
     }
-
-
-    resolvedEntries.push(...entries)
-    return resolvedEntries
+    next(set)
 }
 
 const PendingSymbol = Symbol("Pending")
@@ -187,25 +182,24 @@ const getPromiseStatus = weakMapCache(
     }
 )
 
-const promiseResolver: ResolverFn = (
-    e: Promise<any>,
-    entries: Entry[],
-    isPreview: boolean
+const promiseResolver: ResolverFn<Promise<any>> = (
+    promise: Promise<any>,
+    cb,
+    next,
+    isPreview,
 ) => {
-    let { result, status } = getPromiseStatus(e)
-
-    const resolvedEntries: Entry[] = [{
-        key: "[[status]]",
-        value: InternalPromise.getInstance(status),
-        enumerable: isPreview
-    }, {
-        key: "[[result]]",
-        value: InternalPromise.getInstance(result),
-        enumerable: isPreview
-    }]
-
-    resolvedEntries.push(...entries)
-    return resolvedEntries
+    let { result, status } = getPromiseStatus(promise)
+    cb(
+        "[[status]]",
+        InternalPromise.getInstance(status),
+        isPreview
+    )
+    cb(
+        "[[result]]",
+        InternalPromise.getInstance(result),
+        isPreview
+    )
+    next(promise);
 }
 
 

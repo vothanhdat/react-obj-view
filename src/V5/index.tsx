@@ -13,7 +13,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     name,
     expandLevel,
     highlightUpdate,
-    resolver: _resolver,
+    resolver: customResolver,
     nonEnumerable = false,
     preview = true,
     showLineNumbers = false,
@@ -22,14 +22,14 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
     let value = useMemo(() => valueGetter(), [valueGetter])
 
-    const { getNodeByIndex, toggleChildExpand, resolver: combinedResolver, size } = useFlattenObjectView(
+    const { getNodeByIndex, toggleChildExpand, resolver, size } = useFlattenObjectView(
         value,
         name,
         typeof expandLevel == 'boolean'
             ? (expandLevel ? 20 : 0)
             : Number(expandLevel),
         nonEnumerable,
-        _resolver,
+        customResolver,
     );
 
     const dataPLeft = String(size).length
@@ -51,7 +51,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                     </span>}
                 <RenderNode
                     enablePreview={preview}
-                    resolver={combinedResolver}
+                    resolver={resolver}
                     node={nodeData}
                     toggleChildExpand={toggleChildExpand as any}
                     key={nodeData.path} />
@@ -142,7 +142,7 @@ function useFlattenObjectView(
             console.timeEnd("walking")
             return { ...result };
         },
-        [refWalk, value, name, reload]
+        [refWalk, value, name, reload, config]
     );
 
     const toggleChildExpand = useCallback(

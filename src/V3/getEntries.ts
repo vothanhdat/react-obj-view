@@ -147,7 +147,7 @@ export const getEntriesCbOriginal = (
 
 };
 
-
+// const bindGetEntriesCbOriginal = (config: WalkingConfig, cb) => (value: unknown) => getEntriesCbOriginal(value, config, cb)
 
 export const getEntriesCb = (
     value: unknown,
@@ -158,12 +158,12 @@ export const getEntriesCb = (
 
     const prototype = value?.constructor
 
-    if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
-
-        config.resolver?.get(value?.constructor)?.(
+    if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
+        config.resolver?.get(prototype)?.(
             value,
             cb,
-            getEntriesCbOriginal,
+            (value) => getEntriesCbOriginal(value, config, cb),
+            // bindGetEntriesCbOriginal(config, cb),
             isPreview,
         )
     } else {

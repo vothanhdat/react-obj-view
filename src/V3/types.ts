@@ -5,10 +5,10 @@ import { WalkingConfig } from "./NodeData";
 
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
-export type ResolverFn = (
-    value: unknown,
+export type ResolverFn<T = any> = (
+    value: T,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void,
-    resolveOriginal: (value: unknown, config: WalkingConfig, cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void),
+    next: (value: unknown) => void,
     isPreview: boolean
 ) => void
 

@@ -76,7 +76,8 @@ export class NodeResult implements WalkingResult {
             userExpand: this.userExpand,
             updateToken: this.updateToken,
             updateStamp: this.updateStamp,
-            path: this.path
+            path: this.path,
+            paths: this.paths,
         })
     }
 
