@@ -5,8 +5,8 @@ import { ResolverFn } from "./types";
 import { DEFAULT_RESOLVER } from "./resolver";
 import { WalkingConfig } from "./types";
 import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
-import { RenderNode } from "../Virtualize/RenderNode";
-import "../Virtualize/style.css"
+import { RenderNode } from "../Components/RenderNode";
+import "../Components/style.css"
 
 export const V5Index: React.FC<ObjectViewProps> = ({
     valueGetter,
