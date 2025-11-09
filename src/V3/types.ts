@@ -1,5 +1,4 @@
 import React from "react";
-import { WalkingConfig } from "./NodeData";
 
 
 
@@ -53,4 +52,10 @@ export type Entry = {
     key: PropertyKey
     value: unknown,
     enumerable: boolean
+};
+export type WalkingConfig = {
+    expandDepth: number;
+    nonEnumerable: boolean;
+    symbol?: boolean;
+    resolver: Map<any, ResolverFn> | undefined;
 };

@@ -2,15 +2,12 @@ import { useMemo } from "react";
 import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
 import { Entry, ResolverFn } from "../V3/types";
 import { getEntriesCb } from "../V3/getEntries";
-import { NodeData as NodeV4 } from "../V4/NodeData";
-import { NodeData as NodeV3 } from "../V3/NodeData";
+
 import { objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
 import { withPromiseWrapper } from "./PromiseWrapper";
 import { CustomEntry, CustomIterator } from "../V3/resolver";
 
-export type NodeData = NodeV3 | NodeV4 | (WalkingResult & { depth: number })
-
-
+export type NodeData = (WalkingResult & { depth: number, path: string })
 
 
 const NodeRenderDefault: React.FC<{

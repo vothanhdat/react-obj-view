@@ -1,6 +1,6 @@
 import { isRef } from "../utils/isRef";
 import { getEntriesCb } from "../V3/getEntries";
-import { WalkingConfig } from "../V3/NodeData"
+import { WalkingConfig } from "../V3/types";
 import { CircularChecking } from "../V4/CircularChecking";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";
 import { GetStateFn, StateFactory } from "./StateFactory";
@@ -25,24 +25,10 @@ export type WalkingResult = {
 }
 
 
-export class NodeResult implements WalkingResult {
-    value!: unknown
-    cumulate!: number[]
-    name!: PropertyKey
-    keys!: PropertyKey[]
-    count!: number
-    enumerable!: boolean
-    maxDepth!: number
-    expandedDepth!: number
-    expanded!: boolean
-    isCircular!: boolean
-    childCanExpand!: boolean
-    userExpand?: boolean
-    updateToken?: number
-    updateStamp!: number
-
+export class NodeResult {
+  
     constructor(
-        state: WalkingResult,
+        public state: WalkingResult,
         public depth: number,
         public paths: PropertyKey[],
     ) {
@@ -60,22 +46,23 @@ export class NodeResult implements WalkingResult {
             }).join("/");
     }
 
-    getData() {
+    getData(): WalkingResult & { depth: number } {
+        const state = this.state
         return ({
-            value: this.value,
-            cumulate: this.cumulate,
-            name: this.name,
-            count: this.count,
+            value: state.value,
+            cumulate: state.cumulate,
+            name: state.name,
+            count: state.count,
             depth: this.depth,
-            enumerable: this.enumerable,
-            maxDepth: this.maxDepth,
-            expandedDepth: this.expandedDepth,
-            expanded: this.expanded,
-            isCircular: this.isCircular,
-            childCanExpand: this.childCanExpand,
-            userExpand: this.userExpand,
-            updateToken: this.updateToken,
-            updateStamp: this.updateStamp,
+            enumerable: state.enumerable,
+            maxDepth: state.maxDepth,
+            expandedDepth: state.expandedDepth,
+            expanded: state.expanded,
+            isCircular: state.isCircular,
+            childCanExpand: state.childCanExpand,
+            userExpand: state.userExpand,
+            updateToken: state.updateToken,
+            updateStamp: state.updateStamp,
             path: this.path,
             paths: this.paths,
         })

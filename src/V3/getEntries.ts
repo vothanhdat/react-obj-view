@@ -1,7 +1,6 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
-import type { WalkingConfig } from "./NodeData";
 import { InternalPromise } from "./resolver";
-import type { Entry } from "./types";
+import type { Entry, WalkingConfig } from "./types";
 
 
 

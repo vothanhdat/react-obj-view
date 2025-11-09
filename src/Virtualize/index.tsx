@@ -3,7 +3,8 @@ import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "../ObjectViewV2/ObjectViewProps";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
-import { WalkingConfig, walkingFactory } from "../V3/NodeData";
+import { walkingFactory } from "../V3/NodeData";
+import { WalkingConfig } from "../V3/types";
 import { NodeData, RenderNode } from "./RenderNode";
 import { walkingFactoryV4 } from "../V4/walkingV4";
 import { linkListToArray as linkToArrV4 } from "../V4/LinkedNode";

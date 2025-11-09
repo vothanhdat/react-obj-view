@@ -3,7 +3,7 @@ import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "../ObjectViewV2/ObjectViewProps";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
-import { WalkingConfig, walkingFactory } from "../V3/NodeData";
+import { WalkingConfig } from "../V3/types";
 import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
 import "../Virtualize/style.css"
