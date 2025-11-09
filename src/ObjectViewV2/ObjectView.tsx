@@ -13,7 +13,7 @@ export const NameRender: React.FC<{ name: string }> = ({ name }) => {
 }
 
 export type ObjectViewProps = {
-    value: any;
+    valueGetter: any;
     name?: string;
     style?: any;
     expandLevel?: number | boolean;

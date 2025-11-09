@@ -66,105 +66,105 @@ export class InternalPromise {
     }
 }
 
-const iteraterResolver: ResolverFn = function* (
+const iteraterResolver: ResolverFn = (
     e: CustomIterator,
-    entries: Generator<Entry, any, any>,
-    isPreview: boolean
-) {
-    for (let e of entries) { }
-
-    let iterator = e.iterator()
+    _entries: Entry[],
+    _isPreview: boolean
+) => {
+    const iterator = e.iterator()
+    const entries: Entry[] = []
 
     if (Object.getPrototypeOf(iterator) == MapIterater) {
         let index = 0
 
         for (let [key, value] of iterator) {
-            yield {
+            entries.push({
                 key: index++,
                 value: new CustomEntry(key, value),
                 enumerable: true
-            }
+            })
         }
     } else {
         let index = 0
 
         for (let entry of iterator) {
-            yield {
+            entries.push({
                 key: index++,
                 value: entry,
                 enumerable: true
-            }
+            })
         }
     }
 
+    return entries
 }
 
-const mapResolver: ResolverFn = function* (
+const mapResolver: ResolverFn = (
     map: Map<any, any>,
-    entries: Generator<Entry, any, any>,
+    entries: Entry[],
     isPreview: boolean
-) {
+) => {
+    const resolvedEntries: Entry[] = []
     if (isPreview) {
         let index = 0
         for (let [key, value] of map.entries()) {
-            yield {
+            resolvedEntries.push({
                 key: index++,
                 value: new CustomEntry(key, value),
                 enumerable: true
-            }
+            })
         }
     } else {
-        yield {
+        resolvedEntries.push({
             key: "[[Entries]]",
             value: new CustomIterator(() => map.entries(), map.size),
             enumerable: false
-        }
+        })
 
-        yield {
+        resolvedEntries.push({
             key: "size",
             value: map.size,
             enumerable: true
-        }
+        })
     }
 
-    for (let e of entries) {
-        yield e
-    }
+    resolvedEntries.push(...entries)
+    return resolvedEntries
 }
 
-const setResolver: ResolverFn = function* (
+const setResolver: ResolverFn = (
     set: Set<any>,
-    entries: Generator<Entry, any, any>,
+    entries: Entry[],
     isPreview: boolean
-) {
+) => {
+    const resolvedEntries: Entry[] = []
     if (isPreview) {
+        let index = 0
         for (let value of set.values()) {
-            let index = 0
-            yield {
+            resolvedEntries.push({
                 key: index++,
                 value,
                 enumerable: true
-            }
+            })
         }
     } else {
 
-        yield {
+        resolvedEntries.push({
             key: "[[Entries]]",
             value: new CustomIterator(() => set.values(), set.size),
             enumerable: false
-        }
+        })
 
-        yield {
+        resolvedEntries.push({
             key: "size",
             value: set.size,
             enumerable: true
-        }
+        })
     }
 
 
-    for (let e of entries) {
-        yield e
-    }
+    resolvedEntries.push(...entries)
+    return resolvedEntries
 }
 
 const PendingSymbol = Symbol("Pending")
@@ -187,27 +187,25 @@ const getPromiseStatus = weakMapCache(
     }
 )
 
-const promiseResolver: ResolverFn = function* (
+const promiseResolver: ResolverFn = (
     e: Promise<any>,
-    entries: Generator<Entry, any, any>,
+    entries: Entry[],
     isPreview: boolean
-) {
+) => {
     let { result, status } = getPromiseStatus(e)
 
-    yield {
+    const resolvedEntries: Entry[] = [{
         key: "[[status]]",
         value: InternalPromise.getInstance(status),
         enumerable: isPreview
-    }
-    yield {
+    }, {
         key: "[[result]]",
         value: InternalPromise.getInstance(result),
         enumerable: isPreview
-    }
+    }]
 
-    for (let e of entries) {
-        yield e
-    }
+    resolvedEntries.push(...entries)
+    return resolvedEntries
 }
 
 
@@ -218,5 +216,4 @@ export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn
     [CustomIterator, iteraterResolver],
     [Promise, promiseResolver],
 ]);
-
 

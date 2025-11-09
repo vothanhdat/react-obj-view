@@ -42,77 +42,77 @@ const pickEntries = (entries: Entry[], keys: Array<string>): Entry[] => {
     return picked;
 };
 
-const userResolver: ResolverFn = function* (user: User, iterator, isPreview) {
+const userResolver: ResolverFn = (user: User, iterator, isPreview) => {
     const entries = [...iterator];
+    const result: Entry[] = [];
+
     if (isPreview) {
-        yield {
+        result.push({
             key: 'summary',
             value: `${user.name} • ${user.email}`,
             enumerable: true,
-        };
+        });
         if (user.role !== 'user') {
-            yield {
+            result.push({
                 key: 'role',
                 value: user.role,
                 enumerable: true,
-            };
+            });
         }
-        return;
+        return result;
     }
 
     const prioritized = pickEntries(entries, ['name', 'email', 'role']);
-    for (const entry of prioritized) {
-        yield entry;
-    }
+    result.push(...prioritized);
 
     if (user.role !== 'user') {
-        yield {
+        result.push({
             key: 'badge',
             value: `⭐ ${user.role.toUpperCase()}`,
             enumerable: true,
-        };
+        });
     }
 
-    for (const entry of entries) {
-        yield entry;
-    }
+    result.push(...entries);
+    return result;
 };
 
-const apiEndpointResolver: ResolverFn = function* (endpoint: APIEndpoint, iterator, isPreview) {
+const apiEndpointResolver: ResolverFn = (endpoint: APIEndpoint, iterator, isPreview) => {
     const entries = [...iterator];
+    const result: Entry[] = [];
+
     if (isPreview) {
-        yield {
+        result.push({
             key: 'request',
             value: `${endpoint.method} ${endpoint.url}`,
             enumerable: true,
-        };
-        yield {
+        });
+        result.push({
             key: 'status',
             value: endpoint.status,
             enumerable: true,
-        };
-        return;
+        });
+        return result;
     }
 
     const [methodEntry, urlEntry, statusEntry, responseTimeEntry] = pickEntries(entries, ['method', 'url', 'status', 'responseTime']);
-    if (methodEntry) yield methodEntry;
-    if (urlEntry) yield urlEntry;
-    if (statusEntry) yield statusEntry;
+    if (methodEntry) result.push(methodEntry);
+    if (urlEntry) result.push(urlEntry);
+    if (statusEntry) result.push(statusEntry);
 
-    yield {
+    result.push({
         key: 'responseTimeLabel',
         value: `${endpoint.responseTime}ms`,
         enumerable: true,
-    };
+    });
 
-    if (responseTimeEntry) yield responseTimeEntry;
+    if (responseTimeEntry) result.push(responseTimeEntry);
 
     const [dataEntry] = pickEntries(entries, ['data']);
-    if (dataEntry) yield dataEntry;
+    if (dataEntry) result.push(dataEntry);
 
-    for (const entry of entries) {
-        yield entry;
-    }
+    result.push(...entries);
+    return result;
 };
 
 // Create custom data with new classes
@@ -138,8 +138,14 @@ const createCustomExampleData = () => ({
     }
 });
 
+type TestDataOption = {
+    label: string;
+    value: any;
+    category: string;
+};
+
 // Create a flat list of all available test data for the dropdown
-const testDataOptions = [
+const testDataOptions: TestDataOption[] = [
     // Quick Examples
     { label: 'Quick - Simple Object', value: quickExamples.simple, category: 'Quick' },
     { label: 'Quick - Moderate Nested', value: quickExamples.moderate, category: 'Quick' },
@@ -208,8 +214,10 @@ const testDataOptions = [
 ];
 
 export const Test = () => {
+    "use no memo";
+
     const [selectedData, setSelectedData] = useState(testDataOptions[0]);
-    const [expandLevel, setExpandLevel] = useState<number | boolean>(1);
+    const [expandLevel, setExpandLevel] = useState<number | boolean>(true);
     const [customData, setCustomData] = useState('{\n  "name": "Custom Data",\n  "value": 123,\n  "nested": {\n    "array": [1, 2, 3],\n    "boolean": true\n  }\n}');
     const [isCustomMode, setIsCustomMode] = useState(false);
     const [customDataParsed, setCustomDataParsed] = useState<any>(null);
@@ -280,28 +288,33 @@ export const Test = () => {
         }
     };
 
-    const getCurrentData = () => {
-        if (isCustomMode) {
-            return customDataParsed || { error: 'Invalid JSON', message: parseError };
-        }
-        return selectedData.value;
-    };
+    // Group options by category for better organization without recomputing on every render
+    const groupedOptions = useMemo<Record<string, Array<TestDataOption & { index: number }>>>(() => {
+        return testDataOptions.reduce((acc, option, index) => {
+            if (!acc[option.category]) {
+                acc[option.category] = [];
+            }
+            acc[option.category].push({ ...option, index });
+            return acc;
+        }, {} as Record<string, Array<TestDataOption & { index: number }>>);
+    }, []);
 
-    const getCurrentLabel = () => {
+    const invalidCustomData = useMemo(() => ({ error: 'Invalid JSON', message: parseError }), [parseError]);
+
+    const currentDataGetter = useMemo(() => {
+        if (isCustomMode) {
+            return () => (customDataParsed || invalidCustomData);
+        }
+        return () => selectedData.value;
+    }, [customDataParsed, invalidCustomData, isCustomMode, selectedData]);
+    
+
+    const currentLabel = useMemo(() => {
         if (isCustomMode) {
             return parseError ? 'Custom Data (Invalid JSON)' : 'Custom Data';
         }
         return selectedData.label;
-    };
-
-    // Group options by category for better organization
-    const groupedOptions = testDataOptions.reduce((acc, option, index) => {
-        if (!acc[option.category]) {
-            acc[option.category] = [];
-        }
-        acc[option.category].push({ ...option, index });
-        return acc;
-    }, {} as Record<string, Array<typeof testDataOptions[0] & { index: number }>>);
+    }, [isCustomMode, parseError, selectedData]);
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
@@ -574,7 +587,7 @@ export const Test = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <h3>Currently Viewing: {getCurrentLabel()}</h3>
+                    <h3>Currently Viewing: {currentLabel}</h3>
                     <p style={{ color: '#666', fontSize: '14px' }}>
                         {!isCustomMode && (
                             <>
@@ -614,7 +627,7 @@ export const Test = () => {
                     >
 
                         <V5Index
-                            value={getCurrentData()}
+                            valueGetter={currentDataGetter}
                             name="testData"
                             expandLevel={expandLevel}
                             highlightUpdate={enableHighlighting}

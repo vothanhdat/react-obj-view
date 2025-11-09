@@ -11,7 +11,7 @@ export const AllChildsPreview: React.FC<{ value: any; style?: React.CSSPropertie
     const resolver = useResolver(value, context)
 
     const allIterators = useMemo(
-        () => [...resolver(value, createIterator(false, false)(value), true).take(6)],
+        () => resolver(value, createIterator(false, false)(value), true).slice(0, 6),
         [value, resolver]
     );
 

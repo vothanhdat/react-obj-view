@@ -1,10 +1,16 @@
 import React from "react";
+import { WalkingConfig } from "./NodeData";
 
 
 
 export type Constructor<T = {}> = new (...args: any[]) => T;
 
-export type ResolverFn = (e: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>
+export type ResolverFn = (
+    value: unknown,
+    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void,
+    resolveOriginal: (value: unknown, config: WalkingConfig, cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void),
+    isPreview: boolean
+) => void
 
 export type JSONViewCtx = {
     expandLevel: number;
@@ -48,4 +54,3 @@ export type Entry = {
     value: unknown,
     enumerable: boolean
 };
-

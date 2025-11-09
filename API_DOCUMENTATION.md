@@ -43,7 +43,7 @@ interface ObjectViewProps {
 }
 
 type Constructor<T = {}> = new (...args: any[]) => T;
-type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type ResolverFn = (value: any, entries: Entry[], isPreview: boolean) => Entry[];
 type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
 ```
 
@@ -124,23 +124,22 @@ Threshold for grouping array elements. Arrays longer than this number render as 
 ```
 
 ##### `resolver?: Map<Constructor, ResolverFn>`
-Override or extend rendering for specific constructors. Resolvers are generators that can reorder, rewrite, or augment entries yielded for a value.
+Override or extend rendering for specific constructors. Resolvers are functions that can reorder, rewrite, or augment the entry list for a value.
 
 **Default:** `undefined` (uses built-in resolvers for `Promise` and `Error`)
 
 **Example:**
 ```tsx
 type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
-type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type ResolverFn = (value: any, entries: Entry[], isPreview: boolean) => Entry[];
 
 const resolver = new Map<Function, ResolverFn>([
-  [User, function* (user, iterator, isPreview) {
+  [User, (user, iterator, isPreview) => {
     const entries = [...iterator];
     if (isPreview) {
-      yield { name: 'summary', data: user.name, isNonenumerable: false };
-      return;
+      return [{ name: 'summary', data: user.name, isNonenumerable: false }];
     }
-    yield* entries;
+    return entries;
   }],
 ]);
 
@@ -310,9 +309,9 @@ type Entry = {
 
 type ResolverFn = (
   value: any,
-  entries: Generator<Entry>,
+  entries: Entry[],
   isPreview: boolean
-) => Generator<Entry>;
+) => Entry[];
 
 interface JSONViewCtx {
   expandLevel: number;
@@ -355,11 +354,11 @@ import 'react-obj-view/dist/react-obj-view.css';
 **Solution**: Define helper types for resolver signatures and reuse them:
 ```tsx
 type Entry = { name: PropertyKey; data: unknown; isNonenumerable: boolean };
-type ResolverFn = (value: unknown, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type ResolverFn = (value: unknown, entries: Entry[], isPreview: boolean) => Entry[];
 
 const resolvers = new Map<Function, ResolverFn>([
-  [MyClass, function* myResolver(value, iterator) {
-    yield* iterator; // customize as needed
+  [MyClass, (value, iterator) => {
+    return [...iterator]; // customize as needed
   }],
 ]);
 ```

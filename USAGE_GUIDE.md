@@ -326,12 +326,13 @@ class APIEndpoint {
 }
 
 type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
-type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type ResolverFn = (value: any, entries: Entry[], isPreview: boolean) => Entry[];
 
 const createEndpointResolvers = (): Map<Function, ResolverFn> => {
   return new Map([
-    [APIEndpoint, function* endpointResolver(endpoint, iterator, isPreview) {
+    [APIEndpoint, (endpoint, iterator, isPreview) => {
       const entries = [...iterator];
+      const result: Entry[] = [];
 
       const pull = (key: string) => {
         const index = entries.findIndex(entry => String(entry.name) === key);
@@ -343,29 +344,30 @@ const createEndpointResolvers = (): Map<Function, ResolverFn> => {
       };
 
       if (isPreview) {
-        yield { name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false };
-        yield { name: 'status', data: endpoint.status, isNonenumerable: false };
-        return;
+        result.push({ name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false });
+        result.push({ name: 'status', data: endpoint.status, isNonenumerable: false });
+        return result;
       }
 
       const methodEntry = pull('method');
       const urlEntry = pull('url');
       const statusEntry = pull('status');
 
-      if (methodEntry) yield methodEntry;
-      if (urlEntry) yield urlEntry;
-      if (statusEntry) yield statusEntry;
+      if (methodEntry) result.push(methodEntry);
+      if (urlEntry) result.push(urlEntry);
+      if (statusEntry) result.push(statusEntry);
 
-      yield {
+      result.push({
         name: 'responseTimeLabel',
         data: `${endpoint.responseTime}ms`,
         isNonenumerable: false,
-      };
+      });
 
       const dataEntry = pull('data');
-      if (dataEntry) yield dataEntry;
+      if (dataEntry) result.push(dataEntry);
 
-      yield* entries;
+      result.push(...entries);
+      return result;
     }],
   ]);
 };

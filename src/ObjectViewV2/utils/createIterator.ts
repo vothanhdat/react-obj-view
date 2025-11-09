@@ -7,7 +7,7 @@ export function getPropertyValue(object: any, propertyName: PropertyKey) {
     const propertyDescriptor = Object.getOwnPropertyDescriptor(object, propertyName);
     if (propertyDescriptor?.get) {
         try {
-            return propertyDescriptor.get.bind(object)();
+            return propertyDescriptor.get.call(object);
         } catch {
 
         }
@@ -21,13 +21,14 @@ export function getPropertyValue(object: any, propertyName: PropertyKey) {
     return undefined
 }
 
-export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (data: any) => Generator<Entry> => {
+export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (data: any) => Entry[] => {
 
-    const objectIterator = function* (data: any) {
+    const objectIterator = (data: any): Entry[] => {
         const shouldIterate = (typeof data === 'object' && data !== null) || typeof data === 'function';
-        if (!shouldIterate) return;
+        if (!shouldIterate) return [];
 
         const dataIsArray = Array.isArray(data);
+        const entries: Entry[] = [];
 
         // iterable objects (except arrays)
         if (!dataIsArray && data[Symbol.iterator]) {
@@ -35,19 +36,19 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
             for (const entry of data) {
                 if (Array.isArray(entry) && entry.length === 2) {
                     const [k, v] = entry;
-                    yield {
+                    entries.push({
                         key: k,
                         value: v,
                         enumerable: true,
 
-                    };
+                    });
                 } else {
-                    yield {
+                    entries.push({
                         key: i.toString(),
                         value: entry,
                         enumerable: true,
 
-                    };
+                    });
                 }
                 i++;
             }
@@ -63,11 +64,11 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
             for (const propertyName of keys) {
                 if (propertyIsEnumerable.call(data, propertyName)) {
                     const propertyValue = getPropertyValue(data, propertyName);
-                    yield {
+                    entries.push({
                         key: propertyName || `""`,
                         value: propertyValue,
                         enumerable: true,
-                    };
+                    });
                 } else if (showNonenumerable) {
                     // To work around the error (happens some time when propertyName === 'caller' || propertyName === 'arguments')
                     // 'caller' and 'arguments' are restricted function properties and cannot be accessed in this context
@@ -81,11 +82,11 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
                     }
 
                     if (propertyValue !== undefined) {
-                        yield {
+                        entries.push({
                             key: propertyName,
                             value: propertyValue,
                             enumerable: false,
-                        };
+                        });
                     }
                 }
             }
@@ -94,16 +95,17 @@ export const createIterator = (showNonenumerable: any, sortObjectKeys: any): (da
             // the property name is shown as "__proto__"
             if (showNonenumerable && data !== Object.prototype /* already added */) {
                 // if (showNonenumerable && data !== Object.prototype /* already added */) {
-                yield {
+                entries.push({
                     key: '__proto__',
                     value: Object.getPrototypeOf(data),
                     enumerable: false,
-                };
+                });
             }
         }
+
+        return entries;
     };
 
     return objectIterator;
 };
-
 

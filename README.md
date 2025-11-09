@@ -18,7 +18,7 @@ Experience all features hands-on including resolver overrides, keyword styling, 
 - 🔄 **Circular Reference Safe**: Safely handles circular references without infinite loops
 - ⚡ **Performance Optimized**: Efficient rendering with lazy loading and change detection
 - 🎨 **Customizable Styling**: Built-in CSS with full customization support
-- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with generator-based resolvers
+- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with custom resolver functions
 - 💡 **Keyword Highlighting**: Special styling for boolean values, null, undefined with keyword badges
 - � **TypeScript Ready**: Complete TypeScript support with proper type definitions
 - 🔍 **Developer Friendly**: Perfect for debugging, logging, and data inspection
@@ -301,7 +301,7 @@ const largeDataset = {
 
 ### Resolver Overrides
 
-Fine-tune how specific constructors render by supplying resolver overrides. A resolver is a generator that receives the current value, the default entry iterator, and a `isPreview` flag. You can yield custom entries, reorder fields, or add derived data before falling back to the defaults.
+Fine-tune how specific constructors render by supplying resolver overrides. A resolver is a function that receives the current value, the default entry list, and an `isPreview` flag. You can return a reordered array, inject derived data, or strip entries as needed.
 
 ```tsx
 import React, { useMemo } from 'react';
@@ -321,20 +321,21 @@ class APIEndpoint {
 }
 
 type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
-type ResolverFn = (value: any, entries: Generator<Entry>, isPreview: boolean) => Generator<Entry>;
+type ResolverFn = (value: any, entries: Entry[], isPreview: boolean) => Entry[];
 
 const createResolvers = (): Map<Function, ResolverFn> => {
   const resolvers = new Map<Function, ResolverFn>();
 
-  resolvers.set(User, function* (user, iterator, isPreview) {
+  resolvers.set(User, (user, iterator, isPreview) => {
     const entries = [...iterator];
+    const result: Entry[] = [];
 
     if (isPreview) {
-      yield { name: 'summary', data: `${user.name} • ${user.email}`, isNonenumerable: false };
+      result.push({ name: 'summary', data: `${user.name} • ${user.email}`, isNonenumerable: false });
       if (user.role !== 'user') {
-        yield { name: 'role', data: user.role, isNonenumerable: false };
+        result.push({ name: 'role', data: user.role, isNonenumerable: false });
       }
-      return;
+      return result;
     }
 
     const important = ['name', 'email', 'role'];
@@ -342,24 +343,26 @@ const createResolvers = (): Map<Function, ResolverFn> => {
       const index = entries.findIndex(entry => String(entry.name) === key);
       if (index >= 0) {
         const [entry] = entries.splice(index, 1);
-        yield entry;
+        result.push(entry);
       }
     }
 
     if (user.role !== 'user') {
-      yield { name: 'badge', data: `⭐ ${user.role.toUpperCase()}`, isNonenumerable: false };
+      result.push({ name: 'badge', data: `⭐ ${user.role.toUpperCase()}`, isNonenumerable: false });
     }
 
-    yield* entries;
+    result.push(...entries);
+    return result;
   });
 
-  resolvers.set(APIEndpoint, function* (endpoint, iterator, isPreview) {
+  resolvers.set(APIEndpoint, (endpoint, iterator, isPreview) => {
     const entries = [...iterator];
+    const result: Entry[] = [];
 
     if (isPreview) {
-      yield { name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false };
-      yield { name: 'status', data: endpoint.status, isNonenumerable: false };
-      return;
+      result.push({ name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false });
+      result.push({ name: 'status', data: endpoint.status, isNonenumerable: false });
+      return result;
     }
 
     const ordered = ['method', 'url', 'status'];
@@ -367,17 +370,18 @@ const createResolvers = (): Map<Function, ResolverFn> => {
       const index = entries.findIndex(entry => String(entry.name) === key);
       if (index >= 0) {
         const [entry] = entries.splice(index, 1);
-        yield entry;
+        result.push(entry);
       }
     }
 
-    yield {
+    result.push({
       name: 'responseTimeLabel',
       data: `${endpoint.responseTime}ms`,
       isNonenumerable: false,
-    };
+    });
 
-    yield* entries;
+    result.push(...entries);
+    return result;
   });
 
   return resolvers;

@@ -1,8 +1,102 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
 import type { WalkingConfig } from "./NodeData";
 import { InternalPromise } from "./resolver";
+import type { Entry } from "./types";
 
-export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
+
+
+export const getEntriesOrignal = (value: any, config: WalkingConfig): Entry[] => {
+
+    const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
+
+    if (!shouldIterate) return [];
+
+    let entries: Entry[] = []
+
+    if (value instanceof Array) {
+
+        for (let index = 0; index < value.length; index++) {
+            entries.push({
+                key: index,
+                value: value[index],
+                enumerable: true
+            })
+        }
+
+    } else {
+
+        const keys = config.nonEnumerable
+            ? Object.getOwnPropertyNames(value)
+            : Object.keys(value)
+
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index]
+            const enumerable = config.nonEnumerable ? propertyIsEnumerable.call(value, key) : true
+            entries.push({
+                key,
+                value: enumerable ? value[key] : getPropertyValue(value, key),
+                enumerable,
+            })
+        }
+
+    }
+
+    if (config.symbol) {
+        for (var symbol of Object.getOwnPropertySymbols(value)) {
+            entries.push({
+                key: symbol,
+                value: getPropertyValue(value, symbol),
+                enumerable: propertyIsEnumerable.call(value, symbol),
+            });
+        }
+    }
+
+    if (config.nonEnumerable && value !== Object.prototype /* already added */) {
+        entries.push({
+            key: '[[Prototype]]',
+            value: Object.getPrototypeOf(value),
+            enumerable: false,
+        });
+    }
+
+
+    return entries
+};
+
+
+export const getEntries = function (
+    value: any,
+    config: WalkingConfig,
+    isPreview = false,
+): Entry[] {
+    const prototype = value?.constructor
+
+    let baseEntries: Entry[] | undefined = undefined;
+
+    if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
+        baseEntries = getEntriesOrignal(value, config);
+        const resolverResult = config.resolver?.get(value?.constructor)?.(
+            value,
+            baseEntries,
+            isPreview,
+        )
+
+        if (resolverResult)
+            return resolverResult;
+    }
+    if (value instanceof InternalPromise) {
+        return getEntries(value.value, config, isPreview)
+    }
+    return baseEntries || getEntriesOrignal(value, config)
+
+};
+
+
+export const getEntriesCbOriginal = (
+    value: unknown,
+    config: WalkingConfig,
+    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+) => {
 
     const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
 
@@ -10,60 +104,70 @@ export const getEntriesOrignal = function* (value: any, config: WalkingConfig) {
 
     if (value instanceof Array) {
 
-        for (let key = 0; key < value.length; key++) {
-            yield { key, value: value[key], enumerable: true };
+        for (let index = 0; index < value.length; index++) {
+            if (cb(index, value[index], true))
+                return;
         }
 
     } else {
-        const keys = config.nonEnumerable
+        const nonEnumerable = config.nonEnumerable
+
+        const keys = nonEnumerable
             ? Object.getOwnPropertyNames(value)
             : Object.keys(value)
 
-        for (var key of keys) {
-            yield {
+        for (let key of keys) {
+            const enumerable = config.nonEnumerable ? propertyIsEnumerable.call(value, key) : true
+            if (cb(
                 key,
-                value: getPropertyValue(value, key),
-                enumerable: propertyIsEnumerable.call(value, key),
-            };
+                enumerable ? value[key] : getPropertyValue(value, key),
+                enumerable,
+            )) return;
         }
+
     }
 
     if (config.symbol) {
         for (var symbol of Object.getOwnPropertySymbols(value)) {
-            yield {
-                key: symbol,
-                value: getPropertyValue(value, symbol),
-                enumerable: propertyIsEnumerable.call(value, symbol),
-            };
+            if (cb(
+                symbol,
+                getPropertyValue(value, symbol),
+                propertyIsEnumerable.call(value, symbol),
+            )) return;
         }
     }
 
-    if (config.nonEnumerable && value !== Object.prototype /* already added */) {
-        yield {
-            key: '[[Prototype]]',
-            value: Object.getPrototypeOf(value),
-            enumerable: false,
-        };
+    if (config.nonEnumerable && value !== Object.prototype) {
+        if (cb(
+            '[[Prototype]]',
+            Object.getPrototypeOf(value),
+            false,
+        )) return;
     }
+
 };
 
 
 
-export const getEntries = function (value: any, config: WalkingConfig, isPreview = false) {
+export const getEntriesCb = (
+    value: unknown,
+    config: WalkingConfig,
+    isPreview: boolean,
+    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+) => {
+
     const prototype = value?.constructor
+
     if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
-        let iterator = config.resolver?.get(value?.constructor)?.(
+
+        config.resolver?.get(value?.constructor)?.(
             value,
-            getEntriesOrignal(value, config),
+            cb,
+            getEntriesCbOriginal,
             isPreview,
         )
-
-        if (iterator)
-            return iterator;
+    } else {
+        getEntriesCbOriginal(value, config, cb)
     }
-    if (value instanceof InternalPromise) {
-        return getEntries(value.value, config, isPreview)
-    }
-    return getEntriesOrignal(value, config)
 
 };

@@ -160,10 +160,11 @@ export const RenderPreview: React.FC<{
 }> = ({ value, resolver, depth = 0 }) => {
 
     let iterator = useMemo(
-        () => [
-            ...getEntries(value, { expandDepth: 0, nonEnumerable: false, resolver, symbol: false }, true)
-                .take(6)
-        ],
+        () => getEntries(
+            value,
+            { expandDepth: 0, nonEnumerable: false, resolver, symbol: false },
+            true
+        ).slice(0, 6),
         [resolver, value]
     )
 

@@ -2,7 +2,7 @@ import { PromiseWrapper } from "./ResolvePromiseWrapper";
 import { Entry, JSONViewCtx, ResolverFn } from "./types";
 
 
-const promiseResolver: ResolverFn = function* (promise: Promise<any>, entriesIterator: Generator<Entry, any, any>, isPreview: boolean) {
+const promiseResolver: ResolverFn = (promise: Promise<any>, entriesIterator: Entry[], isPreview: boolean) => {
 
     let pendingSym = Symbol("Pending");
 
@@ -11,16 +11,14 @@ const promiseResolver: ResolverFn = function* (promise: Promise<any>, entriesIte
         .then(e => e == pendingSym ? { status: "pending" } : { status: "resolved", result: e })
         .catch(e => ({ status: "rejected", reason: e }));
 
-    for (let entry of entriesIterator) {
-        yield entry;
-    }
+    const entries = [...entriesIterator];
 
-    yield {
+    entries.push({
         key: isPreview ? "status" : "[[PromiseState]]",
         value: new PromiseWrapper(result.then(e => e.status)),
         enumerable: false,
-    };
-    yield {
+    });
+    entries.push({
         key: isPreview ? "result" : "[[PromiseResult]]",
         value: new PromiseWrapper(
             result.then(e => e.status == "resolved" ? e.result
@@ -28,41 +26,43 @@ const promiseResolver: ResolverFn = function* (promise: Promise<any>, entriesIte
                     : undefined)
         ),
         enumerable: false,
-    };
+    });
+
+    return entries;
 };
 
-const errorResolver: ResolverFn = function* (error: Error, entriesIterator: Generator<Entry, any, any>, isPreview: boolean) {
+const errorResolver: ResolverFn = (error: Error, entriesIterator: Entry[], isPreview: boolean) => {
 
-
-    for (let entry of entriesIterator) {
-        if (entry.key != "message") {
-            yield entry;
-        }
-    }
+    const entries = entriesIterator.filter(entry => entry.key != "message");
 
     if (error instanceof Error) {
-        error.name && (yield {
-            key: "name",
-            value: error.name,
-            enumerable: false,
-        })
-        yield {
+        if (error.name) {
+            entries.push({
+                key: "name",
+                value: error.name,
+                enumerable: false,
+            });
+        }
+        entries.push({
             key: isPreview ? "msg" : "message",
             value: error.message,
             enumerable: false,
-        };
-        yield {
+        });
+        entries.push({
             key: "stack",
             value: error.stack,
             enumerable: false,
-        };
-        error.cause && (yield {
-            key: "cause",
-            value: error.cause,
-            enumerable: false,
-        })
+        });
+        if (error.cause) {
+            entries.push({
+                key: "cause",
+                value: error.cause,
+                enumerable: false,
+            });
+        }
     }
 
+    return entries;
 };
 
 
@@ -70,5 +70,4 @@ export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn
     [Promise, promiseResolver],
     [Error, errorResolver],
 ]);
-
 

@@ -15,7 +15,7 @@ type ExpandTree = { [key in PropertyKey]?: ExpandState };
 export type WalkingConfig = {
     expandDepth: number,
     nonEnumerable: boolean,
-    symbol: boolean,
+    symbol?: boolean,
     resolver: Map<any, ResolverFn> | undefined,
 }
 

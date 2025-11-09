@@ -235,7 +235,7 @@ export const walkingFactoryV4 = () => {
     const stateRead = getStateOnly(rootMapState)
 
     const getIterator = (value: any, config: any) => getEntries(value, config)
-        .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))
+        .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))[Symbol.iterator]()
 
     let walkingCounter = 0
 
@@ -378,4 +378,3 @@ function traverseNodeGraph(
 
     console.log("stepCounter %s", stepCounter)
 }
-

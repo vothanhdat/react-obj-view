@@ -6,49 +6,63 @@ import { DEFAULT_RESOLVER } from "../V3/resolver";
 import { WalkingConfig, walkingFactory } from "../V3/NodeData";
 import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
-import { NodeData } from "../V4/NodeData";
 import "../Virtualize/style.css"
 
 export const V5Index: React.FC<ObjectViewProps> = ({
-    value,
+    valueGetter,
     name,
     expandLevel,
     highlightUpdate,
-    resolver,
+    resolver: _resolver,
     nonEnumerable = false,
     preview = true,
     showLineNumbers = false,
 }) => {
+    "use no memo";
 
+    let value = useMemo(() => valueGetter(), [valueGetter])
 
-    const { getNodeByIndex, toggleChildExpand, combinedResolver, size } = useFlattenObjectView(
+    const { getNodeByIndex, toggleChildExpand, resolver: combinedResolver, size } = useFlattenObjectView(
         value,
         name,
         typeof expandLevel == 'boolean'
             ? (expandLevel ? 20 : 0)
             : Number(expandLevel),
         nonEnumerable,
-        resolver,
+        _resolver,
     );
 
     const dataPLeft = String(size).length
 
-    const nodeRender = useCallback(
-        (index: number) => <div style={{
-            height: "14px",
-            borderBottom: "solid 1px #8881",
-        }} data-p-left={showLineNumbers ? dataPLeft : 0}>
-            {showLineNumbers &&
-                <span className="index-counter">{String(index).padStart(dataPLeft, " ")}
-                </span>}
-            <RenderNode
-                enablePreview={preview}
-                resolver={combinedResolver}
-                node={getNodeByIndex(index)}
-                toggleChildExpand={toggleChildExpand as any}
-                key={getNodeByIndex(index).path} />
-        </div>,
+    const NodeRender = useCallback(
+        ({ index }: { index: number }) => {
+            const node: NodeResult = getNodeByIndex(index);
+            const nodeData = useMemo(
+                () => node.getData(),
+                [node.updateStamp]
+            )
+
+            return <div style={{
+                height: "14px",
+                borderBottom: "solid 1px #8881",
+            }} data-p-left={showLineNumbers ? dataPLeft : 0}>
+                {showLineNumbers &&
+                    <span className="index-counter">{String(index).padStart(dataPLeft, " ")}
+                    </span>}
+                <RenderNode
+                    enablePreview={preview}
+                    resolver={combinedResolver}
+                    node={nodeData}
+                    toggleChildExpand={toggleChildExpand as any}
+                    key={nodeData.path} />
+            </div>
+        },
         [getNodeByIndex, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
+    )
+
+    const nodeRender = useCallback(
+        (index: number) => <NodeRender index={index} />,
+        [NodeRender, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
     )
 
     const computeItemKey = useCallback(
@@ -69,39 +83,53 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     </>
 }
 
+type ValueRef<T> = RefObject<{ value: T; id: number; }>
 
+const useValueWithID = <T,>(value: any): ValueRef<T> => {
+    let ref = useRef<{ value: T, id: number }>({ value, id: 0 })
+    if (ref.current.value != value) {
+        ref.current.id++;
+        ref.current.value = value
+    }
+    return ref
+}
+
+const useObjectId = <T,>(value: any) => {
+    let ref = useRef<{ value: T, id: number }>({ value, id: 0 })
+    if (ref.current.value !== value) {
+        ref.current.value = value;
+        ref.current.id++;
+    }
+    return ref.current.id
+}
 
 function useFlattenObjectView(
-    value: any,
+    value: ValueRef<unknown>,
     name: string | undefined,
     expandDepth: number,
     nonEnumerable: boolean,
-    resolver: Map<any, ResolverFn> | undefined,
+    _resolver: Map<any, ResolverFn> | undefined,
 ) {
 
-    const combinedResolver = useMemo(
+    const resolver = useMemo(
         () => new Map([
             ...DEFAULT_RESOLVER,
-            ...resolver ?? [],
-        ]), [resolver, DEFAULT_RESOLVER]
+            ..._resolver ?? [],
+        ]),
+        [useObjectId(_resolver), DEFAULT_RESOLVER]
     )
 
     const config = useMemo(
-        () => ({
-            expandDepth,
-            resolver: combinedResolver,
-            nonEnumerable,
-        }) as WalkingConfig,
-        [nonEnumerable, expandDepth, combinedResolver]
+        () => ({ expandDepth, resolver, nonEnumerable, }) as WalkingConfig,
+        [nonEnumerable, expandDepth, resolver]
     )
 
     const [reload, setReload] = useState(0);
 
-    const { refWalk } = useWalkingFn("v3");
+    const { refWalk } = useWalkingFn();
 
     const refWalkResult = useMemo(
         () => {
-            // console.log("walking config", config)
             console.time("walking")
             const result = refWalk.current!.walking(
                 value,
@@ -109,12 +137,13 @@ function useFlattenObjectView(
                 "ROOT",
                 true,
             );
-            console.timeEnd("walking")
-            return result;
-        },
-        [refWalk.current, value, name, config, reload]
-    );
 
+            console.log("updateStamp", result.updateStamp)
+            console.timeEnd("walking")
+            return { ...result };
+        },
+        [refWalk, value, name, reload]
+    );
 
     const toggleChildExpand = useCallback(
         (node: NodeResult) => {
@@ -140,14 +169,12 @@ function useFlattenObjectView(
                 return data
             }
         },
-        [refWalk.current, config, refWalkResult.count, reload, refWalkResult.value]
+        [refWalk.current, config, refWalkResult, reload]
     )
-
-    // console.log("COUNT", refWalkResult.count)
 
     return {
         toggleChildExpand,
-        combinedResolver,
+        resolver,
         getNodeByIndex,
         size: refWalkResult.count,
     };
@@ -155,7 +182,7 @@ function useFlattenObjectView(
 
 type Factory = typeof walkingToIndexFactory
 
-function useWalkingFn(version: "v3" | "v4"): {
+function useWalkingFn(): {
     refWalk: RefObject<ReturnType<Factory> | undefined>,
 } {
     const refWalkFn = useRef<Factory>(undefined);

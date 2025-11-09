@@ -1,5 +1,5 @@
 import { isRef } from "../utils/isRef";
-import { getEntries } from "../V3/getEntries";
+import { getEntries, getEntriesCb } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData"
 import { CircularChecking } from "../V4/CircularChecking";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";
@@ -21,13 +21,9 @@ export type WalkingResult = {
     childCanExpand: boolean,
     userExpand?: boolean,
     updateToken?: number,
+    updateStamp: number,
 }
 
-// export type NodeResult = {
-//     state: WalkingResult,
-//     depth: number,
-//     paths: PropertyKey[],
-// }
 
 export class NodeResult implements WalkingResult {
     value!: unknown
@@ -43,6 +39,7 @@ export class NodeResult implements WalkingResult {
     childCanExpand!: boolean
     userExpand?: boolean
     updateToken?: number
+    updateStamp!: number
 
     constructor(
         state: WalkingResult,
@@ -63,6 +60,26 @@ export class NodeResult implements WalkingResult {
             }).join("/");
     }
 
+    getData() {
+        return ({
+            value: this.value,
+            cumulate: this.cumulate,
+            name: this.name,
+            count: this.count,
+            depth: this.depth,
+            enumerable: this.enumerable,
+            maxDepth: this.maxDepth,
+            expandedDepth: this.expandedDepth,
+            expanded: this.expanded,
+            isCircular: this.isCircular,
+            childCanExpand: this.childCanExpand,
+            userExpand: this.userExpand,
+            updateToken: this.updateToken,
+            updateStamp: this.updateStamp,
+            path: this.path
+        })
+    }
+
 }
 
 export const objectHasChild = (e: unknown) => {
@@ -72,8 +89,43 @@ export const objectHasChild = (e: unknown) => {
 }
 
 
+const getEntriesCbBinded = (
+    value, config, walking, updateToken, depth, getChild,
+    count, maxDepth, childCanExpand, cumulate, keys,
+) => {
+
+
+    getEntriesCb(
+        value, config, false,
+        (key, value, enumerable) => {
+            const result = walking(
+                value, config, key, enumerable,
+                updateToken,
+                depth + 1,
+                getChild(key),
+            );
+
+            count += result.count;
+            maxDepth = Math.max(maxDepth, result.maxDepth)
+            childCanExpand ||= result.childCanExpand;
+            cumulate.push(count)
+            keys.push(key)
+        }
+    )
+
+    return { count, maxDepth, childCanExpand }
+}
+
+const getUpdateToken = (config: WalkingConfig) => {
+    return (
+        (config.nonEnumerable ? 0 : 1)
+        | (getObjectUniqueId(config.resolver) << 1)
+    )
+}
+
 export const walkingToIndexFactory = () => {
 
+    let updateStamp = 0
 
     const { stateFactory, getStateOnly } = StateFactory<WalkingResult>(() => ({
         value: undefined,
@@ -85,6 +137,7 @@ export const walkingToIndexFactory = () => {
         childCanExpand: false,
         expanded: false,
         isCircular: false,
+        updateStamp,
     }))
 
     const rootMapState: any = {}
@@ -94,23 +147,14 @@ export const walkingToIndexFactory = () => {
 
     const cirularChecking = new CircularChecking()
 
-    const getUpdateToken = (config: WalkingConfig) => {
-        return (
-            (config.nonEnumerable ? 0 : 1)
-            | (getObjectUniqueId(config.resolver) << 1)
-        )
-    }
-
-
-
-    const walking = (
+    const walkingInternal = (
         value: unknown,
         config: WalkingConfig,
         name: PropertyKey,
         enumerable: boolean,
-        updateToken = getUpdateToken(config),
-        depth = 1,
-        { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult>> = stateRoot,
+        updateToken: number,
+        depth: number,
+        { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult>>,
     ): WalkingResult => {
 
         let count = 1;
@@ -136,58 +180,48 @@ export const walkingToIndexFactory = () => {
             )
         )
 
-
         if (shoudUpdate) {
 
 
             let cumulate = undefined
             let keys = undefined
 
-            if (hasChild && isExpand) {
+            if (hasChild && isExpand && !isCircular) {
+                cumulate = [count]
+                keys = [] as PropertyKey[]
 
-                cumulate = [count];
-                keys = []
+                cirularChecking.enterNode(value);
 
-                isCircular || cirularChecking.enterNode(value)
+                let r = getEntriesCbBinded(
+                    value, config, walkingInternal, updateToken, depth, getChild,
+                    count, maxDepth, childCanExpand,
+                    cumulate, keys,
+                );
 
-                let entries = getEntries(value, config)
+                count = r.count
+                maxDepth = r.maxDepth
+                childCanExpand = r.childCanExpand
 
-                for (let entry of entries) {
-
-                    const { key, value, enumerable } = entry
-
-                    const result = walking(
-                        value, config, key, enumerable,
-                        updateToken,
-                        depth + 1,
-                        getChild(key),
-                    );
-
-                    count += result.count;
-                    maxDepth = Math.max(maxDepth, result.maxDepth)
-                    childCanExpand ||= result.childCanExpand;
-                    keys.push(key)
-                    cumulate.push(count);
-
-                }
-
-                isCircular || cirularChecking.exitNode(value)
+                cirularChecking.exitNode(value)
 
             }
 
-
-            state.count = count
-            state.cumulate = cumulate
+            state.name = name;
             state.value = value
             state.enumerable = enumerable
+
+            state.count = count
             state.maxDepth = maxDepth
             state.childCanExpand = childCanExpand
+
+            state.keys = keys;
+            state.cumulate = cumulate
+
             state.expanded = isExpand
             state.expandedDepth = config.expandDepth
             state.isCircular = isCircular
-            state.name = name;
-            state.keys = keys;
             state.updateToken = updateToken;
+            state.updateStamp = updateStamp;
 
             cleanChild()
 
@@ -196,6 +230,25 @@ export const walkingToIndexFactory = () => {
             return state
         }
 
+    }
+
+    const walking = (
+        value: unknown,
+        config: WalkingConfig,
+        name: PropertyKey,
+        enumerable: boolean,
+    ) => {
+        updateStamp++;
+        return walkingInternal(
+            value,
+            config,
+            name,
+            enumerable,
+            getUpdateToken(config),
+            1,
+            stateRoot,
+        )
+        // return rest
     }
 
 
@@ -226,9 +279,6 @@ export const walkingToIndexFactory = () => {
                     end = mid
                 }
             }
-
-
-            // let keyNames = getEntries(value, config).drop(start).next()?.value?.key!
 
             let keyNames = state.keys[start]
 

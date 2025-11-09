@@ -16,7 +16,7 @@ export const AllChilds: React.FC<ObjectRenderProps> = ({ name, value, path = "",
         () => {
             const all = value instanceof GroupedProxy
                 ? []
-                : [...resolver(value, createIterator(true, false)(value), false)];
+                : resolver(value, createIterator(true, false)(value), false);
             return [
                 all.filter(e => e.enumerable),
                 all.filter(e => !e.enumerable),
