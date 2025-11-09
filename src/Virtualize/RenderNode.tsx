@@ -167,7 +167,7 @@ export const RenderPreview: React.FC<{
                 true,
                 (key, value, enumerable) => {
                     list.push({ key, value, enumerable });
-                    return list.length < 6
+                    return list.length > 5
                 }
             )
 
