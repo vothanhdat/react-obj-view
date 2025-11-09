@@ -1,5 +1,5 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/createIterator";
-import type { WalkingConfig } from "./types";
+import { WalkingConfig } from "./types";
 
 
 export const getEntriesCbOriginal = (

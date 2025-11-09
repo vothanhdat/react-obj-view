@@ -1,5 +1,5 @@
 import { memo, use } from "react";
-import { InternalPromise } from "../V3/resolver";
+import { InternalPromise } from "../V5/resolver";
 
 const PromiseResolver: React.FC<any> = ({ Component, ...props }) => {
     let value = use(props.value);

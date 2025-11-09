@@ -1,8 +1,8 @@
 import { isRef } from "../utils/isRef";
-import { getEntriesCb } from "../V3/getEntries";
-import { WalkingConfig } from "../V3/types";
-import { CircularChecking } from "../V4/CircularChecking";
-import { getObjectUniqueId } from "../V4/getObjectUniqueId";
+import { getEntriesCb } from "./getEntries";
+import { WalkingConfig } from "./types";
+import { CircularChecking } from "./CircularChecking";
+import { getObjectUniqueId } from "./getObjectUniqueId";
 import { GetStateFn, StateFactory } from "./StateFactory";
 
 

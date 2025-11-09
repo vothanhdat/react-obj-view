@@ -1,5 +1,5 @@
 import React from "react";
-import { ResolverFn } from "../V3/types";
+import { ResolverFn } from "../V5/types";
 
 
 

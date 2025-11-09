@@ -1,9 +1,9 @@
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Virtuoso } from 'react-virtuoso'
-import { ObjectViewProps } from "../V3/types";
-import { ResolverFn } from "../V3/types";
-import { DEFAULT_RESOLVER } from "../V3/resolver";
-import { WalkingConfig } from "../V3/types";
+import { ObjectViewProps } from "./types";
+import { ResolverFn } from "./types";
+import { DEFAULT_RESOLVER } from "./resolver";
+import { WalkingConfig } from "./types";
 import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
 import "../Virtualize/style.css"

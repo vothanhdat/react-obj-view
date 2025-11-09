@@ -6,7 +6,7 @@ import './style.css';
 import "./Test.css";
 import type { Constructor, Entry } from './ObjectViewV2/types';
 import { V5Index } from './V5';
-import { ResolverFn } from './V3/types';
+import { ResolverFn } from './V5/types';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script

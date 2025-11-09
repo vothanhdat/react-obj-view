@@ -1,5 +1,4 @@
-import { JSONViewCtx, ResolverFn } from "./types";
-
+import { ResolverFn } from "./types";
 
 const MapIterater = Object.getPrototypeOf(new Map().entries())
 
@@ -202,8 +201,7 @@ const promiseResolver: ResolverFn<Promise<any>> = (
     next(promise);
 }
 
-
-export const DEFAULT_RESOLVER: JSONViewCtx['resolver'] = new Map<any, ResolverFn>([
+export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     // [Error, errorResolver],
     [Map, mapResolver],
     [Set, setResolver],

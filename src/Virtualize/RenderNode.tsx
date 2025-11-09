@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
-import { Entry, ResolverFn } from "../V3/types";
-import { getEntriesCb } from "../V3/getEntries";
+import { Entry, ResolverFn } from "../V5/types";
+import { getEntriesCb } from "../V5/getEntries";
 
 import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
 import { withPromiseWrapper } from "./PromiseWrapper";
-import { CustomEntry, CustomIterator } from "../V3/resolver";
+import { CustomEntry, CustomIterator } from "../V5/resolver";
 
 
 const NodeRenderDefault: React.FC<{
