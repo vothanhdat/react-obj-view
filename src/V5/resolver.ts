@@ -1,3 +1,4 @@
+import { LazyValue } from "./LazyValueWrapper";
 import { ResolverFn } from "./types";
 
 const MapIterater = Object.getPrototypeOf(new Map().entries())
@@ -201,11 +202,29 @@ const promiseResolver: ResolverFn<Promise<any>> = (
     next(promise);
 }
 
+const lazyValueResolver: ResolverFn<LazyValue> = (
+    lazyValue: LazyValue,
+    cb,
+    next,
+    isPreview,
+) => {
+    if (lazyValue.inited) {
+        if (lazyValue?.error) {
+            next(lazyValue?.error)
+        } else {
+            next(lazyValue?.value)
+        }
+    } else {
+        next(lazyValue)
+    }
+}
+
 export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     // [Error, errorResolver],
     [Map, mapResolver],
     [Set, setResolver],
     [CustomIterator, iteraterResolver],
     [Promise, promiseResolver],
+    [LazyValue, lazyValueResolver],
 ]);
 

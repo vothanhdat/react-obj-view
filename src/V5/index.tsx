@@ -21,7 +21,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
     let value = useMemo(() => valueGetter(), [valueGetter])
 
-    const { getNodeByIndex, toggleChildExpand, resolver, size } = useFlattenObjectView(
+    const { getNodeByIndex, toggleChildExpand, refreshPath, resolver, size } = useFlattenObjectView(
         value,
         name,
         typeof expandLevel == 'boolean'
@@ -52,13 +52,14 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                         enablePreview,
                         resolver,
                         toggleChildExpand,
+                        refreshPath,
                         nodeData,
                         value: nodeData.value,
                     }}
                     key={nodeData.path} />
             </div>
         },
-        [getNodeByIndex, toggleChildExpand, enablePreview, showLineNumbers ? dataPLeft : 0]
+        [getNodeByIndex, toggleChildExpand, refreshPath, enablePreview, showLineNumbers ? dataPLeft : 0]
     )
 
     const nodeRender = useCallback(
@@ -146,6 +147,16 @@ function useFlattenObjectView(
         [refWalk, value, name, reload, config]
     );
 
+    const refreshPath = useCallback(
+        (node: NodeResultData) => {
+            console.time("refreshPath")
+            refWalk.current?.refreshPath(node.paths)
+            console.timeEnd("refreshPath");
+            setReload(e => e + 1);
+        },
+        [refWalk.current, config]
+    );
+
     const toggleChildExpand = useCallback(
         (node: NodeResultData) => {
             console.time("toggleExpand")
@@ -175,6 +186,7 @@ function useFlattenObjectView(
 
     return {
         toggleChildExpand,
+        refreshPath,
         resolver,
         getNodeByIndex,
         size: refWalkResult.count,

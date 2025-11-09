@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
 import './style.css';
 import "./Test.css";
-import type { Constructor, Entry } from './ObjectViewV2/types';
 import { V5Index } from './V5';
 import { ResolverFn } from './V5/types';
 
@@ -25,91 +24,56 @@ class APIEndpoint {
     ) { }
 }
 
-const pickEntries = (entries: Entry[], keys: Array<string>): Entry[] => {
-    const picked: Entry[] = [];
-    for (const key of keys) {
-        const index = entries.findIndex(entry => String(entry.key) === key);
-        if (index !== -1) {
-            const [entry] = entries.splice(index, 1);
-            if (entry) {
-                picked.push(entry);
-            }
-        }
-    }
-    return picked;
-};
 
-const userResolver: ResolverFn = (user: User, iterator, isPreview) => {
-    const entries = [...iterator];
-    const result: Entry[] = [];
+
+const userResolver: ResolverFn<User> = (
+    user,
+    cb,
+    next,
+    isPreview,
+) => {
 
     if (isPreview) {
-        result.push({
-            key: 'summary',
-            value: `${user.name} • ${user.email}`,
-            enumerable: true,
-        });
+        cb(
+            'summary',
+            `${user.name} • ${user.email}`,
+            true,
+        );
+
         if (user.role !== 'user') {
-            result.push({
-                key: 'role',
-                value: user.role,
-                enumerable: true,
-            });
+            cb('role', user.role, true,);
         }
-        return result;
+        // next(user);
+    } else {
+        cb(
+            'badge',
+            `⭐ ${user.role.toUpperCase()}`,
+            true,
+        );
+        next(user);
+
     }
-
-    const prioritized = pickEntries(entries, ['name', 'email', 'role']);
-    result.push(...prioritized);
-
-    if (user.role !== 'user') {
-        result.push({
-            key: 'badge',
-            value: `⭐ ${user.role.toUpperCase()}`,
-            enumerable: true,
-        });
-    }
-
-    result.push(...entries);
-    return result;
 };
 
-const apiEndpointResolver: ResolverFn = (endpoint: APIEndpoint, iterator, isPreview) => {
-    const entries = [...iterator];
-    const result: Entry[] = [];
+const apiEndpointResolver: ResolverFn<APIEndpoint> = (
+    endpoint: APIEndpoint,
+    cb,
+    next,
+    isPreview,
+) => {
 
     if (isPreview) {
-        result.push({
-            key: 'request',
-            value: `${endpoint.method} ${endpoint.url}`,
-            enumerable: true,
-        });
-        result.push({
-            key: 'status',
-            value: endpoint.status,
-            enumerable: true,
-        });
-        return result;
+        cb('request', `${endpoint.method} ${endpoint.url}`, true);
+        cb('status', endpoint.status, true);
+    } else {
+        for (let key of ['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]) {
+            let value = endpoint[key]
+            if (key == 'responseTime' && value) {
+                cb('responseTimeLabel', `${endpoint.responseTime}ms`, true)
+            }
+            if (value) cb(key, value, true)
+        }
     }
-
-    const [methodEntry, urlEntry, statusEntry, responseTimeEntry] = pickEntries(entries, ['method', 'url', 'status', 'responseTime']);
-    if (methodEntry) result.push(methodEntry);
-    if (urlEntry) result.push(urlEntry);
-    if (statusEntry) result.push(statusEntry);
-
-    result.push({
-        key: 'responseTimeLabel',
-        value: `${endpoint.responseTime}ms`,
-        enumerable: true,
-    });
-
-    if (responseTimeEntry) result.push(responseTimeEntry);
-
-    const [dataEntry] = pickEntries(entries, ['data']);
-    if (dataEntry) result.push(dataEntry);
-
-    result.push(...entries);
-    return result;
 };
 
 // Create custom data with new classes
@@ -229,13 +193,13 @@ export const Test = () => {
     const [arrayGrouped, setArrayGrouped] = useState(10);
 
     // Create resolver overrides when enabled
-    const resolverOverrides = useMemo<Map<Constructor, ResolverFn> | undefined>(() => {
+    const resolverOverrides = useMemo<Map<any, ResolverFn> | undefined>(() => {
         if (!enableResolvers) {
             return undefined;
         }
-        return new Map<Constructor, ResolverFn>([
-            [User as Constructor, userResolver],
-            [APIEndpoint as Constructor, apiEndpointResolver],
+        return new Map<any, ResolverFn>([
+            [User as any, userResolver],
+            [APIEndpoint as any, apiEndpointResolver],
         ]);
     }, [enableResolvers]);
 

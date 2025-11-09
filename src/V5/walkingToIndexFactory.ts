@@ -4,6 +4,7 @@ import { WalkingConfig } from "./types";
 import { CircularChecking } from "./CircularChecking";
 import { getObjectUniqueId } from "./getObjectUniqueId";
 import { GetStateFn, StateFactory } from "./StateFactory";
+import { LazyValue } from "./LazyValueWrapper";
 
 
 
@@ -75,6 +76,7 @@ export const objectHasChild = (e: unknown) => {
     return isRef(e)
         && !(e instanceof Date)
         && !(e instanceof RegExp)
+        && !(e instanceof LazyValue)
 }
 
 
@@ -137,7 +139,7 @@ export const walkingToIndexFactory = () => {
     const cirularChecking = new CircularChecking()
 
     const walkingInternal = (
-        value: unknown,
+        _value: unknown,
         config: WalkingConfig,
         name: PropertyKey,
         enumerable: boolean,
@@ -145,6 +147,10 @@ export const walkingToIndexFactory = () => {
         depth: number,
         { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult>>,
     ): WalkingResult => {
+
+        let value = _value instanceof LazyValue && _value.inited
+            ? _value.value ?? _value.error
+            : _value;
 
         let count = 1;
         let maxDepth = depth
@@ -171,6 +177,8 @@ export const walkingToIndexFactory = () => {
 
         if (shoudUpdate) {
 
+            // console.group(name)
+            // console.log(value)
 
             let cumulate = undefined
             let keys = undefined
@@ -213,6 +221,9 @@ export const walkingToIndexFactory = () => {
             state.updateStamp = updateStamp;
 
             cleanChild()
+
+            // console.groupEnd()
+
 
             return state
         } else {
@@ -283,6 +294,17 @@ export const walkingToIndexFactory = () => {
         }
     }
 
+    const refreshPath = (paths: PropertyKey[],) => {
+        let currentState = stateRead
+        for (let path of paths) {
+            if (!currentState) {
+                throw new Error("State Error: Paths not inited")
+            }
+            currentState.state.updateToken = -1;
+            currentState = currentState.getChildOnly(path)
+        }
+        currentState.state.updateToken = -1;
+    }
 
     const toggleExpand = (
         paths: PropertyKey[],
@@ -307,5 +329,6 @@ export const walkingToIndexFactory = () => {
         walking,
         getNode,
         toggleExpand,
+        refreshPath,
     }
 }

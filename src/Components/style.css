@@ -39,6 +39,10 @@
         }
     }
 
+    .pointer-cursor {
+        cursor: pointer;
+    }
+
     .expand-symbol {
         width: 1em;
         display: inline-block;
@@ -143,7 +147,7 @@
             --color: red;
         }
 
-        
+
         &.value-preview {
             --color: var(--bigobjview-color);
 

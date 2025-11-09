@@ -1,4 +1,5 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/object";
+import { LazyValue } from "./LazyValueWrapper";
 import { WalkingConfig } from "./types";
 
 
@@ -23,10 +24,11 @@ export const getEntriesCbOriginal = (
 
         if (config.nonEnumerable) {
             for (let key of Object.getOwnPropertyNames(value)) {
+                const descriptor = Object.getOwnPropertyDescriptor(value, key)
                 if (cb(
                     key,
-                    value[key],
-                    propertyIsEnumerable.call(value, key),
+                    descriptor?.get ? LazyValue.getInstance(value, key) : descriptor?.value,
+                    descriptor?.enumerable!
                 )) return;
             }
         } else {
@@ -78,7 +80,6 @@ export const getEntriesCb = (
             value,
             cb,
             (value) => getEntriesCbOriginal(value, config, cb),
-            // bindGetEntriesCbOriginal(config, cb),
             isPreview,
         )
     } else {

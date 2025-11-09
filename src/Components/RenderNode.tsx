@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ResolverFn } from "../V5/types";
 
 import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
@@ -12,7 +13,8 @@ const NodeRenderDefault: React.FC<{
     value: unknown,
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeResultData) => void
-}> = ({ nodeData, value, toggleChildExpand, resolver, enablePreview = true }) => {
+    refreshPath: (node: NodeResultData) => void
+}> = ({ nodeData, value, toggleChildExpand, refreshPath, resolver, enablePreview = true }) => {
 
     const isExpanded = nodeData.expanded
 
@@ -21,6 +23,14 @@ const NodeRenderDefault: React.FC<{
     const hasChild = objectHasChild(value);
 
     const isPreview = enablePreview && hasChild && !isExpanded && typeof value != "function"
+
+    const bindRefreshPath = useCallback(
+        () => {
+            console.log("nodeData.path",nodeData.path)
+            refreshPath(nodeData)
+        },
+        [refreshPath, nodeData]
+    )
 
     return <div className="node-container" style={{ paddingLeft: `${(nodeData.depth - 1) * 1.5}em` }}>
         <div
@@ -47,16 +57,14 @@ const NodeRenderDefault: React.FC<{
                 isPreview,
                 enumrable: nodeData.enumerable,
                 resolver,
+                refreshPath: bindRefreshPath,
             }} />
 
         </div>
     </div>;
 }
 
-export const RenderNode = withPromiseWrapper(
-    NodeRenderDefault,
-
-)
+export const RenderNode = withPromiseWrapper(NodeRenderDefault)
 
 
 

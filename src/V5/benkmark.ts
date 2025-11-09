@@ -32,7 +32,7 @@ for (let i = 0; i < 10; i++) {
     // console.log("walking time %s ms", t2 - t1)
 
 
-    let r2 = walking.walking(
+    walking.walking(
         arr2,
         config,
         "root",
@@ -42,7 +42,7 @@ for (let i = 0; i < 10; i++) {
     const t3 = performance.now()
 
 
-    let r3 = walking.walking(
+    walking.walking(
         arr2,
         config,
         "root",
@@ -60,7 +60,7 @@ for (let i = 0; i < 10; i++) {
     //     update: t3 - t2,
     // })
 
-    gc?.();
+    // gc?.();
     console.log('..')
 }
 
