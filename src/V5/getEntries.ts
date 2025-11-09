@@ -46,7 +46,7 @@ export const getEntriesCbOriginal = (
 
             if (cb(
                 symbol,
-                getPropertyValue(value, symbol),
+                value[symbol],
                 propertyIsEnumerable.call(value, symbol),
             )) return;
         }
