@@ -34,7 +34,7 @@ type BaseProcessStack<T> = {
     data: T;
     depth: number;
     paths: PropertyKey[];
-    iterator: Iterator<T, void, unknown>;
+    // iterator: Iterator<T, void, unknown>;
     // cursorStart: LinkedNode<NodeData>;
     cursor: LinkedNode<NodeData>;
     parentContext: ChildStats;
@@ -75,7 +75,7 @@ type ChangedStage = {
 export type ProcessStack<T> = BaseProcessStack<T> & (InitStage | IterateStage | FinalStage | ChangedStage);
 
 export type SharingContext = {
-    getIterator: (value: any, config: any) => IteratorObject<DataEntry, undefined, unknown>;
+    // getIterator: (value: any, config: any, cb: (k: PropertyKey, value: any, enumerable: boolean) => boolean) => void;
     config: WalkingConfig;
     cirular: CircularChecking,
     walkCounter: number,

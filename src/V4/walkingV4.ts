@@ -1,5 +1,5 @@
 import { isRef } from "../utils/isRef";
-import { getEntries } from "../V3/getEntries";
+import { getEntriesCb } from "../V3/getEntries";
 import { WalkingConfig } from "../V3/NodeData";
 import { GetStateFn, StateFactory } from "../V5/StateFactory";
 import { CircularChecking } from "./CircularChecking";
@@ -43,15 +43,12 @@ function createRootNodeStack({
         throw new Error("Require paths with atleast one element") //TODO error message
     }
 
-    const { config, getIterator } = context
-
     startLink.next = endLink;
     endLink.prev = startLink;
 
 
     const rootNodeStack: ProcessStack<DataEntry> = {
         data: { value, name: paths.at(-1)!, enumerable },
-        iterator: getIterator(value, config),
         paths,
         depth: 0,
         stage: Stage.INIT,
@@ -163,37 +160,55 @@ function initializeNode(
 
 function iterateThroughNode(
     current: ProcessStack<DataEntry> & { stage: Stage.ITERATE },
-): ProcessStack<DataEntry> | undefined {
+): ProcessStack<DataEntry>[] | undefined {
 
-    const { iterator, paths, depth, state, getChild, context } = current;
+    const { paths, depth, state, getChild, context, data } = current;
 
-    const { config, getIterator } = context
+    const { config, } = context
 
-    const iterationResult = iterator.next();
 
-    if (iterationResult.done) {
-        //@ts-ignore
-        current.stage = Stage.FINAL;
-        return undefined;
-    }
+    const nextContext: ProcessStack<DataEntry>[] = []
 
-    const nextChild = iterationResult.value;
+    getEntriesCb(data.value, config, false, (key, value, enumerable) => {
 
-    const stateMGr = getChild(nextChild.name)
+        const stateMGr = getChild(key)
 
-    return {
-        data: nextChild,
-        iterator: getIterator(nextChild.value, config),
-        paths: [...paths, nextChild.name],
-        depth: depth + 1,
-        stage: Stage.INIT,
-        cursor: state.end!,
-        context,
-        parentContext: state.childStats!,
-        state: stateMGr.state,
-        getChild: stateMGr.getChild,
-        cleanChild: stateMGr.cleanChild,
-    };
+        nextContext.push({
+            data: { name: key, value, enumerable },
+            paths: [...paths, key],
+            depth: depth + 1,
+            stage: Stage.INIT,
+            cursor: state.end!,
+            context,
+            parentContext: state.childStats!,
+            state: stateMGr.state,
+            getChild: stateMGr.getChild,
+            cleanChild: stateMGr.cleanChild,
+        })
+    })
+
+    //@ts-ignore //Typescript Doesn't detech ITERATE branch
+
+    current.stage = Stage.FINAL;
+
+    return nextContext
+
+    // const nextChild = iterationResult.value;
+
+
+    // return {
+    //     data: nextChild,
+    //     // iterator: getIterator(nextChild.value, config),
+    //     paths: [...paths, nextChild.name],
+    //     depth: depth + 1,
+    //     stage: Stage.INIT,
+    //     cursor: state.end!,
+    //     context,
+    //     parentContext: state.childStats!,
+    //     state: stateMGr.state,
+    //     getChild: stateMGr.getChild,
+    //     cleanChild: stateMGr.cleanChild,
+    // };
 }
 
 
@@ -234,8 +249,8 @@ export const walkingFactoryV4 = () => {
     const stateRoot = stateFactory(rootMapState)
     const stateRead = getStateOnly(rootMapState)
 
-    const getIterator = (value: any, config: any) => getEntries(value, config)
-        .map(({ key: name, value, enumerable }) => ({ name, value, enumerable }))[Symbol.iterator]()
+    // const getIterator = (value: any, config: any, cb: (k: PropertyKey, value: any, enumerable: boolean) => boolean) => getEntriesCb(value, config, false, cb)
+
 
     let walkingCounter = 0
 
@@ -249,7 +264,7 @@ export const walkingFactoryV4 = () => {
     const walking = (value: unknown, config: WalkingConfig, rootName = "") => {
 
         const context: SharingContext = {
-            getIterator,
+            // getIterator,
             config,
             cirular: new CircularChecking(),
             walkCounter: walkingCounter++,
@@ -279,7 +294,7 @@ export const walkingFactoryV4 = () => {
     const childWalking = (paths: PropertyKey[], config: WalkingConfig) => {
 
         const context: SharingContext = {
-            getIterator,
+            // getIterator,
             config,
             cirular: new CircularChecking(),
             walkCounter: walkingCounter++,
@@ -360,10 +375,12 @@ function traverseNodeGraph(
             }
             case Stage.ITERATE: {
                 //@ts-ignore //Typescript Doesn't detech ITERATE branch
-                const nextStack = iterateThroughNode(current);
-                if (nextStack) {
-                    stack.push(nextStack);
+                const nextStacks = iterateThroughNode(current);
+                if (nextStacks?.length) {
+                    stack.push(...nextStacks);
                 }
+
+
                 break;
             }
             case Stage.FINAL: {

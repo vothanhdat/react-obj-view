@@ -5,95 +5,95 @@ import type { Entry } from "./types";
 
 
 
-export const getEntriesOrignal = (value: any, config: WalkingConfig): Entry[] => {
+// export const getEntriesOrignal = (value: any, config: WalkingConfig): Entry[] => {
 
-    const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
+//     const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
 
-    if (!shouldIterate) return [];
+//     if (!shouldIterate) return [];
 
-    let entries: Entry[] = []
+//     let entries: Entry[] = []
 
-    if (value instanceof Array) {
+//     if (value instanceof Array) {
 
-        for (let index = 0; index < value.length; index++) {
-            entries.push({
-                key: index,
-                value: value[index],
-                enumerable: true
-            })
-        }
+//         for (let index = 0; index < value.length; index++) {
+//             entries.push({
+//                 key: index,
+//                 value: value[index],
+//                 enumerable: true
+//             })
+//         }
 
-    } else {
+//     } else {
 
-        const keys = config.nonEnumerable
-            ? Object.getOwnPropertyNames(value)
-            : Object.keys(value)
+//         const keys = config.nonEnumerable
+//             ? Object.getOwnPropertyNames(value)
+//             : Object.keys(value)
 
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index]
-            const enumerable = config.nonEnumerable ? propertyIsEnumerable.call(value, key) : true
-            entries.push({
-                key,
-                value: enumerable ? value[key] : getPropertyValue(value, key),
-                enumerable,
-            })
-        }
+//         for (let index = 0; index < keys.length; index++) {
+//             const key = keys[index]
+//             const enumerable = config.nonEnumerable ? propertyIsEnumerable.call(value, key) : true
+//             entries.push({
+//                 key,
+//                 value: enumerable ? value[key] : getPropertyValue(value, key),
+//                 enumerable,
+//             })
+//         }
 
-    }
+//     }
 
-    if (config.symbol) {
-        for (var symbol of Object.getOwnPropertySymbols(value)) {
-            entries.push({
-                key: symbol,
-                value: getPropertyValue(value, symbol),
-                enumerable: propertyIsEnumerable.call(value, symbol),
-            });
-        }
-    }
+//     if (config.symbol) {
+//         for (var symbol of Object.getOwnPropertySymbols(value)) {
+//             entries.push({
+//                 key: symbol,
+//                 value: getPropertyValue(value, symbol),
+//                 enumerable: propertyIsEnumerable.call(value, symbol),
+//             });
+//         }
+//     }
 
-    if (config.nonEnumerable && value !== Object.prototype /* already added */) {
-        entries.push({
-            key: '[[Prototype]]',
-            value: Object.getPrototypeOf(value),
-            enumerable: false,
-        });
-    }
-
-
-    return entries
-};
+//     if (config.nonEnumerable && value !== Object.prototype /* already added */) {
+//         entries.push({
+//             key: '[[Prototype]]',
+//             value: Object.getPrototypeOf(value),
+//             enumerable: false,
+//         });
+//     }
 
 
-export const getEntries = function (
-    value: any,
-    config: WalkingConfig,
-    isPreview = false,
-): Entry[] {
-    const prototype = value?.constructor
+//     return entries
+// };
 
-    let baseEntries: Entry[] | undefined = undefined;
 
-    if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
-        baseEntries = getEntriesOrignal(value, config);
-        const resolverResult = config.resolver?.get(value?.constructor)?.(
-            value,
-            baseEntries,
-            isPreview,
-        )
+// export const getEntries = function (
+//     value: any,
+//     config: WalkingConfig,
+//     isPreview = false,
+// ): Entry[] {
+//     const prototype = value?.constructor
 
-        if (resolverResult)
-            return resolverResult;
-    }
-    if (value instanceof InternalPromise) {
-        return getEntries(value.value, config, isPreview)
-    }
-    return baseEntries || getEntriesOrignal(value, config)
+//     let baseEntries: Entry[] | undefined = undefined;
 
-};
+//     if (prototype && value instanceof value?.constructor && config.resolver?.has(value?.constructor)) {
+//         baseEntries = getEntriesOrignal(value, config);
+//         const resolverResult = config.resolver?.get(value?.constructor)?.(
+//             value,
+//             baseEntries,
+//             isPreview,
+//         )
+
+//         if (resolverResult)
+//             return resolverResult;
+//     }
+//     if (value instanceof InternalPromise) {
+//         return getEntries(value.value, config, isPreview)
+//     }
+//     return baseEntries || getEntriesOrignal(value, config)
+
+// };
 
 
 export const getEntriesCbOriginal = (
-    value: unknown,
+    value: any,
     config: WalkingConfig,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 ) => {

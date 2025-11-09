@@ -1,10 +1,9 @@
 import React from "react";
+import { ResolverFn } from "../V3/types";
 
 
 
 export type Constructor<T = {}> = new (...args: any[]) => T;
-
-export type ResolverFn = (e: any, entries: Entry[], isPreview: boolean) => Entry[]
 
 export type JSONViewCtx = {
     expandLevel: number;

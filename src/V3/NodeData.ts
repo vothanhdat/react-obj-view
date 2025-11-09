@@ -4,7 +4,8 @@ import { memorizeMapWithWithClean } from "../utils/memorizeMapWithWithClean";
 import { getObjectUniqueId } from "../V4/getObjectUniqueId";
 import { WalkingState } from "../V4/types";
 import { GetStateFn, StateFactory } from "../V5/StateFactory";
-import { getEntries } from "./getEntries";
+import { getEntriesCb } from "./getEntries";
+// import { getEntries } from "./getEntries";
 import { immutableNestedUpdate } from "./immutableNestedUpdate";
 import { FirstNode, LastNode, LinkList } from "./LinkList";
 import { ResolverFn } from "./types";
@@ -148,33 +149,38 @@ export const walkingFactory = () => {
         // const { get: getState, clean: cleanState } = stateFactory(...meta.paths);
 
         if (!meta.isCircular && meta.isExpanded && meta.isRefObject) {
-            for (let { key, value, enumerable } of getEntries(meta.object, meta.config)) {
-                // mark(key);
 
-                const { start: childStart, end: childEnd, stats } = walkingInternal(
-                    value,
-                    enumerable,
-                    meta.config,
-                    [...meta.paths, key],
-                    getChild(key),
-                    state.updateToken,
-                );
+            getEntriesCb(
+                meta.object,
+                meta.config,
+                false,
+                (key, value, enumerable) => {
+                    const { start: childStart, end: childEnd, stats } = walkingInternal(
+                        value,
+                        enumerable,
+                        meta.config,
+                        [...meta.paths, key],
+                        getChild(key),
+                        state.updateToken,
+                    );
 
-                if (!childStart || !childEnd) {
-                    throw new Error("Invalid child traversal bounds");
+                    if (!childStart || !childEnd) {
+                        throw new Error("Invalid child traversal bounds");
+                    }
+
+                    currentLink.next = childStart;
+                    childStart.prev = currentLink;
+
+                    currentLink = childEnd;
+
+                    state.childStats.childCanExpand ||= stats.childCanExpand
+                    state.childStats.childMaxDepth = Math.max(
+                        state.childStats.childMaxDepth,
+                        stats.childMaxDepth + 1,
+                    )
                 }
+            )
 
-                currentLink.next = childStart;
-                childStart.prev = currentLink;
-
-                currentLink = childEnd;
-
-                state.childStats.childCanExpand ||= stats.childCanExpand
-                state.childStats.childMaxDepth = Math.max(
-                    state.childStats.childMaxDepth,
-                    stats.childMaxDepth + 1,
-                )
-            }
         }
 
         cleanChild();

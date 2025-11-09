@@ -1,4 +1,4 @@
-import { ResolverFn } from "./types";
+import { ResolverFn } from "../V3/types";
 
 
 export type ObjectViewProps = {
