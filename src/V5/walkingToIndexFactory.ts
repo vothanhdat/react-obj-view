@@ -24,9 +24,10 @@ export type WalkingResult = {
     updateStamp: number,
 }
 
+export type NodeResultData = WalkingResult & { depth: number, path: string, paths: PropertyKey[] }
 
 export class NodeResult {
-  
+
     constructor(
         public state: WalkingResult,
         public depth: number,
@@ -46,7 +47,7 @@ export class NodeResult {
             }).join("/");
     }
 
-    getData(): WalkingResult & { depth: number } {
+    getData(): NodeResultData {
         const state = this.state
         return ({
             value: state.value,

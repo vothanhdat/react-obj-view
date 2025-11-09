@@ -4,7 +4,7 @@ import { ObjectViewProps } from "../ObjectViewV2/ObjectViewProps";
 import { ResolverFn } from "../V3/types";
 import { DEFAULT_RESOLVER } from "../V3/resolver";
 import { WalkingConfig } from "../V3/types";
-import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Virtualize/RenderNode";
 import "../Virtualize/style.css"
 
@@ -15,7 +15,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     highlightUpdate,
     resolver: customResolver,
     nonEnumerable = false,
-    preview = true,
+    preview: enablePreview = true,
     showLineNumbers = false,
 }) => {
     "use no memo";
@@ -36,10 +36,10 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
     const NodeRender = useCallback(
         ({ index }: { index: number }) => {
-            const node: NodeResult = getNodeByIndex(index);
+            const nodeResult: NodeResult = getNodeByIndex(index);
             const nodeData = useMemo(
-                () => node.getData(),
-                [node.updateStamp]
+                () => nodeResult.getData(),
+                [nodeResult.state.updateStamp]
             )
 
             return <div style={{
@@ -47,22 +47,21 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                 borderBottom: "solid 1px #8881",
             }} data-p-left={showLineNumbers ? dataPLeft : 0}>
                 {showLineNumbers &&
-                    <span className="index-counter">{String(index).padStart(dataPLeft, " ")}
+                    <span className="index-counter">
+                        {String(index).padStart(dataPLeft, " ")}
                     </span>}
                 <RenderNode
-                    enablePreview={preview}
-                    resolver={resolver}
-                    node={nodeData}
-                    toggleChildExpand={toggleChildExpand as any}
+                    {...{ enablePreview, resolver, toggleChildExpand }}
+                    nodeData={nodeData}
                     key={nodeData.path} />
             </div>
         },
-        [getNodeByIndex, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
+        [getNodeByIndex, toggleChildExpand, enablePreview, showLineNumbers ? dataPLeft : 0]
     )
 
     const nodeRender = useCallback(
         (index: number) => <NodeRender index={index} />,
-        [NodeRender, toggleChildExpand, preview, showLineNumbers ? dataPLeft : 0]
+        [NodeRender, toggleChildExpand, enablePreview, showLineNumbers ? dataPLeft : 0]
     )
 
     const computeItemKey = useCallback(

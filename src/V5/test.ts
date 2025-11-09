@@ -1,4 +1,4 @@
-import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { performanceTestData } from "../exampleData";
 
 
@@ -44,7 +44,7 @@ let preGetNodes = [
         .fill(0).map((_, i) => i + (r2.count >> 1)),
     ...new Array(5)
         .fill(0).map((_, i) => r2.count - 5 + i),
-].map((i) => [i, walking.getNode(i, config)]) as [number, NodeResult][]
+].map((i) => [i, walking.getNode(i, config).getData()]) as [number, NodeResultData][]
 
 const t5 = performance.now()
 

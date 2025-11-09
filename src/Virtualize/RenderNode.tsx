@@ -11,35 +11,35 @@ export type NodeData = (WalkingResult & { depth: number, path: string })
 
 
 const NodeRenderDefault: React.FC<{
-    node: NodeData;
+    nodeData: NodeData;
     enablePreview: boolean;
     value: unknown,
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeData) => void
-}> = ({ node, value, toggleChildExpand, resolver, enablePreview = true }) => {
+}> = ({ nodeData, value, toggleChildExpand, resolver, enablePreview = true }) => {
 
-    const isExpanded = node.expanded
+    const isExpanded = nodeData.expanded
 
-    const isCircular = node.isCircular;
+    const isCircular = nodeData.isCircular;
 
     const hasChild = objectHasChild(value);
 
     const isPreview = enablePreview && hasChild && !isExpanded && typeof value != "function"
 
-    return <div className="node-container" style={{ paddingLeft: `${(node.depth - 1) * 1.5}em` }}>
+    return <div className="node-container" style={{ paddingLeft: `${(nodeData.depth - 1) * 1.5}em` }}>
         <div
             className="node-default"
             data-child={hasChild}
-            data-nonenumrable={!node.enumerable}
-            onClick={() => hasChild && toggleChildExpand(node)}
+            data-nonenumrable={!nodeData.enumerable}
+            onClick={() => hasChild && toggleChildExpand(nodeData)}
         >
             <span className="expand-symbol">
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
 
             <RenderName {...{
-                depth: node.depth,
-                name: String(node.name ?? "ROOT"),
+                depth: nodeData.depth,
+                name: String(nodeData.name ?? "ROOT"),
             }} />
 
             <span className="symbol">: </span>
@@ -49,7 +49,7 @@ const NodeRenderDefault: React.FC<{
             <RenderValue {...{
                 value: value,
                 isPreview,
-                enumrable: node.enumerable,
+                enumrable: nodeData.enumerable,
                 resolver,
             }} />
 
@@ -60,12 +60,12 @@ const NodeRenderDefault: React.FC<{
 const RenderNodeInternal = withPromiseWrapper(NodeRenderDefault)
 
 export const RenderNode: React.FC<{
-    node: NodeData;
+    nodeData: NodeData;
     enablePreview: boolean;
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeData) => void
 }> = (props) => {
-    return <RenderNodeInternal {...props} value={props.node.value} />
+    return <RenderNodeInternal {...props} value={props.nodeData.value} />
 }
 
 

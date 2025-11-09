@@ -46,7 +46,7 @@ export const ObjectViewVirtualize: React.FC<ObjectViewProps> = ({
             <RenderNode
                 enablePreview={preview}
                 resolver={combinedResolver}
-                node={flattenNodes[index]}
+                nodeData={flattenNodes[index]}
                 toggleChildExpand={toggleChildExpand}
                 key={flattenNodes[index].path} />
         </div>,
