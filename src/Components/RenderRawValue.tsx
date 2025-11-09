@@ -1,3 +1,4 @@
+import { error } from "console";
 import { CustomEntry } from "../V5/resolver";
 import { RenderValue } from "./RenderValue";
 
@@ -39,6 +40,7 @@ export const RenderRawValue: React.FC<{ value: any; depth: any; }> = ({ value, d
             if (value instanceof Array) return `Array(${value.length})`;
             if (value instanceof Map) return `Map(${value.size})`;
             if (value instanceof Set) return `Set(${value.size})`;
+            if (value instanceof Error) return `${String(value)}`;
             if (value instanceof CustomEntry) return <>
                 <RenderValue {...{ value: value.key, isPreview: false, depth: depth + 1 }} />
                 {" => "}

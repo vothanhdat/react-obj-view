@@ -65,8 +65,11 @@ export class LazyValue {
     toString() { return "" }
 }
 
-export class LazyValueError {
-    constructor(private error: any) { }
+export class LazyValueError extends Array {
+    constructor(private error: any) {
+        super()
+        this.push(error)
+    }
     static name = ""
     toString() { return "" }
 }

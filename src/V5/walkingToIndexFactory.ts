@@ -4,7 +4,7 @@ import { WalkingConfig } from "./types";
 import { CircularChecking } from "./CircularChecking";
 import { getObjectUniqueId } from "./getObjectUniqueId";
 import { GetStateFn, StateFactory } from "./StateFactory";
-import { LazyValue } from "./LazyValueWrapper";
+import { LazyValue, LazyValueError } from "./LazyValueWrapper";
 
 
 

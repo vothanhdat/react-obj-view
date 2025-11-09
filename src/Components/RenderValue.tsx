@@ -7,7 +7,7 @@ import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 
 
-const useLazyValue = ({ value, refreshPath }: { value: LazyValue, refreshPath: () => void }) => {
+const useLazyValue = ({ value, refreshPath }: { value: LazyValue, refreshPath?: () => void }) => {
 
     const isLazyValue = value instanceof LazyValue
 
@@ -36,7 +36,7 @@ export const RenderValue: React.FC<{
     isPreview: boolean;
     resolver?: Map<any, ResolverFn>;
     depth?: number;
-    refreshPath: () => void
+    refreshPath?: () => void
 }> = withPromiseWrapper(
     ({ value, isPreview, resolver, refreshPath, depth = 0 }) => {
 

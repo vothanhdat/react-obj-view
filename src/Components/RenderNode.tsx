@@ -5,6 +5,7 @@ import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIn
 import { withPromiseWrapper } from "./PromiseWrapper";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
+import { LazyValueError } from "../V5/LazyValueWrapper";
 
 
 const NodeRenderDefault: React.FC<{
@@ -20,13 +21,18 @@ const NodeRenderDefault: React.FC<{
 
     const isCircular = nodeData.isCircular;
 
-    const hasChild = objectHasChild(value);
+    const hasChild = objectHasChild(value)
+        && !(value instanceof LazyValueError);
 
-    const isPreview = enablePreview && hasChild && !isExpanded && typeof value != "function"
+    const isPreview = enablePreview
+        && (hasChild || value instanceof LazyValueError)
+        && !isExpanded
+        && typeof value != "function"
+        && !(value instanceof Error)
 
     const bindRefreshPath = useCallback(
         () => {
-            console.log("nodeData.path",nodeData.path)
+            console.log("nodeData.path", nodeData.path)
             refreshPath(nodeData)
         },
         [refreshPath, nodeData]
