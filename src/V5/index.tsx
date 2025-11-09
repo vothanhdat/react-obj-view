@@ -18,7 +18,6 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     preview: enablePreview = true,
     showLineNumbers = false,
 }) => {
-    "use no memo";
 
     let value = useMemo(() => valueGetter(), [valueGetter])
 
@@ -49,7 +48,13 @@ export const V5Index: React.FC<ObjectViewProps> = ({
                     </span>
                 }
                 <RenderNode
-                    {...{ enablePreview, resolver, toggleChildExpand, nodeData }}
+                    {...{
+                        enablePreview,
+                        resolver,
+                        toggleChildExpand,
+                        nodeData,
+                        value: nodeData.value,
+                    }}
                     key={nodeData.path} />
             </div>
         },
