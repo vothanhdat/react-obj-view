@@ -1,5 +1,6 @@
 import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/object";
 import { LazyValue } from "./LazyValueWrapper";
+import { InternalPromise } from "./resolvers/promise";
 import { WalkingConfig } from "./types";
 
 
@@ -72,6 +73,12 @@ export const getEntriesCb = (
     isPreview: boolean,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 ) => {
+
+
+    // if (value instanceof InternalPromise && value.resolved) {
+    //     value = value.value
+    //     // console.log("value.value", value.value)
+    // }
 
     const prototype = value
         ? (value.constructor ?? Object.getPrototypeOf(value).constructor)

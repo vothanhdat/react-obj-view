@@ -2,7 +2,7 @@ import { infoSymbol } from "../../ObjectViewV2/utils/groupedProxy";
 import { LazyValue, LazyValueError } from "../LazyValueWrapper";
 import { ResolverFn } from "../types";
 import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./collections";
-import { promiseResolver } from "./promise";
+import { InternalPromise, internalPromiseResolver, promiseResolver } from "./promise";
 
 const lazyValueResolver: ResolverFn<LazyValue> = (
     lazyValue: LazyValue,
@@ -27,6 +27,7 @@ export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     [Set, setResolver],
     [CustomIterator, iteraterResolver],
     [Promise, promiseResolver],
+    [InternalPromise, internalPromiseResolver],
     [LazyValue, lazyValueResolver],
 ]);
 

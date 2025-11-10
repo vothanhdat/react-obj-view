@@ -1,7 +1,10 @@
+import { forwardRef } from "react";
 
 
-export const RenderName: React.FC<{ depth?: number; name: string; }> = ({ depth = undefined, name }) => {
-    return <span className="name">
-        {depth == 0 ? "ROOT" : String(name)}
-    </span>;
-};
+export const RenderName: React.FC<{ depth?: number; name: string; ref: any }> = forwardRef(
+    ({ depth = undefined, name }, ref: any) => {
+        return <span className="name" ref={ref}>
+            {depth == 0 ? "ROOT" : String(name)}
+        </span>;
+    }
+)

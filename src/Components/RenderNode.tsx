@@ -7,6 +7,7 @@ import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
 import { GroupedProxy } from "../ObjectViewV2/utils/groupedProxy";
+import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
 
 
 const NodeRenderDefault: React.FC<{
@@ -40,6 +41,9 @@ const NodeRenderDefault: React.FC<{
         [refreshPath, nodeData]
     )
 
+    const ref = useChangeFlashClasses({ value, flashClassname: 'updated' }) as any
+
+
     return <div className="node-container" style={{ paddingLeft: `${(nodeData.depth - 1) * 1.5}em` }}>
         <div
             className="node-default"
@@ -51,7 +55,7 @@ const NodeRenderDefault: React.FC<{
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
 
-            <RenderName {...{
+            <RenderName ref={ref} {...{
                 depth: nodeData.depth,
                 name: String(nodeData.name ?? "ROOT"),
             }} />

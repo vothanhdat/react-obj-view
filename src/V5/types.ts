@@ -27,8 +27,8 @@ export type ObjectViewProps = {
     name?: string;
     style?: any;
     expandLevel?: number | boolean;
-    objectGroupSize?: number;
-    arrayGroupSize?: number;
+    objectGroupSize?: number; // >= 2 else no grouping
+    arrayGroupSize?: number; // >= 2 else no grouping
     resolver?: Map<any, ResolverFn>;
     highlightUpdate?: boolean;
     preview?: boolean;

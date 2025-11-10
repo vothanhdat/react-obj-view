@@ -1,17 +1,17 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useId } from "react";
 
 
-export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value: any; flashClassname?: string; enable?: boolean }> = ({ value, enable = true, flashClassname = 'jv-updated', ...rest }) => {
-
+export const useChangeFlashClasses = ({ value, enable = true, flashClassname = 'jv-updated' }: { value: any; flashClassname?: string; enable?: boolean }) => {
     const ref = useRef<HTMLElement>(undefined);
     const refValue = useRef(value);
 
     useEffect(() => {
         if (ref.current) {
             const p = performance.now();
-            let tmp1: any, tmp2: any;
+
             let isDiff = value != refValue.current
-            
+            console.log("change", { value, refVal: refValue.current, isDiff })
+
             const p1 = performance.now();
 
             if (p1 - p >= 1) {
@@ -28,5 +28,12 @@ export const ChangeFlashWrappper: React.FC<React.ComponentProps<'div'> & { value
 
     }, [enable && value, ref]);
 
-    return <div {...rest} ref={ref as any} />;
-};
+    // const id = useId()
+
+    // useEffect(() => {
+    //     console.log("Mount", id)
+    //     return () => console.log("Unmount", id)
+    // },[id])
+
+    return ref
+}

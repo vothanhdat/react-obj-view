@@ -8,7 +8,7 @@ const getPromiseStatus = weakMapCache(
         let p = Promise
             .race([e, Promise.resolve(PendingSymbol)])
             .then(
-                (result) => (console.log({ result }), result) == PendingSymbol
+                (result) => result == PendingSymbol
                     ? ({ status: "pending" })
                     : ({ status: "resolved", result }),
                 (error) => ({ status: "rejected", result: error })
@@ -34,12 +34,18 @@ export class InternalPromise {
 
     private constructor(
         public promise: Promise<any>,
+        public resolved = false,
         public value: any = undefined
 
     ) {
         promise
-            .then(r => this.value = r)
+            .then(r => {
+                this.resolved = true
+                this.value = r
+            })
             .catch(() => { });
+        console.log("new InternalPromise", this)
+
     }
 }
 
@@ -63,3 +69,15 @@ export const promiseResolver: ResolverFn<Promise<any>> = (
     );
     next(promise);
 };
+
+
+export const internalPromiseResolver: ResolverFn<InternalPromise> = (
+    promise: InternalPromise,
+    cb,
+    next,
+    isPreview
+) => {
+    if (promise.resolved) {
+        next(promise.value)
+    }
+}

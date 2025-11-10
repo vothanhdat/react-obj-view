@@ -162,7 +162,15 @@
 
     }
 
-    .name {}
+    .name {
+        transition: background-color 1s;
+        background-color: #0000;
+
+        &.updated {
+            transition: background-color 0.00s;
+            background-color: var(--bigobjview-change-color);
+        }
+    }
 
     .node-default,
     .name,
