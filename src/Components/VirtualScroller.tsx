@@ -5,15 +5,13 @@ import React, { useEffect, useRef, useState } from "react"
 export type VirtualScrollerProps<T> = {
     height: number,
     Component: React.FC<VirtualScrollerRenderProps<T>>
-    props: T
-}
+} & T
 
 
 export type VirtualScrollerRenderProps<T> = {
     start: number
     end: number
-    props: T
-}
+} & T
 
 
 
@@ -30,7 +28,7 @@ const getScrollContainer = (e: HTMLElement): HTMLElement => {
     return document.documentElement
 }
 
-export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, Component = React.Fragment, props }) => {
+export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, Component = React.Fragment, ...props }) => {
 
     const ref = useRef<HTMLDivElement>(null)
 
@@ -94,6 +92,6 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
     }, [height])
 
     return <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
-        <Component start={start} end={end} props={props} />
+        <Component start={start} end={end} {...props} />
     </div>
 }

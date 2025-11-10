@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "./types";
 import { groupArrayResolver, groupObjectResolver } from "./resolvers/grouped";
@@ -34,58 +34,76 @@ export const V5Index: React.FC<ObjectViewProps> = ({
         }
     );
 
-    const dataPLeft = String(size).length
 
-    const NodeRender = useCallback(
-        ({ index }: { index: number }) => {
-            const nodeResult: NodeResult = getNodeByIndex(index);
-            const nodeData = useMemo(
-                () => nodeResult.getData(),
-                [nodeResult.state.updateStamp]
-            )
-
-            return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
-                {showLineNumbers &&
-                    <span className="index-counter">
-                        {String(index).padStart(dataPLeft, " ")}
-                    </span>
-                }
-                <RenderNode
-                    {...{
-                        enablePreview,
-                        resolver,
-                        toggleChildExpand,
-                        refreshPath,
-                        nodeData,
-                        value: nodeData.value,
-                    }}
-                    key={nodeData.path} />
-            </div>
-        },
-        [getNodeByIndex, toggleChildExpand, refreshPath, enablePreview, showLineNumbers ? dataPLeft : 0]
+    const computeItemKey = useCallback(
+        (index: number) => index < size ? getNodeByIndex(index).path : "",
+        [getNodeByIndex, size]
     )
 
     const nodeRender = useCallback(
-        (index: number) => <NodeRender index={index} />,
-        [NodeRender, toggleChildExpand, enablePreview, showLineNumbers ? dataPLeft : 0]
+        (index: number) => index < size ? <NodeRender index={index} /> : undefined,
+        [NodeRender, size]
     )
 
-    const computeItemKey = useCallback(
-        (index: number) => getNodeByIndex(index).path,
-        [getNodeByIndex]
+    const ctxProps = useMemo(
+        () => ({
+            getNodeByIndex,
+            toggleChildExpand,
+            refreshPath,
+            enablePreview,
+            size,
+            resolver,
+        }), [getNodeByIndex, toggleChildExpand, refreshPath, enablePreview, size, resolver]
     )
 
     return <>
         <div className="big-objview-root" style={{ height: `400px` }}>
-            <Virtuoso
-                style={{ height: '100%' }}
-                computeItemKey={computeItemKey}
-                fixedItemHeight={14}
-                totalCount={size}
-                itemContent={nodeRender}
-            />
+            <renderCtx.Provider value={ctxProps}>
+                <Virtuoso
+                    style={{ height: '100%' }}
+                    computeItemKey={computeItemKey}
+                    fixedItemHeight={14}
+                    totalCount={size}
+                    itemContent={nodeRender}
+                />
+            </renderCtx.Provider>
         </div>
     </>
 }
 
 
+const renderCtx = React.createContext({
+    getNodeByIndex: undefined as any,
+    toggleChildExpand: undefined as any,
+    refreshPath: undefined as any,
+    enablePreview: undefined as any,
+    size: undefined as any,
+    resolver: undefined as any,
+})
+
+
+
+const NodeRender = ({ index }: { index: number }) => {
+
+    const { enablePreview, getNodeByIndex, refreshPath, toggleChildExpand, resolver, size } = useContext(renderCtx)
+
+    const nodeResult: NodeResult = index < size ? getNodeByIndex?.(index) : undefined
+
+    const nodeData = useMemo(
+        () => nodeResult?.getData?.(),
+        [nodeResult?.state?.updateStamp]
+    )
+
+    return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
+        {nodeResult && <RenderNode
+            {...{
+                enablePreview,
+                resolver,
+                toggleChildExpand,
+                refreshPath,
+                nodeData,
+                value: nodeData.value,
+            }}
+            key={nodeData.path} />}
+    </div>
+}
