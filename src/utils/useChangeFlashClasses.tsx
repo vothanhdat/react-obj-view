@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useId } from "react";
+import { GroupedProxy, groupedProxyIsEqual, proxyInfo } from "./groupedProxy";
 
 
 export const useChangeFlashClasses = ({ value, enable = true, flashClassname = 'jv-updated' }: { value: any; flashClassname?: string; enable?: boolean }) => {
@@ -10,7 +11,12 @@ export const useChangeFlashClasses = ({ value, enable = true, flashClassname = '
             const p = performance.now();
 
             let isDiff = value != refValue.current
-            // console.log("change", { value, refVal: refValue.current, isDiff })
+
+            if (value instanceof GroupedProxy && refValue.current instanceof GroupedProxy) {
+                console.time("compare")
+                isDiff = !groupedProxyIsEqual(value, refValue.current)
+                console.timeEnd("compare")
+            }
 
             const p1 = performance.now();
 
@@ -27,13 +33,6 @@ export const useChangeFlashClasses = ({ value, enable = true, flashClassname = '
         }
 
     }, [enable && value, ref]);
-
-    // const id = useId()
-
-    // useEffect(() => {
-    //     console.log("Mount", id)
-    //     return () => console.log("Unmount", id)
-    // },[id])
 
     return ref
 }

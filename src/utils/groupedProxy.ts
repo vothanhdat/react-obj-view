@@ -1,6 +1,9 @@
-export class GroupedProxy { }
+export const proxyInfo = Symbol("Info")
 
-export const infoSymbol = Symbol("Info")
+export class GroupedProxy {
+    [proxyInfo]!: { from: number, to: number, origin: any, iterators?: [any, any][], }
+}
+
 
 const SPLIT_CHAR = " … ";
 
@@ -39,8 +42,8 @@ export const getObjectGroupProxyEntries = (
                         };
                     },
                     get(_, key) {
-                        if (key == infoSymbol)
-                            return { from: _from, to: _to }
+                        if (key === proxyInfo)
+                            return { from: _from, to: _to, iterators, origin: value }
                         const [from, to] = String(key).split(SPLIT_CHAR);
                         if (+to - 1 > +from) return getChilds(+from, +to);
                         return value[key];
@@ -61,8 +64,9 @@ export const getObjectGroupProxyEntries = (
                         };
                     },
                     get(_, key) {
-                        if (key == infoSymbol)
-                            return { from: _from, to: _to }
+                        if (key === proxyInfo)
+                            return { from: _from, to: _to, iterators, origin: value }
+
                         return value[key]
                     },
                 }
@@ -108,8 +112,8 @@ export const getArrayGroupProxyEntries = (
                         };
                     },
                     get(_, key) {
-                        if (key == infoSymbol)
-                            return { from: _from, to: _to }
+                        if (key == proxyInfo)
+                            return { from: _from, to: _to, origin: array }
                         const [from, to] = String(key).split(SPLIT_CHAR);
                         if (+to - 1 > +from) return getChilds(+from, +to);
                         return array[Number(key)]
@@ -130,8 +134,8 @@ export const getArrayGroupProxyEntries = (
                         };
                     },
                     get(_, key) {
-                        if (key == infoSymbol)
-                            return { from: _from, to: _to }
+                        if (key == proxyInfo)
+                            return { from: _from, to: _to, origin: array }
                         return array[Number(key)]
                     },
                 }
@@ -140,3 +144,37 @@ export const getArrayGroupProxyEntries = (
 
     return getChilds(0, array.length);
 };
+
+
+export const groupedProxyIsEqual = (
+    value: GroupedProxy,
+    compare: GroupedProxy,
+) => {
+    if (value instanceof GroupedProxy && compare instanceof GroupedProxy) {
+        const { from: fromPrivious, to: toPrevious, origin: previous } = compare[proxyInfo]
+        const { from, to, origin: current, iterators } = value[proxyInfo]
+        if (current === previous) {
+            return true
+        } else if (fromPrivious == from && toPrevious == to) {
+            if (current instanceof Array && previous instanceof Array) {
+                for (let i = from; i <= to; i++) {
+                    if (current[i] !== previous[i])
+                        return false
+                }
+                return true
+            } else if (current && previous && iterators) {
+                for (let i = from; i <= to; i++) {
+                    let key = iterators[i][0]
+                    if (current[key] !== previous[key])
+                        return false
+                }
+                return true
+            }
+
+        }
+        return false
+    } else {
+        return value == compare
+    }
+
+}
