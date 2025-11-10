@@ -9,10 +9,10 @@ export const useLazyValue = ({ value, refreshPath }: { value: LazyValue; refresh
 
     const lazyValueEmit = useCallback(() => {
         if (value instanceof LazyValue) {
-            console.log("init lazy value");
+            // console.log("init lazy value");
             value.init();
             setLazyValueInited(value.inited);
-            console.log(value);
+            // console.log(value);
             refreshPath?.();
         }
     }, [isLazyValue && value, isLazyValue && refreshPath]);

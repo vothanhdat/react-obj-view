@@ -1,12 +1,11 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "./types";
-import { groupArrayResolver, groupObjectResolver } from "./resolvers/grouped";
 import { NodeResult } from "./walkingToIndexFactory";
 import { RenderNode, RenderOptions } from "../Components/RenderNode";
 import { useFlattenObjectView } from "./useFlattenObjectView";
-import "../Components/style.css"
 import { useWrapper } from "../hooks/useWrapper";
+import "../Components/style.css"
 
 export const V5Index: React.FC<ObjectViewProps> = ({
     valueGetter,

@@ -52,7 +52,7 @@ export function useFlattenObjectView(
 
     const refWalkResult = useMemo(
         () => {
-            console.time("walking");
+            // console.time("walking");
             const result = refWalk.current!.walking(
                 value,
                 config,
@@ -60,8 +60,8 @@ export function useFlattenObjectView(
                 true
             );
 
-            console.log("updateStamp", result.updateStamp);
-            console.timeEnd("walking");
+            // console.log("updateStamp", result.updateStamp);
+            // console.timeEnd("walking");
             return { ...result };
         },
         [refWalk, value, name, reload, config]
@@ -69,9 +69,9 @@ export function useFlattenObjectView(
 
     const refreshPath = useCallback(
         (node: NodeResultData) => {
-            console.time("refreshPath");
+            // console.time("refreshPath");
             refWalk.current?.refreshPath(node.paths);
-            console.timeEnd("refreshPath");
+            // console.timeEnd("refreshPath");
             setReload(e => e + 1);
         },
         [refWalk.current, config]
@@ -79,9 +79,9 @@ export function useFlattenObjectView(
 
     const toggleChildExpand = useCallback(
         (node: NodeResultData) => {
-            console.time("toggleExpand");
+            // console.time("toggleExpand");
             refWalk.current?.toggleExpand(node.paths, config);
-            console.timeEnd("toggleExpand");
+            // console.timeEnd("toggleExpand");
             setReload(e => e + 1);
         },
         [refWalk.current, config]

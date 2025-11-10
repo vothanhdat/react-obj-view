@@ -1,11 +1,23 @@
 import { ResolverFn } from "../types";
+import { weakMapCache } from "./_shared";
 
 const MapIterater = Object.getPrototypeOf(new Map().entries());
 
 export class CustomIterator {
     static name = "";
 
-    constructor(
+    static getIterator = weakMapCache(
+        (e: Set<any> | Map<any, any>) => new CustomIterator(
+            e instanceof Map ? () => e.entries()
+                : e instanceof Set ? () => e.values()
+                    : () => [] as never,
+            e instanceof Map ? e.size
+                : e instanceof Set ? e.size
+                    : 0
+        )
+    )
+
+    private constructor(
         public iterator: () => IteratorObject<any>,
         public size: number | undefined = undefined
     ) { }
@@ -18,7 +30,18 @@ export class CustomIterator {
 export class CustomEntry {
     static name = "";
 
-    constructor(
+    static getEntryMap = weakMapCache(iterator => new Map<any, CustomEntry>())
+
+    static getEntry(iterate: CustomIterator, key: any, value: any) {
+        let map = this.getEntryMap(iterate)
+        let entry = map.get(key)
+        if (entry?.value !== value || (!map?.has(key))) {
+            map.set(key, entry = new CustomEntry(key, value))
+        }
+        return entry
+    }
+
+    private constructor(
         public key: any,
         public value: any
     ) { }
@@ -41,7 +64,7 @@ export const iteraterResolver: ResolverFn<CustomIterator> = (
         for (let [key, value] of iterator) {
             if (cb(
                 index++,
-                new CustomEntry(key, value),
+                CustomEntry.getEntry(e, key, value),
                 true
             )) return;
         }
@@ -77,7 +100,8 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
     } else {
         cb(
             "[[Entries]]",
-            new CustomIterator(() => map.entries(), map.size),
+            CustomIterator.getIterator(map),
+            // new CustomIterator(() => map.entries(), map.size),
             false
         );
 
@@ -109,7 +133,7 @@ export const setResolver: ResolverFn<Set<any>> = (
     } else {
         cb(
             "[[Entries]]",
-            new CustomIterator(() => set.values(), set.size),
+            CustomIterator.getIterator(set),
             false
         );
 

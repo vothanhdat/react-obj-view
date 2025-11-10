@@ -44,7 +44,7 @@ export class InternalPromise {
                 this.value = r
             })
             .catch(() => { });
-        console.log("new InternalPromise", this)
+        // console.log("new InternalPromise", this)
 
     }
 }
