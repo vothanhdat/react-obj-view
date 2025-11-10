@@ -45,15 +45,20 @@ export const V5Index: React.FC<ObjectViewProps> = ({
         [NodeRender, size]
     )
 
-    const ctxProps = useMemo(
+    const options = useMemo(
         () => ({
-            getNodeByIndex,
-            toggleChildExpand,
-            refreshPath,
             enablePreview,
-            size,
+            refreshPath,
+            toggleChildExpand,
             resolver,
-        }), [getNodeByIndex, toggleChildExpand, refreshPath, enablePreview, size, resolver]
+            highlightUpdate,
+        }) as RenderOptions,
+        [enablePreview, refreshPath, toggleChildExpand, resolver, highlightUpdate]
+    )
+
+    const ctxProps = useMemo(
+        () => ({ getNodeByIndex, options, size, }),
+        [getNodeByIndex, options, size]
     )
 
     return <>
@@ -74,16 +79,13 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
 const renderCtx = React.createContext({
     getNodeByIndex: undefined as any,
-    toggleChildExpand: undefined as any,
-    refreshPath: undefined as any,
-    enablePreview: undefined as any,
     size: undefined as any,
-    resolver: undefined as any,
+    options: undefined as any as RenderOptions
 })
 
 const NodeRender = ({ index }: { index: number }) => {
 
-    const { enablePreview, getNodeByIndex, refreshPath, toggleChildExpand, resolver, size } = useContext(renderCtx)
+    const { getNodeByIndex, size, options } = useContext(renderCtx)
 
     const nodeResult: NodeResult = index < size ? getNodeByIndex?.(index) : undefined
 
@@ -96,23 +98,9 @@ const NodeRender = ({ index }: { index: number }) => {
 
     const valueWrapper = useWrapper(nodeData?.value)
 
-    const options = useMemo(
-        () => ({ enablePreview, refreshPath, toggleChildExpand, resolver, }) as RenderOptions,
-        [enablePreview, refreshPath, toggleChildExpand, resolver]
-    )
-
     return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
         {nodeResult && <RenderNode
-            {...{
-                enablePreview,
-                resolver,
-                toggleChildExpand,
-                refreshPath,
-                nodeDataWrapper,
-                valueWrapper,
-                options,
-
-            }}
+            {...{ nodeDataWrapper, valueWrapper, options, }}
             key={nodeData.path} />}
     </div>
 }

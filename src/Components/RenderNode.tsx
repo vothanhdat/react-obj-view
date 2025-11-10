@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ResolverFn } from "../V5/types";
 
 import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
@@ -13,9 +13,10 @@ import { useWrapper } from "../hooks/useWrapper";
 
 export type RenderOptions = {
     enablePreview: boolean;
-    resolver?: Map<any, ResolverFn>
+    highlightUpdate: boolean;
+    resolver: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeResultData) => void
-    refreshPath: (node: NodeResultData) => void
+    refreshPath: (node?: NodeResultData) => void
 }
 
 const NodeRenderDefault: React.FC<{
@@ -28,7 +29,7 @@ const NodeRenderDefault: React.FC<{
 
     const value = valueWrapper()
 
-    const { enablePreview, refreshPath, toggleChildExpand, resolver } = options
+    const { enablePreview, toggleChildExpand } = options
 
     const isExpanded = nodeData.expanded
 
@@ -44,15 +45,26 @@ const NodeRenderDefault: React.FC<{
         && !(value instanceof Error)
         && !(value instanceof GroupedProxy)
 
-    const bindRefreshPath = useCallback(
+    const refreshPath = useCallback(
         () => {
-            console.log("nodeData.path", nodeData.path)
-            refreshPath(nodeData)
+            // console.log("nodeData.path", nodeData.path)
+            options.refreshPath(nodeData)
         },
-        [refreshPath, nodeData]
+        [options.refreshPath, nodeData]
     )
 
-    const ref = useChangeFlashClasses({ value, flashClassname: 'updated' }) as any
+    const overrideOptions = useMemo(
+        () => ({
+            ...options,
+            refreshPath: refreshPath,
+        }), [options, refreshPath]
+    )
+
+    const ref = useChangeFlashClasses({
+        value,
+        flashClassname: 'updated',
+        enable: options.highlightUpdate,
+    }) as any
 
 
     return <div className="node-container" style={{ paddingLeft: `${(nodeData.depth - 1) * 1.5}em` }}>
@@ -77,10 +89,9 @@ const NodeRenderDefault: React.FC<{
 
             <RenderValue {...{
                 valueWrapper,
-                isPreview,
                 enumrable: nodeData.enumerable,
-                resolver,
-                refreshPath: bindRefreshPath,
+                options: overrideOptions,
+                isPreview,
             }} />
 
         </div>

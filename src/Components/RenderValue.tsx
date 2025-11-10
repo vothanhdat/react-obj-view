@@ -5,16 +5,17 @@ import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../hooks/useWrapper";
 import { withPromiseWrapper } from "./PromiseWrapper";
 import { useLazyValue } from "../hooks/useLazyValue";
+import { RenderOptions } from "./RenderNode";
 
 
 const RenderValueDefault: React.FC<{
     valueWrapper: any;
     isPreview: boolean;
-    resolver?: Map<any, ResolverFn>;
+    options: RenderOptions,
     depth?: number;
-    refreshPath?: () => void
-}> = (({ valueWrapper, isPreview, resolver, refreshPath, depth = 0 }) => {
-
+}> = (({ valueWrapper, isPreview, options, depth = 0 }) => {
+    const { refreshPath } = options
+    
     const value = valueWrapper()
 
     const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
@@ -23,8 +24,8 @@ const RenderValueDefault: React.FC<{
 
     const children = <>
         {isPreview
-            ? <RenderPreview valueWrapper={renderValueWrapper} resolver={resolver} depth={depth} />
-            : <RenderRawValue valueWrapper={renderValueWrapper} depth={depth} />}
+            ? <RenderPreview valueWrapper={renderValueWrapper} options={options} depth={depth} />
+            : <RenderRawValue valueWrapper={renderValueWrapper} depth={depth} options={options} />}
     </>
 
     return <span

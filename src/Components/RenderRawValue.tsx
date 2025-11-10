@@ -1,9 +1,10 @@
 import { CustomEntry } from "../V5/resolvers/collections";
 import { useWrapper } from "../hooks/useWrapper";
+import { RenderOptions } from "./RenderNode";
 import { RenderValue } from "./RenderValue";
 
 
-export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; }> = ({ valueWrapper, depth }) => {
+export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: RenderOptions }> = ({ valueWrapper, depth, options }) => {
 
     const value = valueWrapper()
 
@@ -42,7 +43,7 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; }> = ({ v
             if (value instanceof Map) return `Map(${value.size})`;
             if (value instanceof Set) return `Set(${value.size})`;
             if (value instanceof Error) return `${String(value)}`;
-            if (value instanceof CustomEntry) return <RenderRawEntry {...{ depth, valueWrapper }} />;
+            if (value instanceof CustomEntry) return <RenderRawEntry {...{ depth, valueWrapper, options }} />;
 
             const renderType = value
                 && value.constructor != Object
@@ -54,14 +55,14 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; }> = ({ v
     return "";
 };
 
-export const RenderRawEntry = ({ depth, valueWrapper }: { valueWrapper: any; depth: any; }) => {
+export const RenderRawEntry = ({ depth, valueWrapper, options }: { valueWrapper: any; depth: any; options: RenderOptions }) => {
     const value = valueWrapper()
 
     const wrapperKey = useWrapper(value.key)
     const wrapperValue = useWrapper(value.value)
     return <>
-        <RenderValue {...{ valueWrapper: wrapperKey, isPreview: false, depth: depth + 1 }} />
+        <RenderValue {...{ valueWrapper: wrapperKey, isPreview: false, depth: depth + 1, options }} />
         <span className="symbol">{" => "}</span>
-        <RenderValue {...{ valueWrapper: wrapperValue, isPreview: false, depth: depth + 1 }} />
+        <RenderValue {...{ valueWrapper: wrapperValue, isPreview: false, depth: depth + 1, options }} />
     </>
 }

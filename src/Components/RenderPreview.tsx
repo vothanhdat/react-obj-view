@@ -4,14 +4,15 @@ import { CustomIterator, CustomEntry } from "../V5/resolvers/collections";
 import { ResolverFn, Entry } from "../V5/types";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
+import { RenderOptions } from "./RenderNode";
 
 
 
 export const RenderPreview: React.FC<{
     valueWrapper: any;
-    resolver?: Map<any, ResolverFn>;
     depth?: number;
-}> = ({ valueWrapper, resolver, depth = 0 }) => {
+    options: RenderOptions,
+}> = ({ valueWrapper, options, depth = 0 }) => {
 
     const value = valueWrapper()
 
@@ -20,7 +21,7 @@ export const RenderPreview: React.FC<{
             let list: Entry[] = [];
             getEntriesCb(
                 value,
-                { expandDepth: 0, nonEnumerable: false, resolver, symbol: false },
+                { expandDepth: 0, nonEnumerable: false, resolver: options.resolver, symbol: false },
                 true,
                 (key, value, enumerable) => {
                     list.push({ key, value, enumerable });
@@ -30,7 +31,7 @@ export const RenderPreview: React.FC<{
 
             return list;
         },
-        [resolver, value]
+        [options.resolver, value]
     );
 
     let isArray = Array.isArray(value);
@@ -64,7 +65,7 @@ export const RenderPreview: React.FC<{
                 {!hideKey && <><RenderName name={String(key)} />: </>}
                 <RenderValue {...{
                     valueWrapper: () => value,
-                    resolver,
+                    options,
                     isPreview: false,
                     depth: depth + 1
                 }} />
