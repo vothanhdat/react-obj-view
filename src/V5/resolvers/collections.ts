@@ -30,10 +30,10 @@ export class CustomIterator {
 export class CustomEntry {
     static name = "";
 
-    static getEntryMap = weakMapCache(iterator => new Map<any, CustomEntry>())
+    private static getEntryMap = weakMapCache(iterator => new Map<any, CustomEntry>())
 
-    static getEntry(iterate: CustomIterator, key: any, value: any) {
-        let map = this.getEntryMap(iterate)
+    static getEntry(ref: any, key: any, value: any) {
+        let map = this.getEntryMap(ref)
         let entry = map.get(key)
         if (entry?.value !== value || (!map?.has(key))) {
             map.set(key, entry = new CustomEntry(key, value))
@@ -72,11 +72,8 @@ export const iteraterResolver: ResolverFn<CustomIterator> = (
         let index = 0;
 
         for (let entry of iterator) {
-            if (cb(
-                index++,
-                entry,
-                true
-            )) return;
+            if (cb(index++, entry, true))
+                return;
         }
     }
 
@@ -93,7 +90,8 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
         for (let [key, value] of map.entries()) {
             cb(
                 index++,
-                new CustomEntry(key, value),
+                CustomEntry.getEntry(map, key, value),
+                // new CustomEntry(key, value),
                 true
             );
         }
@@ -105,11 +103,7 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
             false
         );
 
-        cb(
-            "size",
-            map.size,
-            true
-        );
+        cb("size", map.size, true);
     }
 
     next(map);
@@ -124,11 +118,8 @@ export const setResolver: ResolverFn<Set<any>> = (
 ) => {
     if (isPreview) {
         let index = 0;
-        for (let value of set.values()) cb(
-            index++,
-            value,
-            true
-        );
+        for (let value of set.values())
+            cb(index++, value, true);
 
     } else {
         cb(
@@ -137,11 +128,7 @@ export const setResolver: ResolverFn<Set<any>> = (
             false
         );
 
-        cb(
-            "size",
-            set.size,
-            true
-        );
+        cb("size", set.size, true);
     }
     next(set);
 };

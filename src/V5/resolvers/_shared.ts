@@ -12,3 +12,44 @@ export const weakMapCache = <T extends (e: any) => any>(fn: T) => {
 
     }) as T;
 };
+
+
+export const weakMapCacheMultipleLevel = <T extends (...params: any[]) => any>(fn: T) => {
+    let cache = new WeakMap();
+
+    return ((...params: any[]) => {
+
+        let currentMap: (Map<any, any> | WeakMap<any, any>) = cache
+
+        let paths = params.slice(0, -1);
+
+        let end = params.at(-1);
+
+        for (let param of paths) {
+            if (!currentMap.has(param)) {
+                currentMap.set(param, new Map());
+            }
+            currentMap = currentMap.get(param);
+        }
+
+        if (!currentMap.has(end)) {
+            currentMap.set(end, fn(...params));
+        }
+        return currentMap.get(end);
+    }) as T;
+}
+
+export const simpleCache = <T extends (...params: any[]) => any>(
+    fn: T,
+    resolver = (...params: Parameters<T>) => params.join(",")
+) => {
+
+    let map = new Map()
+
+    return ((...params: Parameters<T>) => {
+        let key = resolver(...params)
+        if (!map.has(key)) { map.set(key, fn(...params)) }
+        return map.get(key);
+    }) as T
+
+}

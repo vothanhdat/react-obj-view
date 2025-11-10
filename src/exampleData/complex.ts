@@ -47,6 +47,26 @@ export const complexStructures = {
     }
     return obj;
   })(),
+  manyManyProperties: (() => {
+    const obj: any = {};
+    for (let i = 0; i < 1000; i++) {
+      obj[`property_${i}`] = {
+        id: i,
+        value: `Value ${i}`,
+        isEven: i % 2 === 0,
+        timestamp: new Date(2023, 0, i + 1),
+        nested: {
+          doubleValue: i * 2,
+          squareValue: i * i,
+          details: {
+            description: `This is property number ${i}`,
+            tags: [`tag-${i}`, `category-${Math.floor(i / 10)}`],
+          },
+        },
+      };
+    }
+    return obj;
+  })(),
   
   // Mixed data types in complex structure
   mixedTypes: {

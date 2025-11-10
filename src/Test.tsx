@@ -155,6 +155,7 @@ const testDataOptions: TestDataOption[] = [
     // Complex Structures
     { label: 'Complex - Deep Nesting (10 levels)', value: allExamples.complex.deepNesting, category: 'Complex' },
     { label: 'Complex - Many Properties (100)', value: allExamples.complex.manyProperties, category: 'Complex' },
+    { label: 'Complex - Many Many Properties (1000)', value: allExamples.complex.manyManyProperties, category: 'Complex' },
     { label: 'Complex - Mixed Data Types', value: allExamples.complex.mixedTypes, category: 'Complex' },
     { label: 'Complex - API Response Simulation', value: allExamples.complex.apiResponse, category: 'Complex' },
 
