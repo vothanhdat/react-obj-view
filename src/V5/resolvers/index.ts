@@ -1,5 +1,4 @@
-import { infoSymbol } from "../../ObjectViewV2/utils/groupedProxy";
-import { LazyValue, LazyValueError } from "../LazyValueWrapper";
+import { LazyValue } from "../LazyValueWrapper";
 import { ResolverFn } from "../types";
 import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./collections";
 import { InternalPromise, internalPromiseResolver, promiseResolver } from "./promise";

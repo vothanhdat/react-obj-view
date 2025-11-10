@@ -3,7 +3,7 @@ import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "./types";
 import { groupArrayResolver, groupObjectResolver } from "./resolvers/grouped";
 import { NodeResult } from "./walkingToIndexFactory";
-import { RenderNode } from "../Components/RenderNode";
+import { RenderNode, RenderOptions } from "../Components/RenderNode";
 import { useFlattenObjectView } from "./useFlattenObjectView";
 import "../Components/style.css"
 
@@ -81,7 +81,12 @@ const renderCtx = React.createContext({
     resolver: undefined as any,
 })
 
-
+const useWrapper = <T,>(value: T): () => T => {
+    return useCallback(
+        () => value,
+        [value]
+    )
+}
 
 const NodeRender = ({ index }: { index: number }) => {
 
@@ -94,6 +99,15 @@ const NodeRender = ({ index }: { index: number }) => {
         [nodeResult?.state?.updateStamp]
     )
 
+    const nodeDataWrapper = useWrapper(nodeData)
+
+    const valueWrapper = useWrapper(nodeData?.value)
+
+    const options = useMemo(
+        () => ({ enablePreview, refreshPath, toggleChildExpand, resolver, }) as RenderOptions,
+        [enablePreview, refreshPath, toggleChildExpand, resolver]
+    )
+
     return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
         {nodeResult && <RenderNode
             {...{
@@ -101,8 +115,10 @@ const NodeRender = ({ index }: { index: number }) => {
                 resolver,
                 toggleChildExpand,
                 refreshPath,
-                nodeData,
-                value: nodeData.value,
+                nodeDataWrapper,
+                valueWrapper,
+                options,
+
             }}
             key={nodeData.path} />}
     </div>

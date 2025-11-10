@@ -1,8 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
 import { LazyValue } from "../V5/LazyValueWrapper";
 import { ResolverFn } from "../V5/types";
-import { withPromiseWrapper } from "./PromiseWrapper";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 
@@ -31,37 +30,40 @@ const useLazyValue = ({ value, refreshPath }: { value: LazyValue, refreshPath?: 
 
 
 export const RenderValue: React.FC<{
-
-    value: any;
+    valueWrapper: any;
     isPreview: boolean;
     resolver?: Map<any, ResolverFn>;
     depth?: number;
     refreshPath?: () => void
-}> = withPromiseWrapper(
-    ({ value, isPreview, resolver, refreshPath, depth = 0 }) => {
+}> = (({ valueWrapper, isPreview, resolver, refreshPath, depth = 0 }) => {
 
-        const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
+    const value = valueWrapper()
 
-        const children = <>
-            {isPreview
-                ? <RenderPreview value={renderValue} resolver={resolver} depth={depth} />
-                : <RenderRawValue value={renderValue} depth={depth} />}
-        </>
+    const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
 
-        return <span
-            onClick={lazyValueEmit}
-            className={joinClasses(
-                "value",
-                `type-${typeof value}`,
-                isPreview && 'value-preview',
-                value == null && 'type-null',
-                isLazyValue && 'pointer-cursor',
-                value?.constructor?.name ? `type-object-${value?.constructor?.name}`?.toLowerCase() : ``
-            )}>
-            {isLazyValue
-                ? <> {lazyValueInited ? children : "(...)"} </>
-                : children}
-        </span>;
-    }
+    const renderValueWrapper = useCallback(
+        () => renderValue,
+        [renderValue]
+    )
 
-);
+    const children = <>
+        {isPreview
+            ? <RenderPreview valueWrapper={renderValueWrapper} resolver={resolver} depth={depth} />
+            : <RenderRawValue valueWrapper={renderValueWrapper} depth={depth} />}
+    </>
+
+    return <span
+        onClick={lazyValueEmit}
+        className={joinClasses(
+            "value",
+            `type-${typeof value}`,
+            isPreview && 'value-preview',
+            value == null && 'type-null',
+            isLazyValue && 'pointer-cursor',
+            value?.constructor?.name ? `type-object-${value?.constructor?.name}`?.toLowerCase() : ``
+        )}>
+        {isLazyValue
+            ? <> {lazyValueInited ? children : "(...)"} </>
+            : children}
+    </span>;
+});

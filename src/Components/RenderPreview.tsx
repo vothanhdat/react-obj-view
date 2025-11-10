@@ -8,10 +8,12 @@ import { RenderValue } from "./RenderValue";
 
 
 export const RenderPreview: React.FC<{
-    value: any;
+    valueWrapper: any;
     resolver?: Map<any, ResolverFn>;
     depth?: number;
-}> = ({ value, resolver, depth = 0 }) => {
+}> = ({ valueWrapper, resolver, depth = 0 }) => {
+
+    const value = valueWrapper()
 
     let iterator = useMemo(
         () => {
@@ -53,7 +55,6 @@ export const RenderPreview: React.FC<{
         : isArray ? "[]"
             : "{}";
 
-
     return <>
         {renderType} {wrappSymbol.at(0)}
         {iterator
@@ -61,7 +62,7 @@ export const RenderPreview: React.FC<{
             .map(({ key, value }, index) => <>
                 {index > 0 ? customSeperator : ""}
                 {!hideKey && <><RenderName name={String(key)} />: </>}
-                <RenderValue {...{ value, resolver, isPreview: false, depth: depth + 1 }} />
+                <RenderValue {...{ valueWrapper: () => value, resolver, isPreview: false, depth: depth + 1 }} />
             </>)}
 
         {iterator.length >= 5 ? ",…" : ""}

@@ -2,18 +2,17 @@ export class GroupedProxy { }
 
 export const infoSymbol = Symbol("Info")
 
+const SPLIT_CHAR = " … ";
+
 export const getObjectGroupProxyEntries = (
-    indexed: any,
+    value: any,
     maxSize: number = 10
 ) => {
-    const iterators = Object.entries(indexed)
+    const iterators = Object.entries(value)
 
     const keySize = iterators.length;
 
-    if (keySize < maxSize)
-        return indexed;
-
-    const splitChars = " … ";
+    if (keySize < maxSize) return value;
 
     const getChilds: any = (_from: number, _to: number) => {
 
@@ -30,9 +29,9 @@ export const getObjectGroupProxyEntries = (
                         .map((_, i) => [
                             `${_from + i * seperator}`,
                             `${Math.min(_from + i * seperator + seperator, keySize)}`
-                        ].join(splitChars)),
+                        ].join(SPLIT_CHAR)),
                     getOwnPropertyDescriptor(_, prop) {
-                        const [from, to] = String(prop).split(splitChars);
+                        const [from, to] = String(prop).split(SPLIT_CHAR);
                         return {
                             configurable: true,
                             enumerable: +to - 1 > +from,
@@ -42,9 +41,9 @@ export const getObjectGroupProxyEntries = (
                     get(_, key) {
                         if (key == infoSymbol)
                             return { from: _from, to: _to }
-                        const [from, to] = String(key).split(splitChars);
+                        const [from, to] = String(key).split(SPLIT_CHAR);
                         if (+to - 1 > +from) return getChilds(+from, +to);
-                        return indexed[key];
+                        return value[key];
                     },
                 }
             ) : new Proxy(
@@ -58,13 +57,13 @@ export const getObjectGroupProxyEntries = (
                         return {
                             configurable: true,
                             enumerable: true,
-                            value: indexed[key],
+                            value: value[key],
                         };
                     },
                     get(_, key) {
                         if (key == infoSymbol)
                             return { from: _from, to: _to }
-                        return indexed[key]
+                        return value[key]
                     },
                 }
             );
@@ -76,16 +75,13 @@ export const getObjectGroupProxyEntries = (
 
 
 export const getArrayGroupProxyEntries = (
-    indexed: any[],
+    array: any[],
     maxSize: number = 10
 ) => {
 
-    const keySize = indexed.length;
+    const keySize = array.length;
 
-    if (keySize < maxSize)
-        return indexed;
-
-    const splitChars = " … ";
+    if (keySize < maxSize) return array;
 
     const getChilds: any = (_from: number, _to: number) => {
 
@@ -102,9 +98,9 @@ export const getArrayGroupProxyEntries = (
                         .map((_, i) => [
                             `${_from + i * seperator}`,
                             `${Math.min(_from + i * seperator + seperator, keySize)}`
-                        ].join(splitChars)),
+                        ].join(SPLIT_CHAR)),
                     getOwnPropertyDescriptor(_, prop) {
-                        const [from, to] = String(prop).split(splitChars);
+                        const [from, to] = String(prop).split(SPLIT_CHAR);
                         return {
                             configurable: true,
                             enumerable: +to - 1 > +from,
@@ -114,9 +110,9 @@ export const getArrayGroupProxyEntries = (
                     get(_, key) {
                         if (key == infoSymbol)
                             return { from: _from, to: _to }
-                        const [from, to] = String(key).split(splitChars);
+                        const [from, to] = String(key).split(SPLIT_CHAR);
                         if (+to - 1 > +from) return getChilds(+from, +to);
-                        return indexed[Number(key)]
+                        return array[Number(key)]
                     },
                 }
             ) : new Proxy(
@@ -130,17 +126,17 @@ export const getArrayGroupProxyEntries = (
                         return {
                             configurable: true,
                             enumerable: true,
-                            value: indexed[Number(key)],
+                            value: array[Number(key)],
                         };
                     },
                     get(_, key) {
                         if (key == infoSymbol)
                             return { from: _from, to: _to }
-                        return indexed[Number(key)]
+                        return array[Number(key)]
                     },
                 }
             );
     };
 
-    return getChilds(0, indexed.length);
+    return getChilds(0, array.length);
 };

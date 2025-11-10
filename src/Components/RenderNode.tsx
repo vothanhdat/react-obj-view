@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { ResolverFn } from "../V5/types";
 
 import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
-import { withPromiseWrapper } from "./PromiseWrapper";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
@@ -10,14 +9,24 @@ import { GroupedProxy } from "../ObjectViewV2/utils/groupedProxy";
 import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
 
 
-const NodeRenderDefault: React.FC<{
-    nodeData: NodeResultData;
+export type RenderOptions = {
     enablePreview: boolean;
-    value: unknown,
     resolver?: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeResultData) => void
     refreshPath: (node: NodeResultData) => void
-}> = ({ nodeData, value, toggleChildExpand, refreshPath, resolver, enablePreview = true }) => {
+}
+
+const NodeRenderDefault: React.FC<{
+    nodeDataWrapper: () => NodeResultData;
+    valueWrapper: () => unknown,
+    options: RenderOptions
+}> = ({ nodeDataWrapper, valueWrapper, options }) => {
+
+    const nodeData = nodeDataWrapper()
+
+    const value = valueWrapper()
+
+    const { enablePreview, refreshPath, toggleChildExpand, resolver } = options
 
     const isExpanded = nodeData.expanded
 
@@ -65,7 +74,7 @@ const NodeRenderDefault: React.FC<{
             {isCircular ? <span className="tag-circular">CIRCULAR</span> : <></>}
 
             <RenderValue {...{
-                value: value,
+                valueWrapper,
                 isPreview,
                 enumrable: nodeData.enumerable,
                 resolver,
@@ -76,7 +85,7 @@ const NodeRenderDefault: React.FC<{
     </div>;
 }
 
-export const RenderNode = withPromiseWrapper(NodeRenderDefault)
+export const RenderNode = NodeRenderDefault
 
 
 

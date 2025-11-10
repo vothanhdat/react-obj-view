@@ -1,10 +1,11 @@
-import { error } from "console";
 import { CustomEntry } from "../V5/resolvers/collections";
 import { RenderValue } from "./RenderValue";
+import { useCallback } from "react";
 
 
+export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; }> = ({ valueWrapper, depth }) => {
 
-export const RenderRawValue: React.FC<{ value: any; depth: any; }> = ({ value, depth }) => {
+    const value = valueWrapper()
 
     switch (typeof value) {
         case "boolean":
@@ -41,11 +42,7 @@ export const RenderRawValue: React.FC<{ value: any; depth: any; }> = ({ value, d
             if (value instanceof Map) return `Map(${value.size})`;
             if (value instanceof Set) return `Set(${value.size})`;
             if (value instanceof Error) return `${String(value)}`;
-            if (value instanceof CustomEntry) return <>
-                <RenderValue {...{ value: value.key, isPreview: false, depth: depth + 1 }} />
-                {" => "}
-                <RenderValue {...{ value: value.value, isPreview: false, depth: depth + 1 }} />
-            </>;
+            if (value instanceof CustomEntry) return <RenderEntry {...{ depth, valueWrapper }} />;
 
             const renderType = value
                 && value.constructor != Object
@@ -56,3 +53,15 @@ export const RenderRawValue: React.FC<{ value: any; depth: any; }> = ({ value, d
     }
     return "";
 };
+
+export const RenderEntry = ({ depth, valueWrapper }: { valueWrapper: any; depth: any; }) => {
+    const value = valueWrapper()
+
+    const wrapperKey = useCallback(() => value.key, [value.key])
+    const wrapperValue = useCallback(() => value.value, [value.key])
+    return <>
+        <RenderValue {...{ valueWrapper: wrapperKey, isPreview: false, depth: depth + 1 }} />
+        <span className="symbol">{" => "}</span>
+        <RenderValue {...{ valueWrapper: wrapperValue, isPreview: false, depth: depth + 1 }} />
+    </>
+}
