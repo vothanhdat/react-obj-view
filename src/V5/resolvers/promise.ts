@@ -1,0 +1,65 @@
+import { ResolverFn } from "../types";
+import { weakMapCache } from "./_shared";
+
+const PendingSymbol = Symbol("Pending");
+
+const getPromiseStatus = weakMapCache(
+    (e: Promise<any>) => {
+        let p = Promise
+            .race([e, Promise.resolve(PendingSymbol)])
+            .then(
+                (result) => (console.log({ result }), result) == PendingSymbol
+                    ? ({ status: "pending" })
+                    : ({ status: "resolved", result }),
+                (error) => ({ status: "rejected", result: error })
+            );
+
+        return {
+            status: p.then(e => e.status),
+            result: p.then(e => e.result),
+        };
+    }
+);
+
+export class InternalPromise {
+
+    static #cache = new WeakMap();
+
+    static getInstance(e: Promise<any>) {
+        if (!this.#cache.has(e)) {
+            this.#cache.set(e, new InternalPromise(e));
+        }
+        return this.#cache.get(e);
+    }
+
+    private constructor(
+        public promise: Promise<any>,
+        public value: any = undefined
+
+    ) {
+        promise
+            .then(r => this.value = r)
+            .catch(() => { });
+    }
+}
+
+
+export const promiseResolver: ResolverFn<Promise<any>> = (
+    promise: Promise<any>,
+    cb,
+    next,
+    isPreview
+) => {
+    let { result, status } = getPromiseStatus(promise);
+    cb(
+        "[[status]]",
+        InternalPromise.getInstance(status),
+        isPreview
+    );
+    cb(
+        "[[result]]",
+        InternalPromise.getInstance(result),
+        isPreview
+    );
+    next(promise);
+};

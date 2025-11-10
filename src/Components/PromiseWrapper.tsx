@@ -1,5 +1,5 @@
 import { memo, use } from "react";
-import { InternalPromise } from "../V5/resolver";
+import { InternalPromise } from "../V5/resolvers/promise";
 
 const getValueDefault = (props: any) => props.value
 const transformPropsDefault = (value: any) => ({ value }) as any

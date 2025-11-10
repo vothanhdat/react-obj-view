@@ -1,5 +1,5 @@
 import { error } from "console";
-import { CustomEntry } from "../V5/resolver";
+import { CustomEntry } from "../V5/resolvers/collections";
 import { RenderValue } from "./RenderValue";
 
 

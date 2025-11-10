@@ -2,7 +2,8 @@ import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "./types";
 import { ResolverFn } from "./types";
-import { DEFAULT_RESOLVER } from "./resolver";
+import { DEFAULT_RESOLVER } from "./resolvers";
+import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER, groupArrayResolver, groupObjectResolver } from "./resolvers/grouped";
 import { WalkingConfig } from "./types";
 import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 import { RenderNode } from "../Components/RenderNode";
@@ -17,6 +18,8 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     nonEnumerable = false,
     preview: enablePreview = true,
     showLineNumbers = false,
+    arrayGroupSize,
+    objectGroupSize
 }) => {
 
     let value = useMemo(() => valueGetter(), [valueGetter])
@@ -24,11 +27,13 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     const { getNodeByIndex, toggleChildExpand, refreshPath, resolver, size } = useFlattenObjectView(
         value,
         name,
-        typeof expandLevel == 'boolean'
-            ? (expandLevel ? 20 : 0)
-            : Number(expandLevel),
-        nonEnumerable,
-        customResolver,
+        {
+            expandDepth: typeof expandLevel == 'boolean' ? (expandLevel ? 20 : 0) : Number(expandLevel),
+            nonEnumerable,
+            customResolver,
+            arrayGroupSize,
+            objectGroupSize,
+        }
     );
 
     const dataPLeft = String(size).length
@@ -105,20 +110,32 @@ const useObjectId = <T,>(value: any) => {
     return ref.current.id
 }
 
+export type FlattenObjectConfig = {
+    expandDepth: number
+    nonEnumerable: boolean
+    customResolver?: Map<any, ResolverFn>
+    arrayGroupSize?: number
+    objectGroupSize?: number
+}
+
 function useFlattenObjectView(
     value: ValueRef<unknown>,
     name: string | undefined,
-    expandDepth: number,
-    nonEnumerable: boolean,
-    _resolver: Map<any, ResolverFn> | undefined,
+    { expandDepth, nonEnumerable, arrayGroupSize, customResolver, objectGroupSize, customResolver: _resolver }: FlattenObjectConfig
 ) {
 
     const resolver = useMemo(
         () => new Map([
             ...DEFAULT_RESOLVER,
             ..._resolver ?? [],
+            ...Number(arrayGroupSize) > 1
+                ? GROUP_ARRAY_RESOLVER(Number(arrayGroupSize))
+                : [],
+            ...Number(objectGroupSize) > 1
+                ? GROUP_OBJECT_RESOLVER(Number(objectGroupSize))
+                : [],
         ]),
-        [useObjectId(_resolver), DEFAULT_RESOLVER]
+        [useObjectId(_resolver), arrayGroupSize, objectGroupSize, DEFAULT_RESOLVER]
     )
 
     const config = useMemo(

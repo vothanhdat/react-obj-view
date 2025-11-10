@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { getEntriesCb } from "../V5/getEntries";
-import { CustomIterator, CustomEntry } from "../V5/resolver";
+import { CustomIterator, CustomEntry } from "../V5/resolvers/collections";
 import { ResolverFn, Entry } from "../V5/types";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
