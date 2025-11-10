@@ -6,6 +6,7 @@ import { withPromiseWrapper } from "./PromiseWrapper";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
+import { GroupedProxy } from "../ObjectViewV2/utils/groupedProxy";
 
 
 const NodeRenderDefault: React.FC<{
@@ -29,6 +30,7 @@ const NodeRenderDefault: React.FC<{
         && !isExpanded
         && typeof value != "function"
         && !(value instanceof Error)
+        && !(value instanceof GroupedProxy)
 
     const bindRefreshPath = useCallback(
         () => {

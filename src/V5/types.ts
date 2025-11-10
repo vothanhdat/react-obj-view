@@ -1,8 +1,10 @@
 
+type ResolverFnCb = (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+
 export type ResolverFn<T = any> = (
     value: T,
-    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void,
-    next: (value: unknown) => void,
+    cb: ResolverFnCb,
+    next: (value: unknown, cb?: ResolverFnCb) => void,
     isPreview: boolean
 ) => void
 
@@ -17,7 +19,8 @@ export type WalkingConfig = {
     nonEnumerable: boolean;
     symbol?: boolean;
     resolver: Map<any, ResolverFn> | undefined;
-}; 
+    arrayGroup?: number
+};
 
 export type ObjectViewProps = {
     valueGetter: any;

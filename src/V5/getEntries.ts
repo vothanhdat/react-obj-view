@@ -73,13 +73,15 @@ export const getEntriesCb = (
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 ) => {
 
-    const prototype = value?.constructor
+    const prototype = value
+        ? (value.constructor ?? Object.getPrototypeOf(value).constructor)
+        : undefined
 
     if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
         config.resolver?.get(prototype)?.(
             value,
             cb,
-            (value) => getEntriesCbOriginal(value, config, cb),
+            (value, callback = cb) => getEntriesCbOriginal(value, config, callback),
             isPreview,
         )
     } else {

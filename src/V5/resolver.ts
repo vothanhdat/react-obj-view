@@ -1,3 +1,4 @@
+import { getArrayGroupProxyEntries, getObjectGroupProxyEntries, GroupedProxy, infoSymbol } from "../ObjectViewV2/utils/groupedProxy";
 import { LazyValue, LazyValueError } from "./LazyValueWrapper";
 import { ResolverFn } from "./types";
 
@@ -218,24 +219,42 @@ const lazyValueResolver: ResolverFn<LazyValue> = (
     }
 }
 
-// const lazyValueErrorResolver: ResolverFn<LazyValueError> = (
-//     lazyValue: LazyValueError,
-//     cb,
-//     next,
-//     isPreview,
-// ) => {
-//     if(isPreview){
-//         next(lazyValue)
-//     }
-// }
+const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: number) => (
+    arr: any[],
+    cb,
+    next,
+    isPreview,
+) => {
+    if (!isPreview && arr.length >= size) {
+        next(
+            getArrayGroupProxyEntries(arr, size),
+            (key, value, enumrable) => enumrable && cb(key, value, enumrable),
+        )
+    } else {
+        next(arr)
+    }
+}
+
+const groupProxyResolver: ResolverFn<GroupedProxy> = (
+    groupedProxy: GroupedProxy,
+    cb,
+    next,
+    isPreview,
+) => {
+    next(
+        groupedProxy,
+        (key, value, enumrable) => enumrable && cb(key, value, enumrable),
+    )
+}
+
 
 export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
-    // [Error, errorResolver],
     [Map, mapResolver],
     [Set, setResolver],
     [CustomIterator, iteraterResolver],
     [Promise, promiseResolver],
     [LazyValue, lazyValueResolver],
-    // [LazyValueError, lazyValueErrorResolver],
+    [Array, groupArrayResolver(10)],
+    [GroupedProxy, groupProxyResolver],
 ]);
 
