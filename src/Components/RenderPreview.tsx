@@ -62,7 +62,12 @@ export const RenderPreview: React.FC<{
             .map(({ key, value }, index) => <>
                 {index > 0 ? customSeperator : ""}
                 {!hideKey && <><RenderName name={String(key)} />: </>}
-                <RenderValue {...{ valueWrapper: () => value, resolver, isPreview: false, depth: depth + 1 }} />
+                <RenderValue {...{
+                    valueWrapper: () => value,
+                    resolver,
+                    isPreview: false,
+                    depth: depth + 1
+                }} />
             </>)}
 
         {iterator.length >= 5 ? ",…" : ""}

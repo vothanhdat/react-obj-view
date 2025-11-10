@@ -1,8 +1,8 @@
-import { getPropertyValue, propertyIsEnumerable } from "../utils/object";
+import { propertyIsEnumerable } from "../utils/object";
 import { LazyValue } from "./LazyValueWrapper";
-import { InternalPromise } from "./resolvers/promise";
 import { WalkingConfig } from "./types";
 
+export const hidePrototype = Symbol()
 
 export const getEntriesCbOriginal = (
     value: any,
@@ -55,7 +55,7 @@ export const getEntriesCbOriginal = (
         }
     }
 
-    if (config.nonEnumerable && value !== Object.prototype) {
+    if (config.nonEnumerable && value !== Object.prototype && !value[hidePrototype]) {
         if (cb(
             '[[Prototype]]',
             Object.getPrototypeOf(value),

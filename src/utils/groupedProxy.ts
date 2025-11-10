@@ -1,3 +1,4 @@
+import { hidePrototype } from "../V5/getEntries";
 import { simpleCache, weakMapCacheMultipleLevel } from "../V5/resolvers/_shared";
 
 export const proxyInfo = Symbol("Info")
@@ -47,6 +48,8 @@ export const getObjectGroupProxyEntries = weakMapCacheMultipleLevel(
                         get(_, key) {
                             if (key === proxyInfo)
                                 return { from: _from, to: _to, iterators, origin: value }
+                            if (key === hidePrototype)
+                                return true
                             const [from, to] = String(key).split(SPLIT_CHAR);
                             if (+to - 1 > +from) return getChilds(+from, +to);
                             return value[key];
@@ -69,7 +72,8 @@ export const getObjectGroupProxyEntries = weakMapCacheMultipleLevel(
                         get(_, key) {
                             if (key === proxyInfo)
                                 return { from: _from, to: _to, iterators, origin: value }
-
+                            if (key === hidePrototype)
+                                return true
                             return value[key]
                         },
                     }
@@ -119,6 +123,8 @@ export const getArrayGroupProxyEntries = weakMapCacheMultipleLevel(
                         get(_, key) {
                             if (key == proxyInfo)
                                 return { from: _from, to: _to, origin: array }
+                            if (key === hidePrototype)
+                                return true
                             const [from, to] = String(key).split(SPLIT_CHAR);
                             if (+to - 1 > +from) return getChilds(+from, +to);
                             return array[Number(key)]
@@ -141,6 +147,8 @@ export const getArrayGroupProxyEntries = weakMapCacheMultipleLevel(
                         get(_, key) {
                             if (key == proxyInfo)
                                 return { from: _from, to: _to, origin: array }
+                            if (key === hidePrototype)
+                                return true
                             return array[Number(key)]
                         },
                     }
@@ -157,7 +165,7 @@ export const groupedProxyIsEqual = (
     compare: GroupedProxy,
 ) => {
     if (value instanceof GroupedProxy && compare instanceof GroupedProxy) {
-        if(value == compare)
+        if (value == compare)
             return true;
         const { from: fromPrivious, to: toPrevious, origin: previous } = compare[proxyInfo]
         const { from, to, origin: current, iterators } = value[proxyInfo]

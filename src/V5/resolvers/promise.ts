@@ -1,3 +1,4 @@
+import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
 
@@ -22,7 +23,7 @@ const getPromiseStatus = weakMapCache(
 );
 
 export class InternalPromise {
-
+    [hidePrototype] = true
     static #cache = new WeakMap();
 
     static getInstance(e: Promise<any>) {

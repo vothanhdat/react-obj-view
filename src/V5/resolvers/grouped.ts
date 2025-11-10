@@ -12,8 +12,6 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
     if (!isPreview && arr.length >= size) {
         next(
             getArrayGroupProxyEntries(arr, size),
-            (key, value, enumrable) => value != selfGrouped
-                && cb(key, value, enumrable)
         );
     } else {
         next(arr);
@@ -29,8 +27,6 @@ export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: n
     if (!isPreview) {
         next(
             getObjectGroupProxyEntries(value, size),
-            (key, value, enumrable) => value != selfGrouped
-                && cb(key, value, enumrable)
         );
     } else {
         next(value);

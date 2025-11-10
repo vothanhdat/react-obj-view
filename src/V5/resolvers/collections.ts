@@ -1,11 +1,12 @@
+import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
 
 const MapIterater = Object.getPrototypeOf(new Map().entries());
 
 export class CustomIterator {
+    [hidePrototype] = true
     static name = "";
-
     static getIterator = weakMapCache(
         (e: Set<any> | Map<any, any>) => new CustomIterator(
             e instanceof Map ? () => e.entries()
@@ -28,6 +29,7 @@ export class CustomIterator {
 }
 
 export class CustomEntry {
+    [hidePrototype] = true
     static name = "";
 
     private static getEntryMap = weakMapCache(iterator => new Map<any, CustomEntry>())
@@ -45,9 +47,11 @@ export class CustomEntry {
         public key: any,
         public value: any
     ) { }
+
     toString() {
         return "";
     }
+
 }
 
 export const iteraterResolver: ResolverFn<CustomIterator> = (
@@ -91,7 +95,6 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
             cb(
                 index++,
                 CustomEntry.getEntry(map, key, value),
-                // new CustomEntry(key, value),
                 true
             );
         }
@@ -99,7 +102,6 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
         cb(
             "[[Entries]]",
             CustomIterator.getIterator(map),
-            // new CustomIterator(() => map.entries(), map.size),
             false
         );
 
@@ -132,3 +134,4 @@ export const setResolver: ResolverFn<Set<any>> = (
     }
     next(set);
 };
+
