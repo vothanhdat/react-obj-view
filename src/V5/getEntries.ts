@@ -1,4 +1,4 @@
-import { getPropertyValue, propertyIsEnumerable } from "../ObjectViewV2/utils/object";
+import { getPropertyValue, propertyIsEnumerable } from "../utils/object";
 import { LazyValue } from "./LazyValueWrapper";
 import { InternalPromise } from "./resolvers/promise";
 import { WalkingConfig } from "./types";

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { joinClasses } from "../ObjectViewV2/utils/joinClasses";
+import { joinClasses } from "./joinClasses";
 import { LazyValue } from "../V5/LazyValueWrapper";
 import { ResolverFn } from "../V5/types";
 import { RenderPreview } from "./RenderPreview";

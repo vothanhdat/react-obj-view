@@ -1,4 +1,4 @@
-import { GroupedProxy, getArrayGroupProxyEntries, getObjectGroupProxyEntries } from "../../ObjectViewV2/utils/groupedProxy";
+import { GroupedProxy, getArrayGroupProxyEntries, getObjectGroupProxyEntries } from "../../utils/groupedProxy";
 import { ResolverFn } from "../types";
 
 const selfGrouped = Object.getPrototypeOf(new GroupedProxy());

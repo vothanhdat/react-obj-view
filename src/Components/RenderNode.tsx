@@ -5,7 +5,7 @@ import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIn
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
-import { GroupedProxy } from "../ObjectViewV2/utils/groupedProxy";
+import { GroupedProxy } from "../utils/groupedProxy";
 import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
 
 
