@@ -79,9 +79,10 @@ export const objectHasChild = (e: unknown) => {
         && !(e instanceof LazyValue)
 }
 
-
 const getEntriesCbBinded = (
+    //@ts-ignore
     value, config, walking, updateToken, depth, getChild,
+    //@ts-ignore
     count, maxDepth, childCanExpand, cumulate, keys,
 ) => {
 
