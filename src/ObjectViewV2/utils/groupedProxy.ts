@@ -3,13 +3,15 @@ export class GroupedProxy { }
 export const infoSymbol = Symbol("Info")
 
 export const getObjectGroupProxyEntries = (
-    iterators: { key: string, value: any }[],
+    indexed: any,
     maxSize: number = 10
 ) => {
-
-    const indexed = new Map(iterators.map(e => [e.key, e.value]))
+    const iterators = Object.entries(indexed)
 
     const keySize = iterators.length;
+
+    if (keySize < maxSize)
+        return indexed;
 
     const splitChars = " … ";
 
@@ -42,7 +44,7 @@ export const getObjectGroupProxyEntries = (
                             return { from: _from, to: _to }
                         const [from, to] = String(key).split(splitChars);
                         if (+to - 1 > +from) return getChilds(+from, +to);
-                        return indexed.get(key as any);
+                        return indexed[key];
                     },
                 }
             ) : new Proxy(
@@ -50,19 +52,19 @@ export const getObjectGroupProxyEntries = (
                 {
                     ownKeys: () => Array(size).fill(0)
                         .map((_, i) => _from + i)
-                        .map(index => String(iterators[index].key)),
+                        .map(index => String(iterators[index][0])),
 
                     getOwnPropertyDescriptor(_, key) {
                         return {
                             configurable: true,
                             enumerable: true,
-                            value: indexed.get(key as any)
+                            value: indexed[key],
                         };
                     },
                     get(_, key) {
                         if (key == infoSymbol)
                             return { from: _from, to: _to }
-                        return indexed.get(key as any);
+                        return indexed[key]
                     },
                 }
             );
@@ -79,6 +81,9 @@ export const getArrayGroupProxyEntries = (
 ) => {
 
     const keySize = indexed.length;
+
+    if (keySize < maxSize)
+        return indexed;
 
     const splitChars = " … ";
 

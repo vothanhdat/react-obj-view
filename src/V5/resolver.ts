@@ -228,23 +228,27 @@ const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: number) =
     if (!isPreview && arr.length >= size) {
         next(
             getArrayGroupProxyEntries(arr, size),
-            (key, value, enumrable) => enumrable && cb(key, value, enumrable),
         )
     } else {
         next(arr)
     }
 }
 
-const groupProxyResolver: ResolverFn<GroupedProxy> = (
-    groupedProxy: GroupedProxy,
+
+const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: number) => (
+    value: Object,
     cb,
     next,
     isPreview,
 ) => {
-    next(
-        groupedProxy,
-        (key, value, enumrable) => enumrable && cb(key, value, enumrable),
-    )
+    if (!isPreview) {
+        next(
+            getObjectGroupProxyEntries(value, size),
+            // (key, value, enumrable) => enumrable && cb(key, value, enumrable),
+        )
+    } else {
+        next(value)
+    }
 }
 
 
@@ -254,7 +258,8 @@ export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     [CustomIterator, iteraterResolver],
     [Promise, promiseResolver],
     [LazyValue, lazyValueResolver],
+    [Object, groupObjectResolver(10)],
     [Array, groupArrayResolver(10)],
-    [GroupedProxy, groupProxyResolver],
+    // [GroupedProxy, groupProxyResolver],
 ]);
 

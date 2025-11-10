@@ -77,6 +77,8 @@ export const getEntriesCb = (
         ? (value.constructor ?? Object.getPrototypeOf(value).constructor)
         : undefined
 
+    // console.log(value, prototype, prototype && value instanceof prototype, config.resolver?.has(prototype))
+
     if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
         config.resolver?.get(prototype)?.(
             value,
