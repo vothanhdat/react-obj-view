@@ -1,35 +1,13 @@
-import { useCallback, useMemo, useState } from "react";
 import { joinClasses } from "./joinClasses";
-import { LazyValue } from "../V5/LazyValueWrapper";
 import { ResolverFn } from "../V5/types";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
+import { useWrapper } from "../hooks/useWrapper";
+import { withPromiseWrapper } from "./PromiseWrapper";
+import { useLazyValue } from "../hooks/useLazyValue";
 
 
-const useLazyValue = ({ value, refreshPath }: { value: LazyValue, refreshPath?: () => void }) => {
-
-    const isLazyValue = value instanceof LazyValue
-
-    const [lazyValueInited, setLazyValueInited] = useState(isLazyValue && value.inited)
-
-    const lazyValueEmit = useCallback(() => {
-        if (value instanceof LazyValue) {
-            console.log("init lazy value")
-            value.init();
-            setLazyValueInited(value.inited);
-            console.log(value)
-            refreshPath?.()
-        }
-    }, [isLazyValue && value, isLazyValue && refreshPath])
-
-    const renderValue = isLazyValue ? (value.value ?? value.error) : value;
-
-    return { isLazyValue, renderValue, lazyValueInited, lazyValueEmit }
-
-}
-
-
-export const RenderValue: React.FC<{
+const RenderValueDefault: React.FC<{
     valueWrapper: any;
     isPreview: boolean;
     resolver?: Map<any, ResolverFn>;
@@ -41,10 +19,7 @@ export const RenderValue: React.FC<{
 
     const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
 
-    const renderValueWrapper = useCallback(
-        () => renderValue,
-        [renderValue]
-    )
+    const renderValueWrapper = useWrapper(renderValue)
 
     const children = <>
         {isPreview
@@ -67,3 +42,11 @@ export const RenderValue: React.FC<{
             : children}
     </span>;
 });
+
+
+export const RenderValue = withPromiseWrapper(
+    RenderValueDefault,
+    ({ valueWrapper }) => valueWrapper(),
+    (value) => ({ valueWrapper: useWrapper(value) })
+)
+

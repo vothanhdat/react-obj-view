@@ -6,6 +6,7 @@ import { NodeResult } from "./walkingToIndexFactory";
 import { RenderNode, RenderOptions } from "../Components/RenderNode";
 import { useFlattenObjectView } from "./useFlattenObjectView";
 import "../Components/style.css"
+import { useWrapper } from "../hooks/useWrapper";
 
 export const V5Index: React.FC<ObjectViewProps> = ({
     valueGetter,
@@ -80,13 +81,6 @@ const renderCtx = React.createContext({
     size: undefined as any,
     resolver: undefined as any,
 })
-
-const useWrapper = <T,>(value: T): () => T => {
-    return useCallback(
-        () => value,
-        [value]
-    )
-}
 
 const NodeRender = ({ index }: { index: number }) => {
 

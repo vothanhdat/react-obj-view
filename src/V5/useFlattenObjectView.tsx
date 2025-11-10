@@ -21,6 +21,7 @@ export type FlattenObjectConfig = {
     arrayGroupSize?: number;
     objectGroupSize?: number;
 };
+
 export function useFlattenObjectView(
     value: ValueRef<unknown>,
     name: string | undefined,

@@ -7,6 +7,8 @@ import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
 import { GroupedProxy } from "../utils/groupedProxy";
 import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
+import { withPromiseWrapper } from "./PromiseWrapper";
+import { useWrapper } from "../hooks/useWrapper";
 
 
 export type RenderOptions = {
@@ -85,7 +87,12 @@ const NodeRenderDefault: React.FC<{
     </div>;
 }
 
-export const RenderNode = NodeRenderDefault
+
+export const RenderNode = withPromiseWrapper(
+    NodeRenderDefault,
+    ({ valueWrapper }) => valueWrapper(),
+    (value) => ({ valueWrapper: useWrapper(value) })
+)
 
 
 
