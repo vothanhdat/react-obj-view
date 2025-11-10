@@ -10,7 +10,7 @@ export const useChangeFlashClasses = ({ value, enable = true, flashClassname = '
             const p = performance.now();
 
             let isDiff = value != refValue.current
-            console.log("change", { value, refVal: refValue.current, isDiff })
+            // console.log("change", { value, refVal: refValue.current, isDiff })
 
             const p1 = performance.now();
 
