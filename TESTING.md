@@ -109,6 +109,14 @@ src/
 │   │   ├── collections.test.ts       # 15 tests
 │   │   ├── promise.ts
 │   │   └── promise.test.ts           # 9 tests
+│   ├── CircularChecking.ts
+│   ├── CircularChecking.test.ts      # 27 tests
+│   ├── StateFactory.ts
+│   ├── StateFactory.test.ts          # 19 tests
+│   ├── getObjectUniqueId.ts
+│   ├── getObjectUniqueId.test.ts     # 30 tests
+│   ├── walkingToIndexFactory.ts
+│   ├── walkingToIndexFactory.test.ts # 40 tests
 │   ├── LazyValueWrapper.ts
 │   ├── LazyValueWrapper.test.ts      # 16 tests
 │   ├── index.tsx
@@ -128,8 +136,8 @@ src/
 
 ### Current Test Statistics
 
-- **Total Tests**: 114
-- **Test Files**: 8
+- **Total Tests**: 230
+- **Test Files**: 12
 - **Pass Rate**: 100%
 
 ### Coverage by Category
@@ -152,7 +160,33 @@ src/
   - Caching behavior
   - Equality checking
 
-#### 2. Resolver Functions (40 tests)
+#### 2. Core Engine (116 tests)
+- **CircularChecking.test.ts** (27 tests)
+  - Circular reference detection
+  - Enter/exit node tracking
+  - LIFO stack management
+  - Multiple object handling
+
+- **StateFactory.test.ts** (19 tests)
+  - State creation and caching
+  - Child state management
+  - State persistence
+  - Read-only state access
+
+- **getObjectUniqueId.test.ts** (30 tests)
+  - Unique ID generation
+  - Object type handling (arrays, maps, sets, dates, etc.)
+  - ID consistency and caching
+  - Memory management with WeakMap
+
+- **walkingToIndexFactory.test.ts** (40 tests)
+  - Tree walking and indexing
+  - Node expansion and collapse
+  - Circular reference handling
+  - State caching and updates
+  - Path navigation
+
+#### 4. Resolver Functions (40 tests)
 - **collections.test.ts** (15 tests)
   - Map resolver (preview & normal modes)
   - Set resolver (preview & normal modes)
@@ -171,7 +205,7 @@ src/
   - Getter evaluation
   - Error handling
 
-#### 3. Component Tests (26 tests)
+#### 5. Component Tests (26 tests)
 - **index.test.tsx** (26 tests)
   - Primitive value rendering
   - Object and array rendering
@@ -179,7 +213,7 @@ src/
   - Props (expandLevel, className, style, lineHeight)
   - Complex scenarios (nested structures, large arrays)
 
-#### 4. Integration Tests (22 tests)
+#### 6. Integration Tests (22 tests)
 - **integration.test.tsx** (22 tests)
   - Circular references (simple, nested, array, mutual)
   - Complex nested structures
