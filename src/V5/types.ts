@@ -1,3 +1,4 @@
+import { ThemeColor } from "../themes";
 
 type ResolverFnCb = (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 
@@ -37,7 +38,7 @@ export type ObjectViewProps = {
     showLineNumbers?: boolean;
     includeSymbols?: boolean;
 
-    style?: React.CSSProperties;
+    style?: React.CSSProperties | ThemeColor;
     lineHeight?: number;
     className?: string;
 };

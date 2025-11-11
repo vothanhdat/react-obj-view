@@ -5,6 +5,7 @@ import { allExamples, quickExamples, performanceTestData } from './exampleData';
 import "./Test.css";
 import { V5Index } from './V5';
 import { ResolverFn } from './V5/types';
+import { themeDefault, themeDracula, themeMaterialDarker, themeMonokai, themeOneDark, themeSepia } from './themes';
 
 // Import version from package.json
 const packageVersion = "1.0.2"; // You can update this manually or use a build script
@@ -609,6 +610,7 @@ export const Test = () => {
                             showLineNumbers={true}
                             lineHeight={14}
                             includeSymbols={showSymbols}
+                            style={themeDefault}
                         />
                     </div>
                 </div>

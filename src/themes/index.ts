@@ -1,4 +1,4 @@
-export { ThemeColor } from "./type";
+export type { ThemeColor } from "./type";
 export { themeDefault } from "./default";
 export { themeGeneral } from "./general";
 export {
