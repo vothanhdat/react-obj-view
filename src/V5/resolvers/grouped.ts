@@ -1,4 +1,4 @@
-import { GroupedProxy, getArrayGroupProxyEntries, getObjectGroupProxyEntries } from "../../utils/groupedProxy";
+import { GroupedProxy, getObjectGroupProxyEntries } from "../../utils/groupedProxy";
 import { ResolverFn } from "../types";
 
 const selfGrouped = Object.getPrototypeOf(new GroupedProxy());
@@ -11,7 +11,7 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
 ) => {
     if (!isPreview && arr.length >= size) {
         next(
-            getArrayGroupProxyEntries(arr, size),
+            getObjectGroupProxyEntries(arr, size),
         );
     } else {
         next(arr);
