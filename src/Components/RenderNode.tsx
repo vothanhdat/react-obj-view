@@ -7,8 +7,7 @@ import { RenderValue } from "./RenderValue";
 import { LazyValueError } from "../V5/LazyValueWrapper";
 import { GroupedProxy } from "../utils/groupedProxy";
 import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
-import { withPromiseWrapper } from "./PromiseWrapper";
-import { useWrapper } from "../hooks/useWrapper";
+import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 
 
 export type RenderOptions = {
@@ -17,9 +16,10 @@ export type RenderOptions = {
     resolver: Map<any, ResolverFn>
     toggleChildExpand: (node: NodeResultData) => void
     refreshPath: (node?: NodeResultData) => void
+    showLineNumbers: boolean
 }
 
-const NodeRenderDefault: React.FC<{
+export const RenderNode: React.FC<{
     nodeDataWrapper: () => NodeResultData;
     valueWrapper: () => unknown,
     options: RenderOptions
@@ -27,7 +27,7 @@ const NodeRenderDefault: React.FC<{
 
     const nodeData = nodeDataWrapper()
 
-    const value = valueWrapper()
+    const value = useInternalPromiseResolve(valueWrapper())
 
     const { enablePreview, toggleChildExpand } = options
 
@@ -67,13 +67,14 @@ const NodeRenderDefault: React.FC<{
     }) as any
 
 
-    return <div className="node-container" style={{ paddingLeft: `${(nodeData.depth - 1) * 1.5}em` }}>
-        <div
+    return <>
+        <span
             className="node-default"
             data-child={hasChild}
             data-nonenumrable={!nodeData.enumerable}
             onClick={() => hasChild && toggleChildExpand(nodeData)}
         >
+            <span style={{ whiteSpace: 'preserve' }}>{"  ".repeat(nodeData.depth - 1)}</span>
             <span className="expand-symbol">
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
             </span>
@@ -94,16 +95,7 @@ const NodeRenderDefault: React.FC<{
                 isPreview,
             }} />
 
-        </div>
-    </div>;
+        </span>
+    </>;
 }
-
-
-export const RenderNode = withPromiseWrapper(
-    NodeRenderDefault,
-    ({ valueWrapper }) => valueWrapper(),
-    (value) => ({ valueWrapper: useWrapper(value) })
-)
-
-
 

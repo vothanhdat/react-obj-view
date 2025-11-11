@@ -1,22 +1,22 @@
-import { joinClasses } from "./joinClasses";
+import { joinClasses } from "../utils/joinClasses";
 import { ResolverFn } from "../V5/types";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../hooks/useWrapper";
-import { withPromiseWrapper } from "./PromiseWrapper";
 import { useLazyValue } from "../hooks/useLazyValue";
 import { RenderOptions } from "./RenderNode";
+import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 
 
-const RenderValueDefault: React.FC<{
+export const RenderValue: React.FC<{
     valueWrapper: any;
     isPreview: boolean;
     options: RenderOptions,
     depth?: number;
 }> = (({ valueWrapper, isPreview, options, depth = 0 }) => {
     const { refreshPath } = options
-    
-    const value = valueWrapper()
+
+    const value = useInternalPromiseResolve(valueWrapper())
 
     const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
 
@@ -43,11 +43,4 @@ const RenderValueDefault: React.FC<{
             : children}
     </span>;
 });
-
-
-export const RenderValue = withPromiseWrapper(
-    RenderValueDefault,
-    ({ valueWrapper }) => valueWrapper(),
-    (value) => ({ valueWrapper: useWrapper(value) })
-)
 

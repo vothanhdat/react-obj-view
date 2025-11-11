@@ -598,6 +598,7 @@ export const Test = () => {
                             resolver={resolverOverrides}
                             preview={enablePreviewMode}
                             nonEnumerable={showNonEnumerable}
+                            showLineNumbers={true}
                         />
                     </div>
                 </div>

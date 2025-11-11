@@ -51,7 +51,7 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
             if (!node) {
                 return
             }
-
+            // console.time("measure")
             const parentRect = isDocumentScroll ? null : parent.getBoundingClientRect()
             const nodeRect = node.getBoundingClientRect()
             const viewportHeight = parentRect ? parentRect.height : window.innerHeight
@@ -67,6 +67,8 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
                 }
                 return { start: nextStart, end: nextEnd }
             })
+            // console.timeEnd("measure")
+
         }
 
         const scheduleMeasure = () => {

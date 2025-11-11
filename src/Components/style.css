@@ -15,24 +15,24 @@
     background-color: var(--bg-color);
     color: var(--color);
 
-
-    .index-counter {
-        opacity: 0.5;
-        position: absolute;
-        white-space: preserve;
-    }
-
-    .node-container {
-        display: block;
-        overflow: hidden;
+    .row {
+        display: flex;
+        flex-direction: row;
         white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
-        /* padding-left: calc(1.5 * attr(data-level em) + var(--padding-left, 0em) + 1em);
-        padding-left: calc(1.5 * attr(data-level em) + var(--padding-left, 0em) + 1em); */
+        width: 100%;
     }
+
+    .line-number {
+        opacity: 0.3;
+        white-space: preserve;
+
+    }
+
 
     .node-default {
-        display: inline;
+        display: contents;
 
         &[data-child="true"] {
             cursor: pointer;
@@ -45,7 +45,6 @@
 
     .expand-symbol {
         width: 1em;
-        display: inline-block;
         opacity: 0.5;
         line-height: 1;
         vertical-align: top;
@@ -80,12 +79,12 @@
 
     .node-default {
         color: color-mix(in srgb, var(--color) var(--opacity), transparent);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .value {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.type-boolean {
             --color: #08f;
@@ -154,9 +153,6 @@
             >.name {
                 --opacity: 30%;
             }
-
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
 

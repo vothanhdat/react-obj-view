@@ -1,11 +1,11 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
-import { Virtuoso } from 'react-virtuoso'
 import { ObjectViewProps } from "./types";
 import { NodeResult } from "./walkingToIndexFactory";
 import { RenderNode, RenderOptions } from "../Components/RenderNode";
 import { useFlattenObjectView } from "./useFlattenObjectView";
 import { useWrapper } from "../hooks/useWrapper";
 import "../Components/style.css"
+import { VirtualScroller } from "../Components/VirtualScroller";
 
 export const V5Index: React.FC<ObjectViewProps> = ({
     valueGetter,
@@ -40,11 +40,6 @@ export const V5Index: React.FC<ObjectViewProps> = ({
         [getNodeByIndex, size]
     )
 
-    const nodeRender = useCallback(
-        (index: number) => index < size ? <NodeRender index={index} /> : undefined,
-        [NodeRender, size]
-    )
-
     const options = useMemo(
         () => ({
             enablePreview,
@@ -62,20 +57,48 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     )
 
     return <>
-        <div className="big-objview-root" style={{ height: `400px` }}>
+        <div className="big-objview-root" style={{}}>
             <renderCtx.Provider value={ctxProps}>
-                <Virtuoso
-                    style={{ height: '100%' }}
+                <VirtualScroller
+                    height={14 * size}
+                    Component={VirtualScrollerRender}
+                    size={size}
                     computeItemKey={computeItemKey}
-                    fixedItemHeight={14}
-                    totalCount={size}
-                    itemContent={nodeRender}
+                    showLineNumbers={showLineNumbers}
                 />
             </renderCtx.Provider>
         </div>
     </>
 }
 
+const VirtualScrollerRender: React.FC<{
+    start: number, end: number, size: number,
+    showLineNumbers: boolean
+    computeItemKey: (index: number) => string,
+}> = ({ start, end, size, computeItemKey, showLineNumbers }) => {
+
+    let startIndex = Math.floor(start / 14)
+    let endIndex = Math.min(size, Math.ceil(end / 14))
+    let renderSize = Math.min(endIndex - startIndex, 500)
+
+    let lineNumberSize = String(endIndex).length
+
+    return <>
+        {new Array(renderSize)
+            .fill(0)
+            .map((_, i) => i + startIndex)
+            .map((index) => index < size && <div
+                key={computeItemKey(index)}
+                className="row"
+                style={{ position: "absolute", top: `${index * 14}px`, height: "14px", borderBottom: "solid 1px #8881", }}
+            >
+                {showLineNumbers && <span className="line-number">
+                    {String(index).padStart(lineNumberSize, " ")}:{" "}
+                </span>}
+                <NodeRender index={index} />
+            </div>)}
+    </>
+}
 
 const renderCtx = React.createContext({
     getNodeByIndex: undefined as any,
@@ -98,9 +121,7 @@ const NodeRender = ({ index }: { index: number }) => {
 
     const valueWrapper = useWrapper(nodeData?.value)
 
-    return <div style={{ height: "14px", borderBottom: "solid 1px #8881", }}>
-        {nodeResult && <RenderNode
-            {...{ nodeDataWrapper, valueWrapper, options, }}
-            key={nodeData.path} />}
-    </div>
+    return nodeResult && <RenderNode
+        {...{ nodeDataWrapper, valueWrapper, options, }}
+        key={nodeData.path} />
 }
