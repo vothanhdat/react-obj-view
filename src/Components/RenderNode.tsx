@@ -17,6 +17,7 @@ export type RenderOptions = {
     toggleChildExpand: (node: NodeResultData) => void
     refreshPath: (node?: NodeResultData) => void
     showLineNumbers: boolean
+    includeSymbols: boolean
 }
 
 export const RenderNode: React.FC<{
@@ -100,4 +101,3 @@ export const RenderNode: React.FC<{
         </span>
     </>;
 }
-

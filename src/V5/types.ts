@@ -34,9 +34,9 @@ export type ObjectViewProps = {
     preview?: boolean;
     nonEnumerable?: boolean;
     showLineNumbers?: boolean;
+    includeSymbols?: boolean;
 
     style?: React.CSSProperties;
     lineHeight?: number;
     className?: string;
 };
-

@@ -43,6 +43,7 @@ export type ObjectViewProps = {
   highlightUpdate?: boolean;
   preview?: boolean;
   nonEnumerable?: boolean;
+  includeSymbols?: boolean;
   showLineNumbers?: boolean;
   style?: React.CSSProperties;
   lineHeight?: number;
@@ -63,6 +64,7 @@ export type ObjectViewProps = {
 | `highlightUpdate` | `false` | Enables flash-highlighting when a node's value changes. |
 | `preview` | `true` | Shows inline previews (e.g. `Array(10)` or string snippets) for collapsed nodes. |
 | `nonEnumerable` | `false` | Includes non-enumerable properties when traversing objects. |
+| `includeSymbols` | `false` | Includes symbol-keyed properties during traversal and in previews. |
 | `showLineNumbers` | `false` | Renders a gutter with 0-based line numbers next to each row. |
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 | `lineHeight` | `14` | Height, in pixels, of each rendered row. Adjust when you override fonts/sizes. |
@@ -156,7 +158,7 @@ Override these selectors or CSS variables to integrate the viewer with your desi
 - Ensure `valueGetter` stays stable across renders; changing the function identity forces a full traversal.
 - When grouping is enabled, use the arrow next to a range (e.g. `items[0…49]`) to expand the proxied subset.
 - If change highlighting seems absent, set `highlightUpdate={true}` explicitly.
-- Toggle `nonEnumerable` to inspect getters, symbols, and prototype members.
+- Toggle `nonEnumerable` (and `includeSymbols`) to inspect getters, symbols, and prototype members.
 
 ## Related Documentation
 

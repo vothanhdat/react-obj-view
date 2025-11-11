@@ -42,7 +42,7 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
         const parent = getScrollContainer(ref.current)
         const isDocumentScroll = parent === document.documentElement || parent === document.body
         const scrollTarget: HTMLElement | Window = isDocumentScroll ? window : parent
-        const listenerOptions = { passive: true } as const
+        const listenerOptions: AddEventListenerOptions = { passive: true }
         let raf = 0
 
         const measure = () => {

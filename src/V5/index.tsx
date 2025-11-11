@@ -21,7 +21,8 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     objectGroupSize = 0,
     className,
     lineHeight = 14,
-    style
+    style,
+    includeSymbols = false,
 }) => {
 
     let value = useMemo(() => valueGetter(), [valueGetter])
@@ -35,6 +36,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
             customResolver,
             arrayGroupSize,
             objectGroupSize,
+            symbol: includeSymbols,
         }
     );
 
@@ -51,8 +53,10 @@ export const V5Index: React.FC<ObjectViewProps> = ({
             toggleChildExpand,
             resolver,
             highlightUpdate,
+            includeSymbols,
+            showLineNumbers,
         }) as RenderOptions,
-        [enablePreview, refreshPath, toggleChildExpand, resolver, highlightUpdate]
+        [enablePreview, refreshPath, toggleChildExpand, resolver, highlightUpdate, includeSymbols, showLineNumbers]
     )
 
     return <>

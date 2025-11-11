@@ -261,7 +261,7 @@ Grouping resolvers emit [`GroupedProxy`](src/utils/groupedProxy.ts) ranges that 
 
 ### Handling Non-Enumerable Properties
 
-Inspect getters, symbols, and prototype chains by enabling `nonEnumerable`:
+Inspect getters and prototype chains by enabling `nonEnumerable`, and opt-in to symbol keys via `includeSymbols`:
 
 ```tsx
 const getter = useMemo(() => () => Object.create({ hidden: 123 }, {
@@ -274,7 +274,7 @@ const getter = useMemo(() => () => Object.create({ hidden: 123 }, {
   },
 }), []);
 
-<ObjectView valueGetter={getter} nonEnumerable expandLevel={1} />;
+<ObjectView valueGetter={getter} nonEnumerable includeSymbols expandLevel={1} />;
 ```
 
 ### Working with Promises
@@ -306,7 +306,7 @@ return (
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.
 - **No highlight effect**: Pass `highlightUpdate` explicitly (`false` by default).
 - **Large data feels slow**: Enable grouping for arrays/objects and keep getters memoised.
-- **Need to inspect prototypes**: Toggle `nonEnumerable` to include inherited and symbol keys.
+- **Need to inspect prototypes**: Toggle `nonEnumerable` and `includeSymbols` to include inherited and symbol keys.
 
 ## Next Steps
 

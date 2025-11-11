@@ -21,7 +21,12 @@ export const RenderPreview: React.FC<{
             let list: Entry[] = [];
             getEntriesCb(
                 value,
-                { expandDepth: 0, nonEnumerable: false, resolver: options.resolver, symbol: false },
+                {
+                    expandDepth: 0,
+                    nonEnumerable: false,
+                    resolver: options.resolver,
+                    symbol: options.includeSymbols,
+                },
                 true,
                 (key, value, enumerable) => {
                     list.push({ key, value, enumerable });
@@ -31,7 +36,7 @@ export const RenderPreview: React.FC<{
 
             return list;
         },
-        [options.resolver, value]
+        [options.resolver, value, options.includeSymbols]
     );
 
     let isArray = Array.isArray(value);

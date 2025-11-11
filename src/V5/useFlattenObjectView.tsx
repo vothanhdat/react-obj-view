@@ -19,6 +19,7 @@ export type FlattenObjectConfig = {
     customResolver?: Map<any, ResolverFn>;
     arrayGroupSize?: number;
     objectGroupSize?: number;
+    symbol?: boolean;
 };
 
 export function useFlattenObjectView(
@@ -32,7 +33,8 @@ export function useFlattenObjectView(
         nonEnumerable,
         arrayGroupSize,
         objectGroupSize,
-        customResolver: _resolver
+        customResolver: _resolver,
+        symbol,
     } = flattenConfig
 
     const resolver = useMemo(
@@ -50,8 +52,8 @@ export function useFlattenObjectView(
     );
 
     const config = useMemo(
-        () => ({ expandDepth, resolver, nonEnumerable, }) as WalkingConfig,
-        [nonEnumerable, expandDepth, resolver]
+        () => ({ expandDepth, resolver, nonEnumerable, symbol, }) as WalkingConfig,
+        [nonEnumerable, expandDepth, resolver, symbol]
     );
 
     const [reload, setReload] = useState(0);

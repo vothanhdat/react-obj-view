@@ -189,6 +189,7 @@ export const Test = () => {
     const [enableHighlighting, setEnableHighlighting] = useState(true);
     const [enablePreviewMode, setEnablePreviewMode] = useState(true);
     const [showNonEnumerable, setShowNonEnumerable] = useState(true);
+    const [showSymbols, setShowSymbols] = useState(false);
     const [objectGrouped, setObjectGrouped] = useState(25);
     const [arrayGrouped, setArrayGrouped] = useState(10);
 
@@ -470,6 +471,15 @@ export const Test = () => {
                                     />
                                     Show Non-enumerable
                                 </label>
+                                <label style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={showSymbols}
+                                        onChange={(e) => setShowSymbols(e.target.checked)}
+                                        style={{ marginRight: '6px' }}
+                                    />
+                                    Include Symbols
+                                </label>
                             </div>
                         </div>
 
@@ -566,6 +576,7 @@ export const Test = () => {
                         Resolvers: {enableResolvers ? 'ON' : 'OFF'} |
                         Preview Mode: {enablePreviewMode ? 'ON' : 'OFF'} |
                         Non-enumerable: {showNonEnumerable ? 'ON' : 'OFF'} |
+                        Symbols: {showSymbols ? 'ON' : 'OFF'} |
                         Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
                         Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
                     </p>
@@ -597,6 +608,7 @@ export const Test = () => {
                             nonEnumerable={showNonEnumerable}
                             showLineNumbers={true}
                             lineHeight={14}
+                            includeSymbols={showSymbols}
                         />
                     </div>
                 </div>
