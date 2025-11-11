@@ -1,28 +1,27 @@
 # React Object View
 
-A powerful and flexible React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view. Perfect for debugging, data inspection, and creating developer tools.
+A powerful and flexible React component for visualizing JavaScript objects and data structures with an interactive, virtualized tree view. Perfect for debugging, data inspection, and building developer tools.
 
 ## 🌟 Live Demo
 
 **[Try the Interactive Demo →](https://vothanhdat.github.io/react-obj-view/)**
 
-Experience all features hands-on including resolver overrides, keyword styling, and configurable highlighting!
+Experience resolver overrides, keyword styling, grouping, previews, and change highlighting in action.
 
-> **Note**: If the demo link shows "404", please wait a few minutes for GitHub Pages to deploy, or check that GitHub Pages is enabled in repository settings.
+> **Note**: If the demo link shows "404", please wait a few minutes for GitHub Pages to deploy or confirm that GitHub Pages is enabled in the repository settings.
 
 ## ✨ Features
 
-- 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions
-- 🎯 **Smart Type Rendering**: Intelligent display for all JavaScript types (objects, arrays, functions, promises, maps, sets, etc.)
-- 📦 **Automatic Grouping**: Groups large arrays and objects for optimal performance and readability
-- 🔄 **Circular Reference Safe**: Safely handles circular references without infinite loops
-- ⚡ **Performance Optimized**: Efficient rendering with lazy loading and change detection
-- 🎨 **Customizable Styling**: Built-in CSS with full customization support
-- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with custom resolver functions
-- 💡 **Keyword Highlighting**: Special styling for boolean values, null, undefined with keyword badges
-- � **TypeScript Ready**: Complete TypeScript support with proper type definitions
-- 🔍 **Developer Friendly**: Perfect for debugging, logging, and data inspection
-- ⚙️ **Configurable Highlighting**: Control change detection and flash highlighting behavior
+- 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions.
+- ⚡ **Virtualized Rendering**: Powered by [`react-virtuoso`](https://virtuoso.dev/) to render only the visible rows—perfect for massive objects and arrays.
+- 📦 **Configurable Grouping**: Opt-in resolvers group large arrays and objects into logical ranges.
+- 🔄 **Circular Reference Safe**: Detects and labels circular references without infinite loops.
+- 🎯 **Smart Type Rendering**: Specialized formatting for promises, maps, sets, errors, functions, dates, regexes, and more.
+- 🎨 **Customizable Styling**: Override CSS variables or class selectors to match your UI.
+- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with composable resolver functions.
+- 💡 **Keyword Highlighting**: Dedicated styling for boolean, null, undefined, and other keyword-like values.
+- 🔍 **Change Detection**: Optional flash-highlighting when values change between renders.
+- 🛠️ **TypeScript Ready**: Strong typings for props, resolvers, and utility hooks.
 
 ## 🚀 Quick Start
 
@@ -37,418 +36,293 @@ yarn add react-obj-view
 ### Basic Usage
 
 ```tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ObjectView } from 'react-obj-view';
-// Import the CSS styles
 import 'react-obj-view/dist/react-obj-view.css';
 
-const App = () => {
-  const data = {
-    user: {
-      name: "John Doe",
-      age: 30,
-      preferences: {
-        theme: "dark",
-        notifications: true
-      }
+const data = {
+  user: {
+    name: 'John Doe',
+    age: 30,
+    preferences: {
+      theme: 'dark',
+      notifications: true,
     },
-    items: ["apple", "banana", "cherry"],
-    metadata: {
-      created: new Date(),
-      tags: new Set(["react", "typescript"])
-    }
-  };
+  },
+  items: ['apple', 'banana', 'cherry'],
+  metadata: {
+    created: new Date(),
+    tags: new Set(['react', 'typescript']),
+  },
+};
+
+export const App = () => {
+  const valueGetter = useMemo(() => () => data, []);
 
   return (
-    <div>
-      <h1>Data Inspector</h1>
-      <ObjectView 
-        value={data} 
-        name="appData" 
-        expandLevel={2} 
-      />
-    </div>
+    <ObjectView
+      valueGetter={valueGetter}
+      name="appData"
+      expandLevel={2}
+    />
   );
 };
 ```
 
-## ♻️ Immutability Matters
+> For mutable values (for example, component state), include the value in the dependency list: `const getter = useMemo(() => () => state, [state]);`.
 
-- React Object View relies on referential equality to reuse computed tree nodes, so updates must flow through new object/array references.
-- In-place mutations (for example `state.user.name = "Alice"`) keep the same parent reference, so the viewer would otherwise render stale data.
-- During development we detect these mutations, rebuild the affected subtree, and emit a warning identifying the mutated path. Production builds skip the check for performance.
-- Prefer immutable update helpers (spread, structured cloning, reducers, `immer`, etc.) and pass fresh references to `<ObjectView />` whenever data changes.
+## ♻️ Understanding `valueGetter`
+
+React Object View evaluates your data through a function prop instead of reading it directly. This provides two benefits:
+
+1. **Always Current Values** – The getter runs during rendering so nested proxies, lazy wrappers, or derived data stay up to date.
+2. **Stable Identity** – You control when the getter identity changes, enabling efficient memoization. Wrap the getter in `useMemo`/`useCallback` to change it only when the underlying value changes.
+
+### Immutability Matters
+
+- Pass new object/array references whenever data changes so the viewer can recompute the tree.
+- Avoid mutating nested data in place (e.g. `state.user.name = 'Alice'`). Instead, create a new object and update the getter dependencies.
+- During development the viewer detects mutations and refreshes the affected subtree; production builds skip this check for performance.
 
 ## 📖 Examples
 
 ### Controlling Expansion
 
 ```tsx
-// Expand all levels (use carefully with large objects)
-<ObjectView value={data} expandLevel={true} />
-
-// Expand first 3 levels
-<ObjectView value={data} expandLevel={3} />
-
-// Start collapsed
-<ObjectView value={data} expandLevel={false} />
+<ObjectView valueGetter={() => data} expandLevel={true} />   // Expand everything
+<ObjectView valueGetter={() => data} expandLevel={3} />      // Expand the first 3 levels
+<ObjectView valueGetter={() => data} expandLevel={false} />  // Start collapsed
 ```
 
 ### Handling Different Data Types
 
 ```tsx
 const complexData = {
-  // Primitives
-  name: "React Object View",
+  name: 'React Object View',
   version: 1.0,
   isActive: true,
-  
-  // Collections
-  users: ["alice", "bob", "charlie"],
+  users: ['alice', 'bob', 'charlie'],
   userMap: new Map([
-    ["alice", { role: "admin" }],
-    ["bob", { role: "user" }]
+    ['alice', { role: 'admin' }],
+    ['bob', { role: 'user' }],
   ]),
-  tags: new Set(["react", "typescript", "visualization"]),
-  
-  // Advanced types
+  tags: new Set(['react', 'typescript', 'visualization']),
   createdAt: new Date(),
   pattern: /[a-z]+/gi,
-  callback: (x) => x * 2,
-  asyncData: Promise.resolve("Loaded successfully"),
-  
-  // Nested structures
+  callback: (x: number) => x * 2,
+  asyncData: Promise.resolve('Loaded successfully'),
   config: {
     api: {
-      baseUrl: "https://api.example.com",
+      baseUrl: 'https://api.example.com',
       timeout: 5000,
-      retries: 3
+      retries: 3,
     },
     features: {
       darkMode: true,
-      notifications: false
-    }
-  }
+      notifications: false,
+    },
+  },
 };
 
-<ObjectView 
-  value={complexData} 
+<ObjectView
+  valueGetter={() => complexData}
   name="appConfig"
   expandLevel={2}
-  objectGroupSize={50}  // Group objects with 50+ properties
-  arrayGroupSize={20}   // Group arrays with 20+ items
-/>
+  objectGroupSize={50}
+  arrayGroupSize={20}
+/>;
 ```
 
 ### Real-World Use Cases
 
 #### API Response Debugging
+
 ```tsx
 const apiResponse = {
   status: 200,
   data: {
     users: [
-      { id: 1, name: "Alice", email: "alice@example.com" },
-      { id: 2, name: "Bob", email: "bob@example.com" }
+      { id: 1, name: 'Alice', email: 'alice@example.com' },
+      { id: 2, name: 'Bob', email: 'bob@example.com' },
     ],
     pagination: {
       page: 1,
       totalPages: 5,
-      totalItems: 87
-    }
+      totalItems: 87,
+    },
   },
   headers: {
-    "content-type": "application/json",
-    "x-request-id": "abc-123"
-  }
+    'content-type': 'application/json',
+    'x-request-id': 'abc-123',
+  },
 };
 
-<ObjectView value={apiResponse} name="API Response" expandLevel={2} />
+<ObjectView
+  valueGetter={() => apiResponse}
+  name="API Response"
+  expandLevel={2}
+/>;
 ```
 
 #### State Management Debugging
+
 ```tsx
 const [appState, setAppState] = useState({
-  user: { name: "John", preferences: {...} },
-  ui: { theme: "dark", sidebarOpen: true },
-  data: { items: [...], loading: false }
+  user: { name: 'John', preferences: { theme: 'dark', notifications: true } },
+  ui: { theme: 'dark', sidebarOpen: true },
+  data: { items: [], loading: false },
 });
 
-// Visualize state changes
-<ObjectView 
-  value={appState} 
-  name="Application State" 
-  expandLevel={1} 
-/>
+const stateGetter = useMemo(() => () => appState, [appState]);
+
+<ObjectView
+  valueGetter={stateGetter}
+  name="Application State"
+  expandLevel={1}
+/>;
 ```
 
 ## 🎛️ API Reference
 
-### Props
-
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `value` | `any` | **required** | The data to visualize |
-| `name` | `string` | `undefined` | Display name for the root object |
-| `style` | `CSSProperties` | `undefined` | Custom styles for the container |
-| `expandLevel` | `number \| boolean` | `false` | Initial expansion: `true` (all), `false` (none), or depth number |
-| `objectGroupSize` | `number` | `100` | Group objects with more than N properties |
-| `arrayGroupSize` | `number` | `10` | Group arrays with more than N elements |
-| `resolver` | `Map<Constructor, ResolverFn>` | `undefined` | Override or extend rendering for constructors |
-| `highlightUpdate` | `boolean` | `true` | Enable/disable change detection highlighting |
-| `preview` | `boolean` | `true` | Render preview badges when collapsed |
-| `nonEnumerable` | `boolean` | `true` | Include non-enumerable properties |
+| `valueGetter` | `() => any` | **required** | Function that returns the data to visualise. Memoise the function so it only changes when the value changes. |
+| `name` | `string` | `undefined` | Label displayed for the root object. |
+| `expandLevel` | `number \| boolean` | `false` | Initial expansion depth: `true` expands everything, `false` collapses everything, numbers expand that many levels. |
+| `objectGroupSize` | `number` | `undefined` | Group objects with at least this many enumerable keys. Set to `undefined`/`1` to disable. |
+| `arrayGroupSize` | `number` | `undefined` | Group arrays into virtual buckets once they exceed this size. |
+| `resolver` | `Map<any, ResolverFn>` | `undefined` | Extend or replace rendering for specific constructors. |
+| `highlightUpdate` | `boolean` | `false` | Enable flash-highlighting when values change. |
+| `preview` | `boolean` | `true` | Show inline previews for collapsed nodes. |
+| `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties in traversal. |
 
 ### Supported Data Types
 
-- ✅ **Primitives**: `string`, `number`, `boolean`, `null`, `undefined`, `symbol`, `bigint`
+- ✅ **Primitives**: string, number, boolean, null, undefined, symbol, bigint
 - ✅ **Objects**: Plain objects, class instances, nested structures
-- ✅ **Arrays**: Regular arrays, typed arrays, sparse arrays
-- ✅ **Functions**: Arrow functions, regular functions, methods
-- ✅ **Built-ins**: `Date`, `RegExp`, `Error`, `Map`, `Set`, `Promise`
-- ✅ **Special Cases**: Circular references, long strings, large collections
+- ✅ **Collections**: Arrays, Maps, Sets, custom iterables
+- ✅ **Functions**: Async, generator, arrow, and regular functions
+- ✅ **Built-ins**: Date, RegExp, Error, Promise (with live status)
+- ✅ **Special Cases**: Lazy values, grouped ranges, circular references
 
 ## 🎨 Styling
 
-The component comes with sensible defaults but is fully customizable:
+The component ships with the `.big-objview-root` namespace. Override these classes or CSS variables to match your theme:
 
 ```css
-/* Container */
-.jv-root { 
-  font-family: 'Monaco', 'Menlo', monospace;
+.big-objview-root {
+  font-family: 'Menlo', 'Monaco', monospace;
   font-size: 12px;
+  background: var(--bigobjview-bg-color);
+  color: var(--bigobjview-color);
 }
 
-/* Property names */
-.jv-name { 
-  color: #881391; 
-  font-weight: bold;
+.big-objview-root .node-container {
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-/* Values by type */
-.jv-field-string .jv-value { color: #c41a16; }
-.jv-field-number .jv-value { color: #1c00cf; }
-.jv-field-boolean .jv-value { color: #aa0d91; }
+.big-objview-root .value.type-boolean { color: #08f; }
+.big-objview-root .value.type-number { color: #d12; }
+.big-objview-root .value.type-string { color: #e67e22; }
+.big-objview-root .value.value-preview { opacity: 0.7; }
+.big-objview-root .name.updated { background: rgb(255, 50, 0); }
+```
 
-/* Keyword badges (null, undefined, true, false) */
-.jv-keyword {
-  font-size: 0.85em;
-  padding-inline: 0.6em;
-  margin-inline: 0.3em;
-  padding-block: 0.05em;
-  border-radius: 0.2em;
-  text-transform: uppercase;
-  font-weight: bold;
-  background-color: color-mix(in srgb, currentColor 20%, var(--jv-bg-color));
-}
+By default the viewer renders inside a 400px-tall container. Override the height via CSS:
 
-/* Interactive elements */
-.jv-cursor { cursor: pointer; }
-.jv-cursor:hover { background-color: #f0f0f0; }
-
-/* Change highlighting */
-.change-flash {
-  background-color: #fff3cd;
-  transition: background-color 0.5s ease;
+```css
+.big-objview-root {
+  height: 100%;
 }
 ```
+
+Wrap the component in your own container to control layout, scrolling, and height.
 
 ## 🔧 Advanced Features
 
 ### Change Detection
-Values that change between renders are automatically highlighted:
 
 ```tsx
 const [counter, setCounter] = useState({ count: 0, lastUpdated: Date.now() });
-
-const increment = () => {
-  setCounter(prev => ({
-    count: prev.count + 1,
-    lastUpdated: Date.now()
-  }));
-};
+const counterGetter = useMemo(() => () => counter, [counter]);
 
 return (
-  <div>
-    <button onClick={increment}>Increment</button>
-    <ObjectView value={counter} expandLevel={true} />
-  </div>
+  <>
+    <button onClick={() => setCounter(prev => ({ count: prev.count + 1, lastUpdated: Date.now() }))}>
+      Increment
+    </button>
+    <ObjectView valueGetter={counterGetter} highlightUpdate expandLevel={true} />
+  </>
 );
 ```
 
-### Performance with Large Data
+### Working with Large Data Sets
+
 ```tsx
-// Efficiently handles large datasets
 const largeDataset = {
-  users: new Array(1000).fill(null).map((_, i) => ({
+  users: Array.from({ length: 1000 }, (_, i) => ({
     id: i,
     name: `User ${i}`,
-    email: `user${i}@example.com`
+    email: `user${i}@example.com`,
   })),
   metadata: {
     total: 1000,
-    generated: new Date()
-  }
+    generated: new Date(),
+  },
 };
 
-<ObjectView 
-  value={largeDataset}
-  arrayGroupSize={50}    // Show 50 items before grouping
-  objectGroupSize={100}  // Show 100 properties before grouping
-  expandLevel={1}      // Only expand first level initially
-/>
+<ObjectView
+  valueGetter={() => largeDataset}
+  arrayGroupSize={50}
+  objectGroupSize={100}
+  expandLevel={1}
+/>;
 ```
 
 ### Resolver Overrides
 
-Fine-tune how specific constructors render by supplying resolver overrides. A resolver is a function that receives the current value, the default entry list, and an `isPreview` flag. You can return a reordered array, inject derived data, or strip entries as needed.
-
 ```tsx
-import React, { useMemo } from 'react';
-import { ObjectView } from 'react-obj-view';
-
 class User {
   constructor(public name: string, public email: string, public role: string = 'user') {}
 }
 
-class APIEndpoint {
-  constructor(
-    public method: string,
-    public url: string,
-    public status: number,
-    public responseTime: number,
-  ) {}
-}
-
-type Entry = { name: PropertyKey; data: any; isNonenumerable: boolean };
-type ResolverFn = (value: any, entries: Entry[], isPreview: boolean) => Entry[];
-
-const createResolvers = (): Map<Function, ResolverFn> => {
-  const resolvers = new Map<Function, ResolverFn>();
-
-  resolvers.set(User, (user, iterator, isPreview) => {
-    const entries = [...iterator];
-    const result: Entry[] = [];
-
+const resolver = new Map([
+  [User, (user, cb, next, isPreview) => {
     if (isPreview) {
-      result.push({ name: 'summary', data: `${user.name} • ${user.email}`, isNonenumerable: false });
-      if (user.role !== 'user') {
-        result.push({ name: 'role', data: user.role, isNonenumerable: false });
-      }
-      return result;
+      cb('summary', `${user.name} • ${user.email}`, true);
+      return;
     }
 
-    const important = ['name', 'email', 'role'];
-    for (const key of important) {
-      const index = entries.findIndex(entry => String(entry.name) === key);
-      if (index >= 0) {
-        const [entry] = entries.splice(index, 1);
-        result.push(entry);
-      }
-    }
+    cb('badge', `⭐ ${user.role.toUpperCase()}`, true);
+    next(user);
+  }],
+]);
 
-    if (user.role !== 'user') {
-      result.push({ name: 'badge', data: `⭐ ${user.role.toUpperCase()}`, isNonenumerable: false });
-    }
+const valueGetter = useMemo(() => () => ({ owner: new User('Ada', 'ada@example.com', 'admin') }), []);
 
-    result.push(...entries);
-    return result;
-  });
-
-  resolvers.set(APIEndpoint, (endpoint, iterator, isPreview) => {
-    const entries = [...iterator];
-    const result: Entry[] = [];
-
-    if (isPreview) {
-      result.push({ name: 'request', data: `${endpoint.method} ${endpoint.url}`, isNonenumerable: false });
-      result.push({ name: 'status', data: endpoint.status, isNonenumerable: false });
-      return result;
-    }
-
-    const ordered = ['method', 'url', 'status'];
-    for (const key of ordered) {
-      const index = entries.findIndex(entry => String(entry.name) === key);
-      if (index >= 0) {
-        const [entry] = entries.splice(index, 1);
-        result.push(entry);
-      }
-    }
-
-    result.push({
-      name: 'responseTimeLabel',
-      data: `${endpoint.responseTime}ms`,
-      isNonenumerable: false,
-    });
-
-    result.push(...entries);
-    return result;
-  });
-
-  return resolvers;
-};
-
-const data = {
-  customUser: new User('Ada Lovelace', 'ada@example.com', 'admin'),
-  login: new APIEndpoint('POST', '/api/auth/login', 401, 92),
-};
-
-const Demo = () => {
-  const resolverMap = useMemo(createResolvers, []);
-
-  return (
-    <ObjectView
-      value={data}
-      resolver={resolverMap}
-      expandLevel={2}
-      preview
-    />
-  );
-};
+<ObjectView valueGetter={valueGetter} resolver={resolver} />;
 ```
 
-### Controlling Change Highlighting
+Resolvers receive four parameters:
 
-```tsx
-// Disable change highlighting for performance
-<ObjectView 
-  value={frequentlyChangingData}
-  highlightUpdate={false}
-  expandLevel={1}
-/>
-
-// Enable highlighting (default behavior)
-<ObjectView 
-  value={data}
-  highlightUpdate={true}
-  expandLevel={1}
-/>
+```ts
+export type ResolverFn<T = any> = (
+  value: T,
+  cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void,
+  next: (value: unknown, cb?: ResolverFnCb) => void,
+  isPreview: boolean,
+) => void;
 ```
 
-## 💡 Tips & Best Practices
+Call `cb` to push entries (return `true` to stop early) and `next` to continue with the default traversal.
 
-1. **Performance**: Use appropriate `expandLevel` values for large objects
-2. **Grouping**: Adjust `arrayGroupSize` and `objectGroupSize` based on your data size
-3. **Debugging**: Perfect for inspecting API responses, state changes, and complex data structures
-4. **Development**: Great for creating admin panels, debug tools, and data browsers
+## ✅ Testing & Tooling
 
-## 🌐 Browser Support
+- The project is built with Vite and TypeScript.
+- Virtualisation relies on [`react-virtuoso`](https://virtuoso.dev/).
+- Demo tooling lives under `src/Test.tsx` and `vite.config.demo.ts`.
 
-- ✅ Chrome/Edge 88+
-- ✅ Firefox 85+
-- ✅ Safari 14+
-- ✅ React 19+
-- ✅ TypeScript 5.0+
+## 📄 License
 
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.
-
-## 🔗 Links
-
-- [GitHub Repository](https://github.com/vothanhdat/react-obj-view)
-- [Issue Tracker](https://github.com/vothanhdat/react-obj-view/issues)
-- [NPM Package](https://www.npmjs.com/package/react-obj-view)
+MIT © [Dat Vo](https://github.com/vothanhdat)
