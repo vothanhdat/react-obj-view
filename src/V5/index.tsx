@@ -91,7 +91,7 @@ const VirtualScrollerRender: React.FC<{
 
         let startIndex = Math.floor(start / lineHeight)
         let endIndex = Math.min(size, Math.ceil(end / lineHeight))
-        let renderSize = Math.min(endIndex - startIndex, 500)
+        let renderSize = Math.min(Math.max(0, endIndex - startIndex), 500)
 
         let lineNumberSize = String(endIndex).length
 
