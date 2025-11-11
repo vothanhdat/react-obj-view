@@ -19,7 +19,6 @@ export type WalkingConfig = {
     nonEnumerable: boolean;
     symbol?: boolean;
     resolver: Map<any, ResolverFn> | undefined;
-    arrayGroup?: number
 };
 
 export type ObjectViewProps = {
