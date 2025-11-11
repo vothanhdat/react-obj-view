@@ -186,15 +186,19 @@ const stateGetter = useMemo(() => () => appState, [appState]);
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `valueGetter` | `() => any` | **required** | Function that returns the data to visualise. Memoise the function so it only changes when the value changes. |
+| `valueGetter` | `() => unknown` | **required** | Function that returns the data to visualise. Memoise the function so it only changes when the value changes. |
 | `name` | `string` | `undefined` | Label displayed for the root object. |
 | `expandLevel` | `number \| boolean` | `false` | Initial expansion depth: `true` expands everything, `false` collapses everything, numbers expand that many levels. |
-| `objectGroupSize` | `number` | `undefined` | Group objects with at least this many enumerable keys. Set to `undefined`/`1` to disable. |
-| `arrayGroupSize` | `number` | `undefined` | Group arrays into virtual buckets once they exceed this size. |
+| `objectGroupSize` | `number` | `0` | Group objects with at least this many enumerable keys. Values `0`/`1` disable grouping. |
+| `arrayGroupSize` | `number` | `0` | Group arrays into virtual buckets once they exceed this size. Values `0`/`1` disable grouping. |
 | `resolver` | `Map<any, ResolverFn>` | `undefined` | Extend or replace rendering for specific constructors. |
 | `highlightUpdate` | `boolean` | `false` | Enable flash-highlighting when values change. |
 | `preview` | `boolean` | `true` | Show inline previews for collapsed nodes. |
 | `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties in traversal. |
+| `showLineNumbers` | `boolean` | `false` | Display a gutter with 0-based line numbers. |
+| `style` | `React.CSSProperties` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
+| `lineHeight` | `number` | `14` | Row height in pixels used by the virtual scroller. Adjust after changing font sizes. |
+| `className` | `string` | `undefined` | Extra class names merged with `.big-objview-root` for custom themes. |
 
 ### Supported Data Types
 
@@ -207,7 +211,7 @@ const stateGetter = useMemo(() => () => appState, [appState]);
 
 ## 🎨 Styling
 
-The component ships with the `.big-objview-root` namespace. Override these classes or CSS variables to match your theme:
+Use the `className`, `style`, and `lineHeight` props for quick tweaks, or override the built-in selectors for full control. The component ships with the `.big-objview-root` namespace—customise these classes or CSS variables to match your theme:
 
 ```css
 .big-objview-root {

@@ -36,7 +36,6 @@ export type ResolverFn<T = any> = (
 export type ObjectViewProps = {
   valueGetter: () => unknown;
   name?: string;
-  style?: React.CSSProperties;
   expandLevel?: number | boolean;
   objectGroupSize?: number;
   arrayGroupSize?: number;
@@ -45,6 +44,9 @@ export type ObjectViewProps = {
   preview?: boolean;
   nonEnumerable?: boolean;
   showLineNumbers?: boolean;
+  style?: React.CSSProperties;
+  lineHeight?: number;
+  className?: string;
 };
 ```
 
@@ -54,15 +56,17 @@ export type ObjectViewProps = {
 |------|---------|-------------|
 | `valueGetter` | — (required) | Function that returns the value to render. Wrap it in `useMemo`/`useCallback` so it only changes when the underlying data changes. |
 | `name` | `undefined` | Optional label for the root node. |
-| `style` | `undefined` | Reserved for future styling hooks. Use CSS overrides on `.big-objview-root` today. |
 | `expandLevel` | `false` | Initial expansion depth. `true` expands all nodes (up to depth 20), `false` collapses everything, numbers expand that many levels (0-based). |
-| `objectGroupSize` | `undefined` | When provided and greater than `1`, adds an object grouping resolver that batches enumerable keys into ranges. |
-| `arrayGroupSize` | `undefined` | When provided and greater than `1`, adds an array grouping resolver that presents ranges like `[0…49]`. |
+| `objectGroupSize` | `0` | When greater than `1`, adds an object grouping resolver that batches enumerable keys into ranges. |
+| `arrayGroupSize` | `0` | When greater than `1`, adds an array grouping resolver that presents ranges like `[0…49]`. |
 | `resolver` | `undefined` | Custom resolver map merged on top of the built-in resolver map. Keys are constructors; values are `ResolverFn`s. |
 | `highlightUpdate` | `false` | Enables flash-highlighting when a node's value changes. |
 | `preview` | `true` | Shows inline previews (e.g. `Array(10)` or string snippets) for collapsed nodes. |
 | `nonEnumerable` | `false` | Includes non-enumerable properties when traversing objects. |
-| `showLineNumbers` | `false` | Reserved flag for rendering line numbers; currently unused by the renderer. |
+| `showLineNumbers` | `false` | Renders a gutter with 0-based line numbers next to each row. |
+| `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
+| `lineHeight` | `14` | Height, in pixels, of each rendered row. Adjust when you override fonts/sizes. |
+| `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
 
 ## Resolver System
 

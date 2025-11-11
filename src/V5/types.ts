@@ -23,7 +23,7 @@ export type WalkingConfig = {
 };
 
 export type ObjectViewProps = {
-    valueGetter: any;
+    valueGetter: () => unknown;
     name?: string;
 
     expandLevel?: number | boolean;
@@ -36,8 +36,7 @@ export type ObjectViewProps = {
     showLineNumbers?: boolean;
 
     style?: React.CSSProperties;
-    lineHeight?: number
+    lineHeight?: number;
     className?: string;
 };
-
 

@@ -190,6 +190,28 @@ return (
 );
 ```
 
+### Line Numbers & Layout Tweaks
+
+Control how each row is rendered and surfaced:
+
+```tsx
+const viewerGetter = useMemo(() => () => state, [state]);
+
+return (
+  <ObjectView
+    valueGetter={viewerGetter}
+    showLineNumbers
+    lineHeight={18}
+    className="state-viewer"
+    style={{ height: 480 }}
+  />
+);
+```
+
+- `showLineNumbers` toggles a gutter so you can reference nodes quickly.
+- `lineHeight` must match the actual row height for smooth virtual scrolling (bump it when you increase font sizes).
+- `className` and `style` target the root `.big-objview-root`, making it easy to scope custom theming without extra wrappers.
+
 ### Resolver Overrides
 
 ```tsx
