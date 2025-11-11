@@ -253,6 +253,11 @@
   flex: 1;
 }
 
+.slider-field input[type='range']:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .slider-field span {
   width: 2.5rem;
   text-align: right;
@@ -345,7 +350,8 @@
   border: 1px solid rgba(148, 163, 184, 0.3);
   padding: 1rem;
   overflow: auto;
-  background: #0f172a;
+  background: var(--bigobjview-bg-color, #0f172a);
+  max-height: min(70vh, 720px);
 }
 
 .viewer-body::-webkit-scrollbar,

@@ -183,6 +183,7 @@ export const Test = () => {
   const [enablePreviewMode, setEnablePreviewMode] = useState(true)
   const [showNonEnumerable, setShowNonEnumerable] = useState(true)
   const [showSymbols, setShowSymbols] = useState(false)
+  const [enableGrouping, setEnableGrouping] = useState(false)
   const [objectGrouped, setObjectGrouped] = useState(25)
   const [arrayGrouped, setArrayGrouped] = useState(10)
   const [selectedThemeId, setSelectedThemeId] = useState(themeOptions[0].id)
@@ -268,22 +269,23 @@ export const Test = () => {
 
   const viewerFlags = useMemo(
     () => [
+      { label: 'Grouping', active: enableGrouping },
       { label: 'Resolvers', active: enableResolvers },
       { label: 'Preview', active: enablePreviewMode },
       { label: 'Highlight', active: enableHighlighting },
       { label: 'Non-enum', active: showNonEnumerable },
       { label: 'Symbols', active: showSymbols },
     ],
-    [enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols],
+    [enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols],
   )
 
   const infoChips = useMemo(
     () => [
       { label: 'Dataset', value: currentLabel },
       { label: 'Theme', value: selectedThemeLabel },
-      { label: 'Objects / Arrays', value: `${objectGrouped} • ${arrayGrouped}` },
+      { label: 'Objects / Arrays', value: enableGrouping ? `${objectGrouped} • ${arrayGrouped}` : 'Off' },
     ],
-    [arrayGrouped, currentLabel, objectGrouped, selectedThemeLabel],
+    [arrayGrouped, currentLabel, enableGrouping, objectGrouped, selectedThemeLabel],
   )
 
   return (
@@ -394,7 +396,7 @@ export const Test = () => {
                   </button>
                 ))}
               </div>
-              <div className="slider-field">
+              {enableGrouping && <div className="slider-field">
                 <label htmlFor="object-group-range">Object grouping</label>
                 <div>
                   <input
@@ -405,11 +407,12 @@ export const Test = () => {
                     step={5}
                     value={objectGrouped}
                     onChange={(event) => setObjectGrouped(Number(event.target.value))}
+                    disabled={!enableGrouping}
                   />
-                  <span>{objectGrouped}</span>
+                  <span>{enableGrouping ? objectGrouped : 'Off'}</span>
                 </div>
-              </div>
-              <div className="slider-field">
+              </div>}
+              {enableGrouping && <div className="slider-field">
                 <label htmlFor="array-group-range">Array grouping</label>
                 <div>
                   <input
@@ -420,10 +423,11 @@ export const Test = () => {
                     step={5}
                     value={arrayGrouped}
                     onChange={(event) => setArrayGrouped(Number(event.target.value))}
+                    disabled={!enableGrouping}
                   />
-                  <span>{arrayGrouped}</span>
+                  <span>{enableGrouping ? arrayGrouped : 'Off'}</span>
                 </div>
-              </div>
+              </div>}
             </section>
 
             <section className="panel-section">
@@ -433,6 +437,11 @@ export const Test = () => {
               </div>
               <div className="toggle-grid" role="group" aria-label="Feature switches">
                 {[{
+                  label: 'Enable grouping',
+                  value: enableGrouping,
+                  setter: setEnableGrouping,
+                },
+                {
                   label: 'Class resolvers',
                   value: enableResolvers,
                   setter: setEnableResolvers,
@@ -500,14 +509,14 @@ export const Test = () => {
               ))}
             </div>
           </div>
-          <div className="viewer-body">
+          <div className="viewer-body" style={selectedTheme}>
             <V5Index
               valueGetter={currentDataGetter}
               name="testData"
               expandLevel={expandLevel}
               highlightUpdate={enableHighlighting}
-              objectGroupSize={objectGrouped}
-              arrayGroupSize={arrayGrouped}
+              objectGroupSize={enableGrouping ? objectGrouped : 0}
+              arrayGroupSize={enableGrouping ? arrayGrouped : 0}
               resolver={resolverOverrides}
               preview={enablePreviewMode}
               nonEnumerable={showNonEnumerable}
