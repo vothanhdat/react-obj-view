@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 import { allExamples, quickExamples, performanceTestData } from './exampleData';
-import './style.css';
 import "./Test.css";
 import { V5Index } from './V5';
 import { ResolverFn } from './V5/types';
