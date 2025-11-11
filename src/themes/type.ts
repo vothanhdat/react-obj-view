@@ -1,6 +1,3 @@
-
-
-
 export type ThemeKeys =
     "--bigobjview-color"
     | "--bigobjview-bg-color"
@@ -18,6 +15,6 @@ export type ThemeKeys =
     | "--bigobjview-type-function-color"
     | "--bigobjview-type-object-regexp-color"
     | "--bigobjview-type-object-date-color"
-    | "--bigobjview-type-object-error-color"
+    | "--bigobjview-type-object-error-color";
 
-export type ThemeColor = Record<ThemeKeys, string>
+export type ThemeColor = Record<ThemeKeys, string>;

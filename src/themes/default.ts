@@ -1,6 +1,5 @@
 import { ThemeColor } from "./type";
 
-
 export const themeDefault: ThemeColor = {
     "--bigobjview-color": "light-dark(#333b3c, #efefec)",
     "--bigobjview-bg-color": "light-dark(#f9f9f9, #212121)",
@@ -19,4 +18,4 @@ export const themeDefault: ThemeColor = {
     "--bigobjview-type-object-regexp-color": "red",
     "--bigobjview-type-object-date-color": "#08f",
     "--bigobjview-type-object-error-color": "red",
-}
+};
