@@ -44,12 +44,18 @@ export const simpleCache = <T extends (...params: any[]) => any>(
     resolver = (...params: Parameters<T>) => params.join(",")
 ) => {
 
-    let map = new Map()
+    let map: Map<any, any> | undefined = undefined;//new Map()
 
-    return ((...params: Parameters<T>) => {
+    let fnWithCache = ((...params: Parameters<T>) => {
+        map ||= new Map()
+
         let key = resolver(...params)
         if (!map.has(key)) { map.set(key, fn(...params)) }
         return map.get(key);
-    }) as T
+    }) as T & { clear: any }
+
+    fnWithCache.clear = () => map?.clear();
+
+    return fnWithCache;
 
 }
