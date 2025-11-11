@@ -25,15 +25,18 @@ export type WalkingConfig = {
 export type ObjectViewProps = {
     valueGetter: any;
     name?: string;
-    style?: any;
+
     expandLevel?: number | boolean;
-    objectGroupSize?: number; // >= 2 else no grouping
-    arrayGroupSize?: number; // >= 2 else no grouping
+    objectGroupSize?: number; // >= 2 or no grouping
+    arrayGroupSize?: number; // >= 2 or no grouping
     resolver?: Map<any, ResolverFn>;
     highlightUpdate?: boolean;
     preview?: boolean;
     nonEnumerable?: boolean;
     showLineNumbers?: boolean;
+
+    style?: React.CSSProperties;
+    className?: string;
 };
 
 

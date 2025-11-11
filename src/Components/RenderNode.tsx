@@ -74,9 +74,11 @@ export const RenderNode: React.FC<{
             data-nonenumrable={!nodeData.enumerable}
             onClick={() => hasChild && toggleChildExpand(nodeData)}
         >
-            <span style={{ whiteSpace: 'preserve' }}>{"  ".repeat(nodeData.depth - 1)}</span>
-            <span className="expand-symbol">
-                {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>&#160;&#160;</>}
+            <span style={{ whiteSpace: 'preserve', opacity: 0.05 }}>
+                {"| ".repeat(nodeData.depth - 1)}
+            </span>
+            <span className="expand-symbol" style={{ whiteSpace: 'preserve' }}>
+                {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>  </>}
             </span>
 
             <RenderName ref={ref} {...{

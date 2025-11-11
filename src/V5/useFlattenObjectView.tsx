@@ -4,7 +4,6 @@ import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./resolvers/grouped
 import { ResolverFn, WalkingConfig } from "./types";
 import { NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 
-type ValueRef<T> = RefObject<{ value: T; id: number; }>;
 const useObjectId = <T,>(value: any) => {
     let ref = useRef<{ value: T; id: number; }>({ value, id: 0 });
     if (ref.current.value !== value) {
@@ -23,9 +22,18 @@ export type FlattenObjectConfig = {
 };
 
 export function useFlattenObjectView(
-    value: ValueRef<unknown>,
+    value: unknown,
     name: string | undefined,
-    { expandDepth, nonEnumerable, arrayGroupSize, customResolver, objectGroupSize, customResolver: _resolver }: FlattenObjectConfig) {
+    flattenConfig: FlattenObjectConfig
+) {
+
+    const {
+        expandDepth,
+        nonEnumerable,
+        arrayGroupSize,
+        objectGroupSize,
+        customResolver: _resolver
+    } = flattenConfig
 
     const resolver = useMemo(
         () => new Map([
@@ -38,7 +46,7 @@ export function useFlattenObjectView(
                 ? GROUP_OBJECT_RESOLVER(Number(objectGroupSize))
                 : [],
         ]),
-        [useObjectId(_resolver), arrayGroupSize, objectGroupSize, DEFAULT_RESOLVER]
+        [_resolver, arrayGroupSize, objectGroupSize, DEFAULT_RESOLVER]
     );
 
     const config = useMemo(
@@ -64,7 +72,7 @@ export function useFlattenObjectView(
             // console.timeEnd("walking");
             return { ...result };
         },
-        [refWalk, value, name, reload, config]
+        [refWalk.current, value, name, reload, config]
     );
 
     const refreshPath = useCallback(
@@ -95,7 +103,7 @@ export function useFlattenObjectView(
                 let data = m.get(index);
 
                 if (!data) {
-                    m.set(index, data = (refWalk.current?.getNode(index, config))!);
+                    m.set(index, data = refWalk.current?.getNode(index, config)!);
                 }
 
                 return data;
@@ -112,7 +120,9 @@ export function useFlattenObjectView(
         size: refWalkResult.count,
     };
 }
+
 type Factory = typeof walkingToIndexFactory;
+
 function useWalkingFn(): {
     refWalk: RefObject<ReturnType<Factory> | undefined>;
 } {

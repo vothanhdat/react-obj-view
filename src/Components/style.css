@@ -22,6 +22,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
         width: 100%;
+        &:hover{
+            background-color: color-mix(in srgb, var(--bigobjview-color) 5%, transparent);
+        }
     }
 
     .line-number {
