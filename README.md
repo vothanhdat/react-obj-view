@@ -13,7 +13,7 @@ Experience resolver overrides, keyword styling, grouping, previews, and change h
 ## ✨ Features
 
 - 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions.
-- ⚡ **Virtualized Rendering**: Powered by [`react-virtuoso`](https://virtuoso.dev/) to render only the visible rows—perfect for massive objects and arrays.
+- ⚡ **Virtualized Rendering**: Built-in windowing renders only the visible rows—perfect for massive objects and arrays.
 - 📦 **Configurable Grouping**: Opt-in resolvers group large arrays and objects into logical ranges.
 - 🔄 **Circular Reference Safe**: Detects and labels circular references without infinite loops.
 - 🎯 **Smart Type Rendering**: Specialized formatting for promises, maps, sets, errors, functions, dates, regexes, and more.
@@ -320,7 +320,7 @@ Call `cb` to push entries (return `true` to stop early) and `next` to continue w
 ## ✅ Testing & Tooling
 
 - The project is built with Vite and TypeScript.
-- Virtualisation relies on [`react-virtuoso`](https://virtuoso.dev/).
+- Virtualisation is handled by an internal `VirtualScroller` component that only mounts the visible rows.
 - Demo tooling lives under `src/Test.tsx` and `vite.config.demo.ts`.
 
 ## 📄 License

@@ -90,7 +90,7 @@ To use a custom domain:
 The demo showcases:
 
 - ✅ **Interactive Controls**: Toggle features and adjust settings
-- ✅ **Virtualized Tree**: Smooth scrolling backed by `react-virtuoso`
+- ✅ **Virtualized Tree**: Smooth scrolling backed by the built-in `VirtualScroller`
 - ✅ **Resolver Overrides**: User and API endpoint examples
 - ✅ **Keyword Styling**: Enhanced boolean and null value display
 - ✅ **Performance Options**: Grouping and highlighting controls
