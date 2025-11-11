@@ -577,12 +577,10 @@ export const Test = () => {
                         border: '1px solid #ddd',
                         borderRadius: '8px',
                         padding: '16px',
-                        backgroundColor: '#f9f9f9',
                     }}
                 >
                     <div
                         style={{
-                            // border: '1px solid #ddd',
                             maxHeight: '70vh',
                             overflow: 'auto',
                         }}
@@ -599,6 +597,7 @@ export const Test = () => {
                             preview={enablePreviewMode}
                             nonEnumerable={showNonEnumerable}
                             showLineNumbers={true}
+                            lineHeight={14}
                         />
                     </div>
                 </div>

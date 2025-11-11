@@ -36,6 +36,7 @@ export type ObjectViewProps = {
     showLineNumbers?: boolean;
 
     style?: React.CSSProperties;
+    lineHeight?: number
     className?: string;
 };
 

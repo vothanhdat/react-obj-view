@@ -3,13 +3,14 @@
     --bigobjview-color: light-dark(#333b3c, #efefec);
     --bigobjview-bg-color: light-dark(#f9f9f9, #212121);
     --bigobjview-change-color: rgb(255, 50, 0);
+    --bigobjview-fontsize: 12px
 }
 
 .big-objview-root {
     font-family: monospace;
     user-select: none;
-    font-size: 12px;
-    --color: #000;
+    font-size: var(--bigobjview-fontsize, 12px);
+    --color: var(--bigobjview-color);
     --bg-color: var(--bigobjview-bg-color);
     --opacity: 100%;
     background-color: var(--bg-color);

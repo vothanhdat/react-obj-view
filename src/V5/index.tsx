@@ -20,6 +20,7 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     arrayGroupSize = 0,
     objectGroupSize = 0,
     className,
+    lineHeight = 14,
     style
 }) => {
 
@@ -57,13 +58,17 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     return <>
         <div className={joinClasses("big-objview-root", className)} style={style}>
             <VirtualScroller
-                height={14 * size}
-                Component={VirtualScrollerRender}
+            
+                height={lineHeight * size}
                 size={size}
+                Component={VirtualScrollerRender}
+
                 computeItemKey={computeItemKey}
                 showLineNumbers={showLineNumbers}
                 getNodeByIndex={getNodeByIndex}
+                lineHeight={lineHeight}
                 options={options}
+
             />
         </div>
     </>
@@ -71,15 +76,17 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
 const VirtualScrollerRender: React.FC<{
     start: number, end: number,
+    lineHeight: number,
     showLineNumbers: boolean,
     computeItemKey: (index: number) => string,
 } & NodeRenderProps> = ({
     start, end, size,
+    lineHeight,
     computeItemKey, showLineNumbers, getNodeByIndex, options
 }) => {
 
-        let startIndex = Math.floor(start / 14)
-        let endIndex = Math.min(size, Math.ceil(end / 14))
+        let startIndex = Math.floor(start / lineHeight)
+        let endIndex = Math.min(size, Math.ceil(end / lineHeight))
         let renderSize = Math.min(endIndex - startIndex, 500)
 
         let lineNumberSize = String(endIndex).length
@@ -93,9 +100,8 @@ const VirtualScrollerRender: React.FC<{
                     className="row"
                     style={{
                         position: "absolute",
-                        top: `${index * 14}px`,
-                        height: "14px",
-                        // borderBottom: "solid 1px #8881",
+                        top: `${index * lineHeight}px`,
+                        height: `${lineHeight}px`,
                     }}
                 >
                     {showLineNumbers && <span className="line-number">
