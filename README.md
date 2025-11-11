@@ -1,31 +1,18 @@
 # React Object View
 
-A powerful and flexible React component for visualizing JavaScript objects and data structures with an interactive, virtualized tree view. Perfect for debugging, data inspection, and building developer tools.
+React Object View is a TypeScript-first component for exploring deeply nested JavaScript data structures. It combines a familiar inspector UI with virtual scrolling so large payloads stay responsive.
 
-## 🌟 Live Demo
+## 🌟 Feature Highlights
 
-**[Try the Interactive Demo →](https://vothanhdat.github.io/react-obj-view/)**
+- **Virtualized tree view** – Only the visible rows are rendered, so even 100k+ entries stay smooth.
+- **Resolver-driven rendering** – Built-in handlers cover promises, maps, sets, errors, dates, regexes, iterables, and circular references.
+- **Preview summaries** – Collapsed nodes include inline previews for quick scanning.
+- **Change awareness** – Optional flashing makes updates stand out during debugging.
+- **Styling hooks** – Override CSS variables or add class names to match your design system.
 
-Experience resolver overrides, keyword styling, grouping, previews, and change highlighting in action.
+## 🚀 Quickstart
 
-> **Note**: If the demo link shows "404", please wait a few minutes for GitHub Pages to deploy or confirm that GitHub Pages is enabled in the repository settings.
-
-## ✨ Features
-
-- 🌳 **Interactive Tree View**: Expand and collapse object properties with intuitive click interactions.
-- ⚡ **Virtualized Rendering**: Built-in windowing renders only the visible rows—perfect for massive objects and arrays.
-- 📦 **Configurable Grouping**: Opt-in resolvers group large arrays and objects into logical ranges.
-- 🔄 **Circular Reference Safe**: Detects and labels circular references without infinite loops.
-- 🎯 **Smart Type Rendering**: Specialized formatting for promises, maps, sets, errors, functions, dates, regexes, and more.
-- 🎨 **Customizable Styling**: Override CSS variables or class selectors to match your UI.
-- 🧩 **Resolver Overrides**: Extend or replace rendering for class instances with composable resolver functions.
-- 💡 **Keyword Highlighting**: Dedicated styling for boolean, null, undefined, and other keyword-like values.
-- 🔍 **Change Detection**: Optional flash-highlighting when values change between renders.
-- 🛠️ **TypeScript Ready**: Strong typings for props, resolvers, and utility hooks.
-
-## 🚀 Quick Start
-
-### Installation
+### 1. Install
 
 ```bash
 npm install react-obj-view
@@ -33,300 +20,67 @@ npm install react-obj-view
 yarn add react-obj-view
 ```
 
-### Basic Usage
+### 2. Render your data
 
 ```tsx
-import React, { useMemo } from 'react';
-import { ObjectView } from 'react-obj-view';
-import 'react-obj-view/dist/react-obj-view.css';
+import { ObjectView } from "react-obj-view";
+import "react-obj-view/dist/react-obj-view.css";
 
-const data = {
-  user: {
-    name: 'John Doe',
-    age: 30,
-    preferences: {
-      theme: 'dark',
-      notifications: true,
-    },
-  },
-  items: ['apple', 'banana', 'cherry'],
-  metadata: {
-    created: new Date(),
-    tags: new Set(['react', 'typescript']),
-  },
+const user = {
+  name: "Ada",
+  stack: ["TypeScript", "React"],
+  meta: new Map([["lastLogin", new Date()]])
 };
 
-export const App = () => {
-  const valueGetter = useMemo(() => () => data, []);
-
+export function DebugPanel() {
   return (
     <ObjectView
-      valueGetter={valueGetter}
-      name="appData"
+      valueGetter={() => user}
+      name="user"
       expandLevel={2}
     />
   );
-};
+}
 ```
 
-> For mutable values (for example, component state), include the value in the dependency list: `const getter = useMemo(() => () => state, [state]);`.
+### 3. Keep getters stable
 
-## ♻️ Understanding `valueGetter`
+Wrap the getter in `useMemo`/`useCallback` when the underlying value changes so React Object View only re-renders when necessary.
 
-React Object View evaluates your data through a function prop instead of reading it directly. This provides two benefits:
-
-1. **Always Current Values** – The getter runs during rendering so nested proxies, lazy wrappers, or derived data stay up to date.
-2. **Stable Identity** – You control when the getter identity changes, enabling efficient memoization. Wrap the getter in `useMemo`/`useCallback` to change it only when the underlying value changes.
-
-### Immutability Matters
-
-- Pass new object/array references whenever data changes so the viewer can recompute the tree.
-- Avoid mutating nested data in place (e.g. `state.user.name = 'Alice'`). Instead, create a new object and update the getter dependencies.
-- During development the viewer detects mutations and refreshes the affected subtree; production builds skip this check for performance.
-
-## 📖 Examples
-
-### Controlling Expansion
-
-```tsx
-<ObjectView valueGetter={() => data} expandLevel={true} />   // Expand everything
-<ObjectView valueGetter={() => data} expandLevel={3} />      // Expand the first 3 levels
-<ObjectView valueGetter={() => data} expandLevel={false} />  // Start collapsed
-```
-
-### Handling Different Data Types
-
-```tsx
-const complexData = {
-  name: 'React Object View',
-  version: 1.0,
-  isActive: true,
-  users: ['alice', 'bob', 'charlie'],
-  userMap: new Map([
-    ['alice', { role: 'admin' }],
-    ['bob', { role: 'user' }],
-  ]),
-  tags: new Set(['react', 'typescript', 'visualization']),
-  createdAt: new Date(),
-  pattern: /[a-z]+/gi,
-  callback: (x: number) => x * 2,
-  asyncData: Promise.resolve('Loaded successfully'),
-  config: {
-    api: {
-      baseUrl: 'https://api.example.com',
-      timeout: 5000,
-      retries: 3,
-    },
-    features: {
-      darkMode: true,
-      notifications: false,
-    },
-  },
-};
-
-<ObjectView
-  valueGetter={() => complexData}
-  name="appConfig"
-  expandLevel={2}
-  objectGroupSize={50}
-  arrayGroupSize={20}
-/>;
-```
-
-### Real-World Use Cases
-
-#### API Response Debugging
-
-```tsx
-const apiResponse = {
-  status: 200,
-  data: {
-    users: [
-      { id: 1, name: 'Alice', email: 'alice@example.com' },
-      { id: 2, name: 'Bob', email: 'bob@example.com' },
-    ],
-    pagination: {
-      page: 1,
-      totalPages: 5,
-      totalItems: 87,
-    },
-  },
-  headers: {
-    'content-type': 'application/json',
-    'x-request-id': 'abc-123',
-  },
-};
-
-<ObjectView
-  valueGetter={() => apiResponse}
-  name="API Response"
-  expandLevel={2}
-/>;
-```
-
-#### State Management Debugging
-
-```tsx
-const [appState, setAppState] = useState({
-  user: { name: 'John', preferences: { theme: 'dark', notifications: true } },
-  ui: { theme: 'dark', sidebarOpen: true },
-  data: { items: [], loading: false },
-});
-
-const stateGetter = useMemo(() => () => appState, [appState]);
-
-<ObjectView
-  valueGetter={stateGetter}
-  name="Application State"
-  expandLevel={1}
-/>;
-```
-
-## 🎛️ API Reference
+## ⚙️ Options & Configuration
 
 | Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `valueGetter` | `() => unknown` | **required** | Function that returns the data to visualise. Memoise the function so it only changes when the value changes. |
-| `name` | `string` | `undefined` | Label displayed for the root object. |
-| `expandLevel` | `number \| boolean` | `false` | Initial expansion depth: `true` expands everything, `false` collapses everything, numbers expand that many levels. |
-| `objectGroupSize` | `number` | `0` | Group objects with at least this many enumerable keys. Values `0`/`1` disable grouping. |
-| `arrayGroupSize` | `number` | `0` | Group arrays into virtual buckets once they exceed this size. Values `0`/`1` disable grouping. |
-| `resolver` | `Map<any, ResolverFn>` | `undefined` | Extend or replace rendering for specific constructors. |
-| `highlightUpdate` | `boolean` | `false` | Enable flash-highlighting when values change. |
-| `preview` | `boolean` | `true` | Show inline previews for collapsed nodes. |
-| `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties in traversal. |
-| `showLineNumbers` | `boolean` | `false` | Display a gutter with 0-based line numbers. |
+| --- | --- | --- | --- |
+| `valueGetter` | `() => unknown` | **required** | Supplies the data lazily; keeps values current and memoizable. |
+| `name` | `string` | `undefined` | Optional label for the root node. |
+| `expandLevel` | `number \| boolean` | `false` | Controls initial expansion depth; `true` expands everything. |
+| `objectGroupSize` | `number` | `0` | Groups large objects into virtual buckets once they exceed this many keys. |
+| `arrayGroupSize` | `number` | `0` | Virtualizes arrays by chunking when they exceed this length. |
+| `resolver` | `Map<any, ResolverFn>` | `undefined` | Override or extend renderers for custom classes. |
+| `highlightUpdate` | `boolean` | `false` | Enables flash-highlighting when values change between renders. |
+| `preview` | `boolean` | `true` | Toggles inline value previews on collapsed rows. |
+| `nonEnumerable` | `boolean` | `false` | Includes non-enumerable properties during traversal. |
+| `showLineNumbers` | `boolean` | `false` | Displays a gutter with zero-based line numbers. |
+| `lineHeight` | `number` | `14` | Row height in pixels, used by the virtual scroller. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
-| `lineHeight` | `number` | `14` | Row height in pixels used by the virtual scroller. Adjust after changing font sizes. |
-| `className` | `string` | `undefined` | Extra class names merged with `.big-objview-root` for custom themes. |
 
-### Supported Data Types
+## 🤔 Why `valueGetter`?
 
-- ✅ **Primitives**: string, number, boolean, null, undefined, symbol, bigint
-- ✅ **Objects**: Plain objects, class instances, nested structures
-- ✅ **Collections**: Arrays, Maps, Sets, custom iterables
-- ✅ **Functions**: Async, generator, arrow, and regular functions
-- ✅ **Built-ins**: Date, RegExp, Error, Promise (with live status)
-- ✅ **Special Cases**: Lazy values, grouped ranges, circular references
+- **Always fresh data** – The getter runs during render, so derived values, proxies, or lazy loaders stay accurate.
+- **Explicit memoization** – You control when the getter identity changes, which keeps the virtual tree in sync without redundant work.
 
-## 🎨 Styling
+## 📊 Comparison with other object inspectors
 
-Use the `className`, `style`, and `lineHeight` props for quick tweaks, or override the built-in selectors for full control. The component ships with the `.big-objview-root` namespace—customise these classes or CSS variables to match your theme:
+| Library | Bundle size* | Render performance | Virtualization | Data type coverage | Customization |
+| --- | --- | --- | --- | --- | --- |
+| **React Object View** | ES module: 33.14 kB (10.20 kB gzip) | Virtualized list keeps frame times stable on very large collections. | ✅ Built-in virtual scroller (no external dependency). | Promises, iterables, maps, sets, errors, dates, regexes, circular refs. | CSS variables, class hooks, resolver overrides. |
+| `react-json-view` | Medium (ships pre-styled UI) | Re-renders the whole tree; can stutter on very large payloads. | ❌ Renders everything. | JSON-compatible structures only. | Inline style overrides and a handful of callbacks. |
+| `@devtools-ds/object-tree` | Lean core (single-digit kB gz) | Fast for small trees; relies on manual windowing for huge data. | ⚠️ None by default. | Focused on plain objects, arrays, symbols. | Theme tokens; limited renderer extension. |
 
-```css
-.big-objview-root {
-  font-family: 'Menlo', 'Monaco', monospace;
-  font-size: 12px;
-  background: var(--bigobjview-bg-color);
-  color: var(--bigobjview-color);
-}
+\*Bundle size numbers refer to minified + gzip builds. React Object View figures are taken from the default Vite build output in this repository; third-party numbers reference published package metadata and may vary per version.
 
-.big-objview-root .node-container {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+## 📚 Additional resources
 
-.big-objview-root .value.type-boolean { color: #08f; }
-.big-objview-root .value.type-number { color: #d12; }
-.big-objview-root .value.type-string { color: #e67e22; }
-.big-objview-root .value.value-preview { opacity: 0.7; }
-.big-objview-root .name.updated { background: rgb(255, 50, 0); }
-```
-
-By default the viewer renders inside a 400px-tall container. Override the height via CSS:
-
-```css
-.big-objview-root {
-  height: 100%;
-}
-```
-
-Wrap the component in your own container to control layout, scrolling, and height.
-
-## 🔧 Advanced Features
-
-### Change Detection
-
-```tsx
-const [counter, setCounter] = useState({ count: 0, lastUpdated: Date.now() });
-const counterGetter = useMemo(() => () => counter, [counter]);
-
-return (
-  <>
-    <button onClick={() => setCounter(prev => ({ count: prev.count + 1, lastUpdated: Date.now() }))}>
-      Increment
-    </button>
-    <ObjectView valueGetter={counterGetter} highlightUpdate expandLevel={true} />
-  </>
-);
-```
-
-### Working with Large Data Sets
-
-```tsx
-const largeDataset = {
-  users: Array.from({ length: 1000 }, (_, i) => ({
-    id: i,
-    name: `User ${i}`,
-    email: `user${i}@example.com`,
-  })),
-  metadata: {
-    total: 1000,
-    generated: new Date(),
-  },
-};
-
-<ObjectView
-  valueGetter={() => largeDataset}
-  arrayGroupSize={50}
-  objectGroupSize={100}
-  expandLevel={1}
-/>;
-```
-
-### Resolver Overrides
-
-```tsx
-class User {
-  constructor(public name: string, public email: string, public role: string = 'user') {}
-}
-
-const resolver = new Map([
-  [User, (user, cb, next, isPreview) => {
-    if (isPreview) {
-      cb('summary', `${user.name} • ${user.email}`, true);
-      return;
-    }
-
-    cb('badge', `⭐ ${user.role.toUpperCase()}`, true);
-    next(user);
-  }],
-]);
-
-const valueGetter = useMemo(() => () => ({ owner: new User('Ada', 'ada@example.com', 'admin') }), []);
-
-<ObjectView valueGetter={valueGetter} resolver={resolver} />;
-```
-
-Resolvers receive four parameters:
-
-```ts
-export type ResolverFn<T = any> = (
-  value: T,
-  cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void,
-  next: (value: unknown, cb?: ResolverFnCb) => void,
-  isPreview: boolean,
-) => void;
-```
-
-Call `cb` to push entries (return `true` to stop early) and `next` to continue with the default traversal.
-
-## ✅ Testing & Tooling
-
-- The project is built with Vite and TypeScript.
-- Virtualisation is handled by an internal `VirtualScroller` component that only mounts the visible rows.
-- Demo tooling lives under `src/Test.tsx` and `vite.config.demo.ts`.
-
-## 📄 License
-
-MIT © [Dat Vo](https://github.com/vothanhdat)
+- [Usage Guide](./USAGE_GUIDE.md) – End-to-end patterns, resolver recipes, and styling guidance.
+- [API Documentation](./API_DOCUMENTATION.md) – Deep dive into hooks and resolver authoring.
+- [Live demo](https://vothanhdat.github.io/react-obj-view/) – Interactively explore grouping, previews, and change flash states.
