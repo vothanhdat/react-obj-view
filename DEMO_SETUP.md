@@ -94,6 +94,7 @@ The demo showcases:
 - ✅ **Resolver Overrides**: User and API endpoint examples
 - ✅ **Keyword Styling**: Enhanced boolean and null value display
 - ✅ **Performance Options**: Grouping and highlighting controls
+- ✅ **Theme Picker**: Switch between built-in palettes without touching global styles
 - ✅ **Real-time Updates**: See changes instantly
 - ✅ **Multiple Data Types**: Comprehensive examples
 - ✅ **Professional UI**: Header, footer, and documentation links
@@ -105,6 +106,7 @@ The demo showcases:
 - Modify `src/Test.css` for demo-specific styles
 - Update `src/style.css` for component styles
 - Customize colors and layout in `src/Test.tsx`
+- Extend the `themeOptions` array in `src/Test.tsx` to surface additional palettes in the picker
 
 ### Data Examples
 

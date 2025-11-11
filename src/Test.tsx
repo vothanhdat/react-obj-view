@@ -105,6 +105,21 @@ type TestDataOption = {
     category: string;
 };
 
+type ThemeOption = {
+    id: string;
+    label: string;
+    theme: typeof themeDefault;
+};
+
+const themeOptions: ThemeOption[] = [
+    { id: 'default', label: 'Default', theme: themeDefault },
+    { id: 'oneDark', label: 'One Dark', theme: themeOneDark },
+    { id: 'dracula', label: 'Dracula', theme: themeDracula },
+    { id: 'material', label: 'Material Darker', theme: themeMaterialDarker },
+    { id: 'monokai', label: 'Monokai', theme: themeMonokai },
+    { id: 'sepia', label: 'Sepia', theme: themeSepia },
+];
+
 // Create a flat list of all available test data for the dropdown
 const testDataOptions: TestDataOption[] = [
     // Quick Examples
@@ -193,6 +208,7 @@ export const Test = () => {
     const [showSymbols, setShowSymbols] = useState(false);
     const [objectGrouped, setObjectGrouped] = useState(25);
     const [arrayGrouped, setArrayGrouped] = useState(10);
+    const [selectedThemeId, setSelectedThemeId] = useState(themeOptions[0].id);
 
     // Create resolver overrides when enabled
     const resolverOverrides = useMemo<Map<any, ResolverFn> | undefined>(() => {
@@ -278,6 +294,14 @@ export const Test = () => {
         }
         return selectedData.label;
     }, [isCustomMode, parseError, selectedData]);
+
+    const selectedTheme = useMemo(() => {
+        return themeOptions.find((option) => option.id === selectedThemeId)?.theme ?? themeDefault;
+    }, [selectedThemeId]);
+
+    const selectedThemeLabel = useMemo(() => {
+        return themeOptions.find((option) => option.id === selectedThemeId)?.label ?? 'Default';
+    }, [selectedThemeId]);
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
@@ -513,6 +537,29 @@ export const Test = () => {
                                 </label>
                             </div>
                         </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                                🖌️ Theme:
+                            </label>
+                            <select
+                                value={selectedThemeId}
+                                onChange={(event) => setSelectedThemeId(event.target.value)}
+                                style={{
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    minWidth: '180px',
+                                }}
+                            >
+                                {themeOptions.map((theme) => (
+                                    <option key={theme.id} value={theme.id}>
+                                        {theme.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div style={{ minWidth: '300px' }}>
@@ -579,6 +626,7 @@ export const Test = () => {
                         Non-enumerable: {showNonEnumerable ? 'ON' : 'OFF'} |
                         Symbols: {showSymbols ? 'ON' : 'OFF'} |
                         Change Highlighting: {enableHighlighting ? 'ON' : 'OFF'} |
+                        Theme: {selectedThemeLabel} |
                         Grouping: Objects({objectGrouped}) Arrays({arrayGrouped})
                     </p>
                 </div>
@@ -610,7 +658,7 @@ export const Test = () => {
                             showLineNumbers={true}
                             lineHeight={14}
                             includeSymbols={showSymbols}
-                            style={themeDefault}
+                            style={selectedTheme}
                         />
                     </div>
                 </div>

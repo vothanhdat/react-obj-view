@@ -301,6 +301,36 @@ return (
 - Adjust height by setting `.big-objview-root { height: 100%; }` and wrapping the component in a container with your desired size.
 - Modify keyword colours via `.big-objview-root .value.type-boolean`, `.type-null`, etc.
 
+### Applying Theme Presets
+
+The library ships with ready-to-use palettes. Import a preset and hand it to the `style` prop to swap colours instantly:
+
+```tsx
+import { useMemo } from 'react';
+import { ObjectView } from 'react-obj-view';
+import { themeDracula } from 'react-obj-view/themes';
+
+const getter = useMemo(() => () => data, [data]);
+
+<ObjectView valueGetter={getter} style={themeDracula} />;
+```
+
+Need layout tweaks too? Spread the preset before applying your overrides:
+
+```tsx
+<ObjectView
+  valueGetter={getter}
+  style={{
+    ...themeDracula,
+    height: 420,
+  }}
+/>
+```
+
+Presets are just `CSSProperties`, so you can reuse the same object across multiple viewers or feed it into your design system tokens.
+
+> `getter` is the memoised `valueGetter` used throughout your component examples.
+
 ## Troubleshooting
 
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.

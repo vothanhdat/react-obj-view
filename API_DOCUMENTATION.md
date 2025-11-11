@@ -142,6 +142,46 @@ Component styles live in [`src/Components/style.css`](src/Components/style.css).
 
 Override these selectors or CSS variables to integrate the viewer with your design system.
 
+## Theme Presets
+
+The library ships with curated colour presets that target popular editor palettes. Import the one that best matches your application and pass the variables to your stylesheet or CSS-in-JS solution:
+
+```tsx
+import { ObjectView } from 'react-obj-view';
+import { themeMonokai } from 'react-obj-view/themes';
+
+<ObjectView valueGetter={getter} style={themeMonokai} />;
+```
+
+Because presets are plain `CSSProperties` objects, you can spread them into your own style object:
+
+```tsx
+<ObjectView
+  valueGetter={getter}
+  style={{
+    ...themeMonokai,
+    height: 360,
+  }}
+/>
+```
+
+> `getter` represents the memoised `valueGetter` function you already provide to the component.
+
+Available presets:
+
+| Preset | Palette | Notes |
+| --- | --- | --- |
+| `themeMonokai` | Monokai | High-contrast syntax colours on a deep charcoal background. |
+| `themeDracula` | Dracula | Cool-toned purples and teals with neon highlights. |
+| `themeOneDark` | One Dark | Atom-inspired blues and oranges with a slate background. |
+| `themeMaterialDarker` | Material Darker | Material palette with vivid accents on a dark canvas. |
+| `themeGitHubLight` | GitHub Light | Neutral GitHub-styled greys with accessible accent colours. |
+| `themeSolarizedLight` | Solarized Light | Pastel teal/orange scheme with soft beige background. |
+| `themeQuietLight` | Quiet Light | VS Code's calm light theme with muted tones. |
+| `themeSepia` | Sepia | Warm sepia hues suitable for reader-friendly layouts. |
+
+Each preset exposes the same set of CSS custom properties as `themeDefault`, so you can start with a preset and selectively override individual tokens as needed.
+
 ## Behaviour Notes
 
 - **Expansion State** – `useFlattenObjectView` stores expansion toggles keyed by the node's path. Clicking a node toggles expansion via `toggleChildExpand`.

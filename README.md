@@ -65,6 +65,36 @@ Wrap the getter in `useMemo`/`useCallback` when the underlying value changes so 
 | `lineHeight` | `number` | `14` | Row height in pixels, used by the virtual scroller. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 
+## 🎨 Theme Presets
+
+React Object View exposes curated palettes that map directly to the component's CSS variables. Import a preset and pass it to the `style` prop to change colours without touching global styles:
+
+```tsx
+import { useMemo } from "react";
+import { ObjectView } from "react-obj-view";
+import { themeMonokai } from "react-obj-view/themes";
+
+const getter = useMemo(() => () => data, [data]);
+
+<ObjectView valueGetter={getter} style={themeMonokai} />;
+```
+
+You can also merge presets with your own overrides when you need layout tweaks:
+
+```tsx
+<ObjectView
+  valueGetter={getter}
+  style={{
+    ...themeMonokai,
+    height: 480,
+  }}
+/>
+```
+
+Each preset exports the same tokens as `themeDefault`, so mixing and matching is as simple as spreading the colours you need.
+
+> `getter` refers to the memoised `valueGetter` used elsewhere in your component.
+
 ## 🤔 Why `valueGetter`?
 
 - **Always fresh data** – The getter runs during render, so derived values, proxies, or lazy loaders stay accurate.
