@@ -10,7 +10,7 @@ export const useChangeFlashClasses = ({ value, enable = true, flashClassname = '
         if (ref.current) {
             const p = performance.now();
 
-            let isDiff = value != refValue.current
+            let isDiff = value !== refValue.current
 
             if (value instanceof GroupedProxy && refValue.current instanceof GroupedProxy) {
                 // console.time("compare")
