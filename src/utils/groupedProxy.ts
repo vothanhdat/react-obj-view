@@ -86,7 +86,9 @@ export const objectGroupProxyFactory = () => {
 
     return (_value: any, _maxSize: number) => {
 
-        if (value != _value) { getChilds.clear() }
+        if (value != _value || _maxSize != maxSize) {
+            getChilds.clear()
+        }
 
         value = _value;
         maxSize = _maxSize;

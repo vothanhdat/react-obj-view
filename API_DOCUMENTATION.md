@@ -31,6 +31,8 @@ export type ResolverFn<T = any> = (
   cb: ResolverFnCb,
   next: (value: unknown, cb?: ResolverFnCb) => void,
   isPreview: boolean,
+  config: WalkingConfig,
+  stableRef: unknown,
 ) => void;
 
 export type ObjectViewProps = {
@@ -78,6 +80,8 @@ Resolvers control how entries are produced for a specific constructor. Each reso
 2. `cb` – call with `key`, `value`, and `enumerable` to push entries. Return `true` to stop iteration early.
 3. `next` – continue traversal of another value (usually the original instance). Optionally pass a custom callback to post-process entries.
 4. `isPreview` – `true` when the resolver is asked for a collapsed preview.
+5. `config` – the `WalkingConfig` currently in use (respect flags such as `nonEnumerable`, `symbol`, grouping, etc.).
+6. `stableRef` – an opaque object that stays stable for a given node/state. Use it as a cache key when you need to reuse expensive computations across renders without leaking memory.
 
 ### Built-in Resolvers
 
@@ -98,7 +102,7 @@ class User {
 }
 
 const resolver = new Map([
-  [User, (user, cb, next, isPreview) => {
+  [User, (user, cb, next, isPreview, config, stableRef) => {
     if (isPreview) {
       cb('summary', `${user.name} • ${user.email}`, true);
       return;

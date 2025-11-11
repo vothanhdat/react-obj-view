@@ -66,7 +66,7 @@ export function useFlattenObjectView(
             const result = refWalk.current!.walking(
                 value,
                 config,
-                "ROOT",
+                name ?? "ROOT",
                 true
             );
 

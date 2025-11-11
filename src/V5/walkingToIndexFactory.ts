@@ -112,7 +112,8 @@ const getEntriesCbBinded = (
 const getUpdateToken = (config: WalkingConfig) => {
     return (
         (config.nonEnumerable ? 0 : 1)
-        | (getObjectUniqueId(config.resolver) << 1)
+        | (config.symbol ? 0 : 2)
+        | (getObjectUniqueId(config.resolver) << 2)
     )
 }
 
