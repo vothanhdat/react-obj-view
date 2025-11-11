@@ -83,12 +83,13 @@ const getEntriesCbBinded = (
     //@ts-ignore
     value, config, walking, updateToken, depth, getChild,
     //@ts-ignore
-    count, maxDepth, childCanExpand, cumulate, keys,
+    count, maxDepth, childCanExpand, cumulate, keys, state,
 ) => {
 
 
     getEntriesCb(
         value, config, false,
+        state,
         (key, value, enumerable) => {
             const result = walking(
                 value, config, key, enumerable,
@@ -193,7 +194,7 @@ export const walkingToIndexFactory = () => {
                 let r = getEntriesCbBinded(
                     value, config, walkingInternal, updateToken, depth, getChild,
                     count, maxDepth, childCanExpand,
-                    cumulate, keys,
+                    cumulate, keys, state,
                 );
 
                 count = r.count

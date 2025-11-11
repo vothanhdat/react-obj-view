@@ -5,7 +5,9 @@ export type ResolverFn<T = any> = (
     value: T,
     cb: ResolverFnCb,
     next: (value: unknown, cb?: ResolverFnCb) => void,
-    isPreview: boolean
+    isPreview: boolean,
+    config: WalkingConfig,
+    stableRef: any,
 ) => void
 
 export type Entry = {

@@ -28,6 +28,7 @@ export const RenderPreview: React.FC<{
                     symbol: options.includeSymbols,
                 },
                 true,
+                {},
                 (key, value, enumerable) => {
                     list.push({ key, value, enumerable });
                     return list.length > 5;

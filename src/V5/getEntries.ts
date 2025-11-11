@@ -71,6 +71,7 @@ export const getEntriesCb = (
     value: unknown,
     config: WalkingConfig,
     isPreview: boolean,
+    stableRef: unknown,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 ) => {
 
@@ -92,6 +93,8 @@ export const getEntriesCb = (
             cb,
             (value, callback = cb) => getEntriesCbOriginal(value, config, callback),
             isPreview,
+            config,
+            stableRef,
         )
     } else {
         getEntriesCbOriginal(value, config, cb)
