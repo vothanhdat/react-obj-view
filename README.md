@@ -1,24 +1,27 @@
-# React Object View
+# react-obj-view
 
-React Object View is a TypeScript-first component for exploring deeply nested JavaScript data structures. It combines a familiar inspector UI with virtual scrolling so large payloads stay responsive.
+> High-performance React component for inspecting deeply nested objects with virtualization, grouping, and deterministic value getters.
 
-## 🌟 Feature Highlights
+[![npm](https://img.shields.io/npm/v/react-obj-view.svg)](https://www.npmjs.com/package/react-obj-view)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/react-obj-view)](https://bundlephobia.com/package/react-obj-view)
 
-- **Virtualized tree view** – Only the visible rows are rendered, so even 100k+ entries stay smooth.
-- **Resolver-driven rendering** – Built-in handlers cover promises, maps, sets, errors, dates, regexes, iterables, and circular references.
-- **Preview summaries** – Collapsed nodes include inline previews for quick scanning.
-- **Change awareness** – Optional flashing makes updates stand out during debugging.
-- **Styling hooks** – Override CSS variables or add class names to match your design system.
+React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and ships a TypeScript-first API with ESM + UMD bundles.
 
-## 📋 Requirements
+---
 
-- **Node.js**: 22.x or 24.x
-- **Yarn**: 4.x (recommended) or npm
-- **React**: 19.x
+## ✨ Features
 
-## 🚀 Quickstart
+- **Virtualized tree view** – only visible rows render, so 100k+ nodes stay smooth.
+- **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, and custom classes.
+- **Lazy `valueGetter`** – keeps data fresh without forcing heavy re-renders.
+- **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
+- **Change awareness** – optional flashing highlights updated values.
+- **Styling hooks** – CSS variables + theme presets plus `className`/`style` escape hatches.
+- **TypeScript-native** – published `.d.ts` and React 19 JSX runtime support.
 
-### 1. Install
+---
+
+## 📦 Install
 
 ```bash
 npm install react-obj-view
@@ -26,7 +29,9 @@ npm install react-obj-view
 yarn add react-obj-view
 ```
 
-### 2. Render your data
+---
+
+## ⚡ Quickstart
 
 ```tsx
 import { ObjectView } from "react-obj-view";
@@ -35,7 +40,7 @@ import "react-obj-view/dist/react-obj-view.css";
 const user = {
   name: "Ada",
   stack: ["TypeScript", "React"],
-  meta: new Map([["lastLogin", new Date()]])
+  meta: new Map([["lastLogin", new Date()]]),
 };
 
 export function DebugPanel() {
@@ -49,103 +54,178 @@ export function DebugPanel() {
 }
 ```
 
-### 3. Keep getters stable
-
-Wrap the getter in `useMemo`/`useCallback` when the underlying value changes so React Object View only re-renders when necessary.
-
-## ⚙️ Options & Configuration
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `valueGetter` | `() => unknown` | **required** | Supplies the data lazily; keeps values current and memoizable. |
-| `name` | `string` | `undefined` | Optional label for the root node. |
-| `expandLevel` | `number \| boolean` | `false` | Controls initial expansion depth; `true` expands everything. |
-| `objectGroupSize` | `number` | `0` | Groups large objects into virtual buckets once they exceed this many keys. **Objects must be fully enumerated to know their size, so only enable this when you really need grouped previews.** |
-| `arrayGroupSize` | `number` | `0` | Virtualizes arrays by chunking when they exceed this length. |
-| `resolver` | `Map<any, ResolverFn>` | `undefined` | Override or extend renderers for custom classes. |
-| `highlightUpdate` | `boolean` | `false` | Enables flash-highlighting when values change between renders. |
-| `preview` | `boolean` | `true` | Toggles inline value previews on collapsed rows. |
-| `nonEnumerable` | `boolean` | `false` | Includes non-enumerable properties during traversal. |
-| `includeSymbols` | `boolean` | `false` | Includes symbol-keyed properties while enumerating objects and previews. |
-| `showLineNumbers` | `boolean` | `false` | Displays a gutter with zero-based line numbers. |
-| `lineHeight` | `number` | `14` | Row height in pixels used by the virtual scroller. **Keep this value in sync with your CSS (fonts, padding, custom themes)**—if the actual row height differs, the virtualization math can drift and rows may overlap or leave gaps. |
-| `style` | `React.CSSProperties` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
-
-## 🎨 Theme Presets
-
-React Object View exposes curated palettes that map directly to the component's CSS variables. Import a preset and pass it to the `style` prop to change colours without touching global styles:
+### Keep the getter stable
 
 ```tsx
-import { useMemo } from "react";
+const valueGetter = useCallback(() => user, [user]);
+<ObjectView valueGetter={valueGetter} />;
+```
+
+Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks when the underlying value actually changes.
+
+---
+
+## ⚙️ Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `valueGetter` | `() => unknown` | **required** | Lazily supplies the data that should be rendered. |
+| `name` | `string` | `undefined` | Optional root label shown before the first colon. |
+| `expandLevel` | `number \| boolean` | `false` | Depth of initial expansion; `true` expands everything (up to depth 20). |
+| `objectGroupSize` | `number` | `0` | Enable grouping for objects when they exceed this many keys. **Objects must be fully enumerated to detect size, so only enable this when you need grouped previews and can afford the enumeration cost.** |
+| `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. |
+| `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. |
+| `highlightUpdate` | `boolean` | `false` | Flash updated values via `useChangeFlashClasses`. |
+| `preview` | `boolean` | `true` | Show inline previews (`Array(5)`, `'abc…'`) on collapsed rows. |
+| `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties during traversal. |
+| `includeSymbols` | `boolean` | `false` | Include symbol keys when enumerating or previewing objects. |
+| `showLineNumbers` | `boolean` | `false` | Display a gutter with zero-based line numbers. |
+| `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
+| `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
+| `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
+
+👉 Need more detail? Check the [API Documentation](./API_DOCUMENTATION.md).
+
+---
+
+## 🎨 Styling & Themes
+
+The package exports several ready-made palettes:
+
+```tsx
 import { ObjectView } from "react-obj-view";
 import { themeMonokai } from "react-obj-view/themes";
-
-const getter = useMemo(() => () => data, [data]);
 
 <ObjectView valueGetter={getter} style={themeMonokai} />;
 ```
 
-You can also merge presets with your own overrides when you need layout tweaks:
+Prefer CSS? Override the variables directly:
+
+```css
+.big-objview-root {
+  --bigobjview-color: #e5e9f0;
+  --bigobjview-bg-color: #1e1e1e;
+  --bigobjview-type-string-color: #c3e88d;
+  --bigobjview-type-number-color: #f78c6c;
+}
+```
+
+```tsx
+<ObjectView valueGetter={getter} className="object-view" />
+```
+
+> **Line-height tip:** If your theme tweaks fonts or padding, expose a shared CSS variable (e.g. `--rov-row-height`) and set both `.row { height: var(--rov-row-height) }` and the `lineHeight` prop from the same value so scrolling math stays correct.
+
+---
+
+## 🧩 Advanced Usage
+
+### Custom resolvers
+
+```tsx
+class ApiEndpoint {
+  constructor(
+    public method: string,
+    public url: string,
+    public status: number,
+    public responseTime: number,
+  ) {}
+}
+
+const resolver = new Map([
+  [
+    ApiEndpoint,
+    (endpoint, cb, next, isPreview) => {
+      if (isPreview) {
+        cb('summary', `${endpoint.method} ${endpoint.url}`, true);
+        cb('status', endpoint.status, true);
+        return;
+      }
+
+      cb('responseTime', `${endpoint.responseTime}ms`, true);
+      next(endpoint);
+    },
+  ],
+]);
+
+<ObjectView valueGetter={() => data} resolver={resolver} />;
+```
+
+### Grouping massive datasets
 
 ```tsx
 <ObjectView
-  valueGetter={getter}
-  style={{
-    ...themeMonokai,
-    height: 480,
-  }}
+  valueGetter={() => largeObject}
+  objectGroupSize={250}
+  arrayGroupSize={500}
 />
 ```
 
-Each preset exports the same tokens as `themeDefault`, so mixing and matching is as simple as spreading the colours you need.
+- Arrays get chunked up immediately because their length is known.
+- Objects must be enumerated to count keys. Use grouping when the trade-off (initial enumeration vs. quicker navigation) makes sense for the payload.
 
-> `getter` refers to the memoised `valueGetter` used elsewhere in your component.
+### Virtual scrolling reminders
 
-## 🤔 Why `valueGetter`?
+- Always pass the correct `lineHeight` (or follow the CSS-variable approach) when changing typography.
+- The component sets its container height to `lineHeight * size`. If you clamp the container via CSS, ensure the scroll parent can actually scroll; otherwise virtualization can’t measure the viewport.
 
-- **Always fresh data** – The getter runs during render, so derived values, proxies, or lazy loaders stay accurate.
-- **Explicit memoization** – You control when the getter identity changes, which keeps the virtual tree in sync without redundant work.
+---
 
-## 📊 Comparison with other object inspectors
+## 🧪 Testing & Tooling
 
-| Library | Bundle size* | Render performance | Virtualization | Data type coverage | Customization |
-| --- | --- | --- | --- | --- | --- |
-| **React Object View** | ES module: 33.14 kB (10.20 kB gzip) | Virtualized list keeps frame times stable on very large collections. | ✅ Built-in virtual scroller (no external dependency). | Promises, iterables, maps, sets, errors, dates, regexes, circular refs. | CSS variables, class hooks, resolver overrides. |
-| `react-json-view` | Medium (ships pre-styled UI) | Re-renders the whole tree; can stutter on very large payloads. | ❌ Renders everything. | JSON-compatible structures only. | Inline style overrides and a handful of callbacks. |
-| `@devtools-ds/object-tree` | Lean core (single-digit kB gz) | Fast for small trees; relies on manual windowing for huge data. | ⚠️ None by default. | Focused on plain objects, arrays, symbols. | Theme tokens; limited renderer extension. |
-
-\*Bundle size numbers refer to minified + gzip builds. React Object View figures are taken from the default Vite build output in this repository; third-party numbers reference published package metadata and may vary per version.
-
-## 🧪 Testing
-
-React Object View includes a comprehensive test suite with 114+ tests covering:
-- Utility functions and resolvers
-- React component rendering
-- Edge cases and complex scenarios
-- Performance with large datasets
-- Circular references and special data types
-
-### Running Tests
+The repository ships a large Vitest suite (utilities, walkers, resolvers, components, integration scenarios).
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with UI
-npm run test:ui
-
-# Generate coverage report
+npm test           # run everything once
+npm run test:watch # watch mode
+npm run test:ui    # launch Vitest UI
 npm run test:coverage
 ```
 
-For detailed testing information, see the [Testing Guide](./TESTING.md).
+See [TESTING.md](./TESTING.md) for coverage numbers, structure, and tips.
 
-## 📚 Additional resources
+---
 
-- [Usage Guide](./USAGE_GUIDE.md) – End-to-end patterns, resolver recipes, and styling guidance.
-- [API Documentation](./API_DOCUMENTATION.md) – Deep dive into hooks and resolver authoring.
-- [Testing Guide](./TESTING.md) – Comprehensive testing documentation and best practices.
-- [Live demo](https://vothanhdat.github.io/react-obj-view/) – Interactively explore grouping, previews, and change flash states.
+## 🚀 Use Cases
+
+- **Debug panels** – Inspect Redux/Context refs without spamming console logs.
+- **API/LLM explorers** – Visualize nested JSON or streaming responses with circular references.
+- **State machines & devtools** – Pair with hot reloaders or feature flags to watch state change in real time.
+- **Data-heavy dashboards** – Embed next to chart/table widgets so analysts can drill into raw payloads.
+
+---
+
+## 📊 Performance Snapshot
+
+| Library | Scenario | Mean time* | Command |
+|---------|----------|------------|---------|
+| **react-obj-view** | Flatten ~100k-node payload (see `bench/perf.bench.ts`) | **28.1 ms** (35.6 ops/s) | `npx vitest bench bench/perf.bench.ts` |
+
+\*Measured on macOS (Apple M3 Max, Node 22.11, Vitest 4.0.8). The benchmark instantiates a fresh `walkingToIndexFactory`, generates 10k user records (~100k nodes total), and walks the tree per sample. Adjust `bench/perf.bench.ts` to match your datasets if you need environment-specific numbers.
+
+> Third-party libraries aren’t benchmarked here; run their official examples under the same conditions for apples-to-apples comparisons.
+
+---
+
+## 📚 Resources
+
+- [Usage Guide](./USAGE_GUIDE.md) – end-to-end patterns, resolver recipes, styling guidance.
+- [API Documentation](./API_DOCUMENTATION.md) – deeper dive into props, hooks, and resolver authoring.
+- [Live demo](https://vothanhdat.github.io/react-obj-view/) – try grouping, previews, and change flashes in the browser.
+
+---
+
+## 🧰 Local Development
+
+```bash
+git clone https://github.com/vothanhdat/react-obj-view
+cd react-obj-view
+yarn install
+yarn dev
+```
+
+---
+
+## 📜 License
+
+MIT © [Vo Thanh Dat](https://github.com/vothanhdat)
