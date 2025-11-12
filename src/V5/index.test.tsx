@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ObjectView } from '../index'
 
 describe('ObjectView component', () => {
@@ -108,6 +109,81 @@ describe('ObjectView component', () => {
         <ObjectView valueGetter={() => obj} name="data" expandLevel={false} />
       )
       expect(container.querySelector('.big-objview-root')).toBeTruthy()
+    })
+  })
+
+  describe('rendered content', () => {
+    it('renders property labels and primitive values when expanded', () => {
+      const data = {
+        user: {
+          name: 'Ada',
+          active: true,
+        },
+        stats: {
+          visits: 3,
+          tags: ['react'],
+        },
+      }
+
+      render(
+        <ObjectView
+          valueGetter={() => data}
+          name="details"
+          expandLevel={2}
+        />
+      )
+
+      expect(screen.getByText('user')).toBeVisible()
+      expect(screen.getByText('name')).toBeVisible()
+      expect(screen.getByText('active')).toBeVisible()
+      expect(screen.getByText('stats')).toBeVisible()
+      expect(screen.getByText('visits')).toBeVisible()
+      expect(screen.getByText('tags')).toBeVisible()
+
+      const expectRowValue = (label: string, valueText: string) => {
+        const row = screen.getByText(label).closest('.node-default')
+        expect(row, `Row for ${label} should exist`).toBeTruthy()
+        expect(row?.textContent).toContain(valueText)
+      }
+
+      expectRowValue('name', '"Ada"')
+      expectRowValue('active', 'true')
+      expectRowValue('visits', '3')
+      expectRowValue('tags', "['react']")
+    })
+
+    it('expands nested nodes on click to reveal deeper values', async () => {
+      const data = {
+        user: {
+          profile: {
+            email: 'ada@example.com',
+          },
+        },
+      }
+
+      render(
+        <ObjectView
+          valueGetter={() => data}
+          name="interactive"
+          expandLevel={0}
+        />
+      )
+
+      const user = userEvent.setup()
+
+      const userLabel = screen.getByText('user')
+      const userRow = userLabel.closest('.node-default')
+      expect(userRow).toBeTruthy()
+      await user.click(userRow as HTMLElement)
+
+      const profileLabel = await screen.findByText('profile')
+      const profileRow = profileLabel.closest('.node-default')
+      expect(profileRow).toBeTruthy()
+      await user.click(profileRow as HTMLElement)
+
+      expect(
+        await screen.findByText("'ada@example.com'")
+      ).toBeVisible()
     })
   })
 

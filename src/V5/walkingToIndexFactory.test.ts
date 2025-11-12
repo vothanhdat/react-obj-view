@@ -2,6 +2,57 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { walkingToIndexFactory, NodeResult, objectHasChild } from './walkingToIndexFactory'
 import { WalkingConfig } from './types'
 
+const summarizeValue = (value: unknown) => {
+  if (value === null) return 'null'
+  if (Array.isArray(value)) return `Array(${value.length})`
+  if (typeof value === 'object') {
+    const ctor = value?.constructor?.name
+    if (ctor && ctor !== 'Object') {
+      return ctor
+    }
+    return `Object(${Object.keys(value as Record<string, unknown>).length})`
+  }
+  return `${typeof value}:${String(value)}`
+}
+
+const collectNodeSummaries = (
+  factory: ReturnType<typeof walkingToIndexFactory>,
+  config: WalkingConfig,
+  total: number,
+  limit = 12,
+) => {
+  const summaries: Array<Record<string, unknown>> = []
+  for (let i = 0; i < Math.min(total, limit); i++) {
+    const node = factory.getNode(i, config)
+    const data = node.getData()
+    summaries.push({
+      path: data.path,
+      depth: data.depth,
+      enumerable: data.enumerable,
+      expanded: data.expanded,
+      childCanExpand: data.childCanExpand,
+      valueSummary: summarizeValue(data.value),
+      count: data.count,
+    })
+  }
+  return summaries
+}
+
+const findNodeByPath = (
+  factory: ReturnType<typeof walkingToIndexFactory>,
+  config: WalkingConfig,
+  total: number,
+  targetPath: string,
+) => {
+  for (let i = 0; i < total; i++) {
+    const node = factory.getNode(i, config)
+    if (node.path === targetPath) {
+      return node
+    }
+  }
+  throw new Error(`Node with path "${targetPath}" not found`)
+}
+
 describe('walkingToIndexFactory', () => {
   let factory: ReturnType<typeof walkingToIndexFactory>
   let config: WalkingConfig
@@ -176,6 +227,275 @@ describe('walkingToIndexFactory', () => {
       
       expect(result.value).toBe(arr)
       expect(result.count).toBeGreaterThan(1)
+    })
+  })
+
+  describe('complex structures and incremental walks', () => {
+    it('should flatten complex trees deterministically', () => {
+      const complex = {
+        profile: {
+          name: 'Ada',
+          contact: {
+            email: 'ada@example.com',
+            active: true,
+          },
+          tags: ['systems', 'ml'],
+        },
+        metrics: {
+          releases: [2023, 2024],
+          nested: {
+            success: { week: [1, 2, 3] },
+            errors: [
+              { code: 'E1' },
+              { code: 'E2', meta: { severity: 'warn' } },
+            ],
+          },
+        },
+        tasks: [
+          { id: 1, title: 'design', done: false },
+          { id: 2, title: 'ship', done: true, steps: ['build', 'review'] },
+        ],
+      }
+
+      const deepConfig = { ...config, expandDepth: 5 }
+      const result = factory.walking(complex, deepConfig, 'root', true)
+      const summaries = collectNodeSummaries(factory, deepConfig, result.count, 20)
+
+      expect(summaries).toMatchInlineSnapshot(`
+        [
+          {
+            "childCanExpand": true,
+            "count": 37,
+            "depth": 1,
+            "enumerable": true,
+            "expanded": true,
+            "path": "",
+            "valueSummary": "Object(3)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 8,
+            "depth": 2,
+            "enumerable": true,
+            "expanded": true,
+            "path": "profile",
+            "valueSummary": "Object(3)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 3,
+            "enumerable": true,
+            "expanded": false,
+            "path": "profile/name",
+            "valueSummary": "string:Ada",
+          },
+          {
+            "childCanExpand": false,
+            "count": 3,
+            "depth": 3,
+            "enumerable": true,
+            "expanded": true,
+            "path": "profile/contact",
+            "valueSummary": "Object(2)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "profile/contact/email",
+            "valueSummary": "string:ada@example.com",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "profile/contact/active",
+            "valueSummary": "boolean:true",
+          },
+          {
+            "childCanExpand": false,
+            "count": 3,
+            "depth": 3,
+            "enumerable": true,
+            "expanded": true,
+            "path": "profile/tags",
+            "valueSummary": "Array(2)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "profile/tags/0",
+            "valueSummary": "string:systems",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "profile/tags/1",
+            "valueSummary": "string:ml",
+          },
+          {
+            "childCanExpand": true,
+            "count": 16,
+            "depth": 2,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics",
+            "valueSummary": "Object(2)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 3,
+            "depth": 3,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics/releases",
+            "valueSummary": "Array(2)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "metrics/releases/0",
+            "valueSummary": "number:2023",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": false,
+            "path": "metrics/releases/1",
+            "valueSummary": "number:2024",
+          },
+          {
+            "childCanExpand": true,
+            "count": 12,
+            "depth": 3,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics/nested",
+            "valueSummary": "Object(2)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 5,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics/nested/success",
+            "valueSummary": "Object(1)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 4,
+            "depth": 5,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics/nested/success/week",
+            "valueSummary": "Array(3)",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 6,
+            "enumerable": true,
+            "expanded": false,
+            "path": "metrics/nested/success/week/0",
+            "valueSummary": "number:1",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 6,
+            "enumerable": true,
+            "expanded": false,
+            "path": "metrics/nested/success/week/1",
+            "valueSummary": "number:2",
+          },
+          {
+            "childCanExpand": false,
+            "count": 1,
+            "depth": 6,
+            "enumerable": true,
+            "expanded": false,
+            "path": "metrics/nested/success/week/2",
+            "valueSummary": "number:3",
+          },
+          {
+            "childCanExpand": true,
+            "count": 6,
+            "depth": 4,
+            "enumerable": true,
+            "expanded": true,
+            "path": "metrics/nested/errors",
+            "valueSummary": "Array(2)",
+          },
+        ]
+      `)
+    })
+
+    it('should keep update stamps for untouched branches during incremental walks', () => {
+      const deepConfig = { ...config, expandDepth: 5 }
+      const makePayload = (count: number) => ({
+        users: [
+          { id: 1, name: 'Ada', stats: { count, city: 'London' } },
+          { id: 2, name: 'Linus', stats: { count: 99, city: 'Helsinki' } },
+        ],
+        meta: { build: count, stable: true },
+      })
+
+      const first = makePayload(1)
+      const firstResult = factory.walking(first, deepConfig, 'tree', true)
+
+      const changedBefore = findNodeByPath(
+        factory,
+        deepConfig,
+        firstResult.count,
+        'users/0/stats/count',
+      )
+      const stableBefore = findNodeByPath(
+        factory,
+        deepConfig,
+        firstResult.count,
+        'users/1/stats/count',
+      )
+      const changedBeforeStamp = changedBefore.state.updateStamp
+      const stableBeforeStamp = stableBefore.state.updateStamp
+
+      const second = makePayload(5)
+      const secondResult = factory.walking(second, deepConfig, 'tree', true)
+
+      const changedAfter = findNodeByPath(
+        factory,
+        deepConfig,
+        secondResult.count,
+        'users/0/stats/count',
+      )
+      const stableAfter = findNodeByPath(
+        factory,
+        deepConfig,
+        secondResult.count,
+        'users/1/stats/count',
+      )
+
+      expect(changedAfter.state.value).toBe(5)
+      expect(changedAfter.state.updateStamp).toBeGreaterThan(changedBeforeStamp)
+
+      expect(stableAfter.state.value).toBe(99)
+      expect(stableAfter.state.updateStamp).toBe(stableBeforeStamp)
     })
   })
 
