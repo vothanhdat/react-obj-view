@@ -12,10 +12,10 @@ import {
   themeSepia,
 } from './themes'
 
-const packageVersion = '1.0.2'
+const packageVersion = '1.0.5'
 
 class User {
-  constructor(public name: string, public email: string, public role: string = 'user') {}
+  constructor(public name: string, public email: string, public role: string = 'user') { }
 }
 
 class APIEndpoint {
@@ -25,7 +25,7 @@ class APIEndpoint {
     public status: number,
     public responseTime: number,
     public data?: any,
-  ) {}
+  ) { }
 }
 
 const userResolver: ResolverFn<User> = (user, cb, next, isPreview) => {
@@ -46,7 +46,7 @@ const apiEndpointResolver: ResolverFn<APIEndpoint> = (endpoint, cb, next, isPrev
     cb('request', `${endpoint.method} ${endpoint.url}`, true)
     cb('status', endpoint.status, true)
   } else {
-    ;(['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]).forEach((key) => {
+    ; (['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]).forEach((key) => {
       const value = endpoint[key]
       if (key === 'responseTime' && value) {
         cb('responseTimeLabel', `${endpoint.responseTime}ms`, true)
@@ -372,62 +372,38 @@ export const Test = () => {
                 <h2>Display</h2>
                 <span>Shape the visual experience.</span>
               </div>
-              <div className="pill-grid" role="group" aria-label="Expand level">
-                {expandOptions.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    className={`control-button ${expandLevel === option.value ? 'is-active' : ''}`}
-                    onClick={() => setExpandLevel(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              <div className="theme-grid" role="group" aria-label="Theme selection">
-                {themeOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={`control-button ${selectedThemeId === option.id ? 'is-active' : ''}`}
-                    onClick={() => setSelectedThemeId(option.id)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              {enableGrouping && <div className="slider-field">
-                <label htmlFor="object-group-range">Object grouping</label>
-                <div>
-                  <input
-                    id="object-group-range"
-                    type="range"
-                    min={5}
-                    max={100}
-                    step={5}
-                    value={objectGrouped}
-                    onChange={(event) => setObjectGrouped(Number(event.target.value))}
-                    disabled={!enableGrouping}
-                  />
-                  <span>{enableGrouping ? objectGrouped : 'Off'}</span>
-                </div>
-              </div>}
-              {enableGrouping && <div className="slider-field">
-                <label htmlFor="array-group-range">Array grouping</label>
-                <div>
-                  <input
-                    id="array-group-range"
-                    type="range"
-                    min={5}
-                    max={50}
-                    step={5}
-                    value={arrayGrouped}
-                    onChange={(event) => setArrayGrouped(Number(event.target.value))}
-                    disabled={!enableGrouping}
-                  />
-                  <span>{enableGrouping ? arrayGrouped : 'Off'}</span>
-                </div>
-              </div>}
+
+              <label className="field" aria-label="Expand level">
+                <span>Choose collapse level</span>
+                <select
+                  value={String(expandLevel)}
+                  onChange={(ev) => setExpandLevel(isFinite(Number(ev.target.value))
+                    ? Number(ev.target.value)
+                    : Boolean(ev.target.value == "true"))
+                  }
+                >
+                  {expandOptions.map((option) => (
+                    <option key={String(option.value)} value={String(option.value)}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="field" aria-label="Theme selection">
+                <span>Choose color theme</span>
+                <select
+                  value={selectedThemeId}
+                  onChange={(ev) => setSelectedThemeId(ev.target.value)}
+                >
+                  {themeOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
             </section>
 
             <section className="panel-section">
@@ -477,6 +453,40 @@ export const Test = () => {
                   </button>
                 ))}
               </div>
+
+
+              {enableGrouping && <div className="slider-field">
+                <label htmlFor="object-group-range">Object grouping</label>
+                <div>
+                  <input
+                    id="object-group-range"
+                    type="range"
+                    min={5}
+                    max={100}
+                    step={5}
+                    value={objectGrouped}
+                    onChange={(event) => setObjectGrouped(Number(event.target.value))}
+                    disabled={!enableGrouping}
+                  />
+                  <span>{enableGrouping ? objectGrouped : 'Off'}</span>
+                </div>
+              </div>}
+              {enableGrouping && <div className="slider-field">
+                <label htmlFor="array-group-range">Array grouping</label>
+                <div>
+                  <input
+                    id="array-group-range"
+                    type="range"
+                    min={5}
+                    max={100}
+                    step={5}
+                    value={arrayGrouped}
+                    onChange={(event) => setArrayGrouped(Number(event.target.value))}
+                    disabled={!enableGrouping}
+                  />
+                  <span>{enableGrouping ? arrayGrouped : 'Off'}</span>
+                </div>
+              </div>}
             </section>
 
             <section className="panel-section compact">
