@@ -68,7 +68,7 @@ Wrap the getter in `useMemo`/`useCallback` when the underlying value changes so 
 | `nonEnumerable` | `boolean` | `false` | Includes non-enumerable properties during traversal. |
 | `includeSymbols` | `boolean` | `false` | Includes symbol-keyed properties while enumerating objects and previews. |
 | `showLineNumbers` | `boolean` | `false` | Displays a gutter with zero-based line numbers. |
-| `lineHeight` | `number` | `14` | Row height in pixels, used by the virtual scroller. |
+| `lineHeight` | `number` | `14` | Row height in pixels used by the virtual scroller. **Keep this value in sync with your CSS (fonts, padding, custom themes)**—if the actual row height differs, the virtualization math can drift and rows may overlap or leave gaps. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 
 ## 🎨 Theme Presets

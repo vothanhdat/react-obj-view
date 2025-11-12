@@ -69,7 +69,7 @@ export type ObjectViewProps = {
 | `includeSymbols` | `false` | Includes symbol-keyed properties during traversal and in previews. |
 | `showLineNumbers` | `false` | Renders a gutter with 0-based line numbers next to each row. |
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
-| `lineHeight` | `14` | Height, in pixels, of each rendered row. Adjust when you override fonts/sizes. |
+| `lineHeight` | `14` | Height, in pixels, of each rendered row. **Must reflect the real CSS height**—if your theme overrides fonts, padding, or `--bigobjview` variables, update this prop (or the corresponding CSS variable) so virtualization remains accurate. |
 | `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
 
 ## Resolver System

@@ -212,6 +212,8 @@ return (
 - `lineHeight` must match the actual row height for smooth virtual scrolling (bump it when you increase font sizes).
 - `className` and `style` target the root `.big-objview-root`, making it easy to scope custom theming without extra wrappers.
 
+> **Tip:** If your design system overrides fonts/padding via CSS, expose a shared variable (e.g. `--rov-row-height`) and drive both the CSS row height and the `lineHeight` prop from that value. When those drift apart the virtual canvas height stays wrong, which causes rows to overlap or leave gaps while scrolling.
+
 ### Resolver Overrides
 
 ```tsx
