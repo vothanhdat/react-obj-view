@@ -12,6 +12,7 @@ export default defineConfig({
     }),
     dts({
       include: ['src'],
+      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/test/**'],
     }),
     // analyzer({
     //   analyzerMode: "server",
