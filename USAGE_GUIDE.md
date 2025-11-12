@@ -170,6 +170,8 @@ const ConfigInspector = () => {
 };
 ```
 
+> **Object grouping trade-off:** Unlike arrays, objects don’t expose their size up front. To decide whether `objectGroupSize` should apply, React Object View must enumerate every key first. Leave this at `0` unless you truly need grouped previews for massive objects and you’re okay with the extra enumeration work.
+
 ## Feature Highlights
 
 ### Change Detection

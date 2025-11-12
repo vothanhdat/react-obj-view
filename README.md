@@ -60,7 +60,7 @@ Wrap the getter in `useMemo`/`useCallback` when the underlying value changes so 
 | `valueGetter` | `() => unknown` | **required** | Supplies the data lazily; keeps values current and memoizable. |
 | `name` | `string` | `undefined` | Optional label for the root node. |
 | `expandLevel` | `number \| boolean` | `false` | Controls initial expansion depth; `true` expands everything. |
-| `objectGroupSize` | `number` | `0` | Groups large objects into virtual buckets once they exceed this many keys. |
+| `objectGroupSize` | `number` | `0` | Groups large objects into virtual buckets once they exceed this many keys. **Objects must be fully enumerated to know their size, so only enable this when you really need grouped previews.** |
 | `arrayGroupSize` | `number` | `0` | Virtualizes arrays by chunking when they exceed this length. |
 | `resolver` | `Map<any, ResolverFn>` | `undefined` | Override or extend renderers for custom classes. |
 | `highlightUpdate` | `boolean` | `false` | Enables flash-highlighting when values change between renders. |

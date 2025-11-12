@@ -60,7 +60,7 @@ export type ObjectViewProps = {
 | `valueGetter` | — (required) | Function that returns the value to render. Wrap it in `useMemo`/`useCallback` so it only changes when the underlying data changes. |
 | `name` | `undefined` | Optional label for the root node. |
 | `expandLevel` | `false` | Initial expansion depth. `true` expands all nodes (up to depth 20), `false` collapses everything, numbers expand that many levels (0-based). |
-| `objectGroupSize` | `0` | When greater than `1`, adds an object grouping resolver that batches enumerable keys into ranges. |
+| `objectGroupSize` | `0` | When greater than `1`, adds an object grouping resolver that batches enumerable keys into ranges. **Objects don’t expose their “length”, so the walker must enumerate every key to know whether grouping applies—keep this disabled unless you’re comfortable paying that enumeration cost.** |
 | `arrayGroupSize` | `0` | When greater than `1`, adds an array grouping resolver that presents ranges like `[0…49]`. |
 | `resolver` | `undefined` | Custom resolver map merged on top of the built-in resolver map. Keys are constructors; values are `ResolverFn`s. |
 | `highlightUpdate` | `false` | Enables flash-highlighting when a node's value changes. |
