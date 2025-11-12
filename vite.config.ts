@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts'
 import { analyzer } from 'vite-bundle-analyzer'
 
+const ENABLE_BUILD_ANALYZER = !!(process.env.ANALYZER)
+
 export default defineConfig({
   plugins: [
     react({
@@ -14,10 +16,12 @@ export default defineConfig({
       include: ['src'],
       exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/test/**'],
     }),
-    analyzer({
-      analyzerMode: "server",
-      openAnalyzer: true
-    }),
+    ...ENABLE_BUILD_ANALYZER ? [
+      analyzer({
+        analyzerMode: "server",
+        openAnalyzer: true
+      }),
+    ] : []
   ],
   build: {
     lib: {
