@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
 import { V5Index } from './V5'
@@ -84,6 +84,7 @@ type TestDataOption = {
   label: string
   value: any
   category: string
+  liveStream?: boolean
 }
 
 type ThemeOption = {
@@ -130,6 +131,7 @@ const testDataOptions: TestDataOption[] = [
   },
   { label: 'Primitives • String Variations', value: allExamples.primitives.strings, category: 'Primitives' },
   { label: 'Primitives • Number Variations', value: allExamples.primitives.numbers, category: 'Primitives' },
+  { label: 'Live telemetry (auto-refresh)', value: null, category: 'Live', liveStream: true },
   { label: 'Arrays • Basic Examples', value: allExamples.arrays.numbers, category: 'Arrays' },
   { label: 'Arrays • Mixed Types', value: allExamples.arrays.mixed, category: 'Arrays' },
   { label: 'Arrays • Nested Arrays', value: allExamples.arrays.nested, category: 'Arrays' },
@@ -169,6 +171,36 @@ const expandOptions: Array<{ label: string; value: number | boolean }> = [
   { label: 'All', value: true },
 ]
 
+const createLiveSnapshot = (previous: any) => {
+  const timestamp = new Date()
+  return {
+    timestamp: timestamp.toISOString(),
+    time: previous?.time?.second != timestamp.getSeconds() ? {
+      minute: timestamp.getMinutes(),
+      second: timestamp.getSeconds(),
+      isSecondDivisibleBy5: timestamp.getSeconds() % 5 == 0,
+    } : previous.time,
+    device: previous?.device?.innerWidth == window.innerWidth
+      && previous?.device?.innerHeight == window.innerHeight
+      ? previous?.device
+      : {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        isXs: window.innerWidth >= 0 && window.innerWidth <= 576,
+        isSm: window.innerWidth >= 576 && window.innerWidth <= 768,
+        isMd: window.innerWidth >= 768 && window.innerWidth <= 992,
+        isLg: window.innerWidth >= 992 && window.innerWidth <= 1200,
+        isXl: window.innerWidth >= 1200 && window.innerWidth <= 1400,
+        isXxl: window.innerWidth >= 1400,
+      },
+    randomUpdate: !previous?.randomUpdate || Math.random() < 0.05
+      ? {
+        ...previous?.randomUpdate ?? {},
+        [`property-${Math.random() * 10 | 0}`]: timestamp.getMilliseconds()
+      } : previous?.randomUpdate
+  }
+}
+
 export const Test = () => {
   const [selectedData, setSelectedData] = useState(testDataOptions[0])
   const [expandLevel, setExpandLevel] = useState<number | boolean>(true)
@@ -187,6 +219,20 @@ export const Test = () => {
   const [objectGrouped, setObjectGrouped] = useState(25)
   const [arrayGrouped, setArrayGrouped] = useState(10)
   const [selectedThemeId, setSelectedThemeId] = useState(themeOptions[0].id)
+  const [liveData, setLiveData] = useState(() => createLiveSnapshot(120))
+  const [useLiveStream, setUseLiveStream] = useState(false)
+
+  useEffect(() => {
+    if (useLiveStream) {
+      let raf: any;
+      const update = () => {
+        setLiveData(prev => createLiveSnapshot(prev))
+        raf = requestAnimationFrame(update);
+      }
+      raf = requestAnimationFrame(update);
+      return () => cancelAnimationFrame(raf)
+    }
+  }, [useLiveStream])
 
   const resolverOverrides = useMemo<Map<any, ResolverFn> | undefined>(() => {
     if (!enableResolvers) {
@@ -211,7 +257,10 @@ export const Test = () => {
 
   const handlePresetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedIndex = parseInt(event.target.value)
-    setSelectedData(testDataOptions[selectedIndex])
+    const option = testDataOptions[selectedIndex]
+    setSelectedData(option)
+    setUseLiveStream(Boolean(option.liveStream))
+    setIsCustomMode(false)
   }
 
   const handleCustomDataChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -230,6 +279,9 @@ export const Test = () => {
 
   const toggleDataMode = (custom: boolean) => {
     setIsCustomMode(custom)
+    if (custom) {
+      setUseLiveStream(false)
+    }
 
     if (custom) {
       try {
@@ -246,18 +298,24 @@ export const Test = () => {
   const invalidCustomData = useMemo(() => ({ error: 'Invalid JSON', message: parseError }), [parseError])
 
   const currentDataGetter = useMemo(() => {
+    if (useLiveStream) {
+      return () => liveData
+    }
     if (isCustomMode) {
       return () => customDataParsed || invalidCustomData
     }
     return () => selectedData.value
-  }, [customDataParsed, invalidCustomData, isCustomMode, selectedData])
+  }, [useLiveStream, liveData, customDataParsed, invalidCustomData, isCustomMode, selectedData])
 
   const currentLabel = useMemo(() => {
+    if (useLiveStream) {
+      return 'Live telemetry (auto-refresh)'
+    }
     if (isCustomMode) {
       return parseError ? 'Custom Data (Invalid JSON)' : 'Custom Data'
     }
     return selectedData.label
-  }, [isCustomMode, parseError, selectedData])
+  }, [useLiveStream, isCustomMode, parseError, selectedData])
 
   const selectedTheme = useMemo(() => {
     return themeOptions.find((option) => option.id === selectedThemeId)?.theme ?? themeDefault
@@ -275,8 +333,9 @@ export const Test = () => {
       { label: 'Highlight', active: enableHighlighting },
       { label: 'Non-enum', active: showNonEnumerable },
       { label: 'Symbols', active: showSymbols },
+      { label: 'Live stream', active: useLiveStream },
     ],
-    [enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols],
+    [enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols, useLiveStream],
   )
 
   const infoChips = useMemo(
