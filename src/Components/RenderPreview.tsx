@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { getEntriesCb } from "../V5/getEntries";
 import { CustomIterator, CustomEntry } from "../V5/resolvers/collections";
 import { ResolverFn, Entry } from "../V5/types";
@@ -66,7 +66,7 @@ export const RenderPreview: React.FC<{
         {renderType} {wrappSymbol.at(0)}
         {iterator
             .filter(e => e.enumerable)
-            .map(({ key, value }, index) => <>
+            .map(({ key, value }, index) => <Fragment key={typeof key === "symbol" ? key.toString() : `${String(key)}-${index}`}>
                 {index > 0 ? customSeperator : ""}
                 {!hideKey && <><RenderName name={String(key)} />: </>}
                 <RenderValue {...{
@@ -75,7 +75,7 @@ export const RenderPreview: React.FC<{
                     isPreview: false,
                     depth: depth + 1
                 }} />
-            </>)}
+            </Fragment>)}
 
         {iterator.length >= 5 ? ",…" : ""}
 
