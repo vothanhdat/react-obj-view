@@ -148,7 +148,7 @@ The library ships with curated colour presets that target popular editor palette
 
 ```tsx
 import { ObjectView } from 'react-obj-view';
-import { themeMonokai } from 'react-obj-view/themes';
+import { themeMonokai } from 'react-obj-view';
 
 <ObjectView valueGetter={getter} style={themeMonokai} />;
 ```

@@ -94,7 +94,7 @@ The package exports several ready-made palettes:
 
 ```tsx
 import { ObjectView } from "react-obj-view";
-import { themeMonokai } from "react-obj-view/themes";
+import { themeMonokai } from "react-obj-view";
 
 <ObjectView valueGetter={getter} style={themeMonokai} />;
 ```

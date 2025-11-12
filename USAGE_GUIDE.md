@@ -312,7 +312,7 @@ The library ships with ready-to-use palettes. Import a preset and hand it to the
 ```tsx
 import { useMemo } from 'react';
 import { ObjectView } from 'react-obj-view';
-import { themeDracula } from 'react-obj-view/themes';
+import { themeDracula } from 'react-obj-view';
 
 const getter = useMemo(() => () => data, [data]);
 
