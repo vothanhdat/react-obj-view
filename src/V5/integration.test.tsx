@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 import { ObjectView } from '../index'
 
 describe('ObjectView Integration Tests', () => {
@@ -106,7 +106,7 @@ describe('ObjectView Integration Tests', () => {
       expect(container.querySelector('.big-objview-root')).toBeTruthy()
     })
 
-    it('should handle promises in objects', () => {
+    it('should handle promises in objects', async () => {
       const data = {
         pending: new Promise(() => {}),
         resolved: Promise.resolve(42),
@@ -116,11 +116,17 @@ describe('ObjectView Integration Tests', () => {
       // Catch the rejection to prevent unhandled promise rejection
       data.rejected.catch(() => {})
       
-      const { container } = render(
-        <ObjectView valueGetter={() => data} name="promises" expandLevel={2} />
-      )
-      
-      expect(container.querySelector('.big-objview-root')).toBeTruthy()
+      let renderResult: ReturnType<typeof render>
+
+      await act(async () => {
+        renderResult = render(
+          <ObjectView valueGetter={() => data} name="promises" expandLevel={2} />
+        )
+
+        await Promise.resolve()
+      })
+
+      expect(renderResult!.container.querySelector('.big-objview-root')).toBeTruthy()
     })
 
     it('should handle functions and symbols', () => {
@@ -231,7 +237,7 @@ describe('ObjectView Integration Tests', () => {
     })
 
     it('should handle sparse arrays', () => {
-      const arr = []
+  const arr: any[] = []
       arr[0] = 'first'
       arr[100] = 'hundredth'
       arr[1000] = 'thousandth'
