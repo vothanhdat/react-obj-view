@@ -10,6 +10,12 @@ React Object View is a TypeScript-first component for exploring deeply nested Ja
 - **Change awareness** – Optional flashing makes updates stand out during debugging.
 - **Styling hooks** – Override CSS variables or add class names to match your design system.
 
+## 📋 Requirements
+
+- **Node.js**: 22.x or 24.x
+- **Yarn**: 4.x (recommended) or npm
+- **React**: 19.x
+
 ## 🚀 Quickstart
 
 ### 1. Install
@@ -110,8 +116,36 @@ Each preset exports the same tokens as `themeDefault`, so mixing and matching is
 
 \*Bundle size numbers refer to minified + gzip builds. React Object View figures are taken from the default Vite build output in this repository; third-party numbers reference published package metadata and may vary per version.
 
+## 🧪 Testing
+
+React Object View includes a comprehensive test suite with 114+ tests covering:
+- Utility functions and resolvers
+- React component rendering
+- Edge cases and complex scenarios
+- Performance with large datasets
+- Circular references and special data types
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
+For detailed testing information, see the [Testing Guide](./TESTING.md).
+
 ## 📚 Additional resources
 
 - [Usage Guide](./USAGE_GUIDE.md) – End-to-end patterns, resolver recipes, and styling guidance.
 - [API Documentation](./API_DOCUMENTATION.md) – Deep dive into hooks and resolver authoring.
+- [Testing Guide](./TESTING.md) – Comprehensive testing documentation and best practices.
 - [Live demo](https://vothanhdat.github.io/react-obj-view/) – Interactively explore grouping, previews, and change flash states.
