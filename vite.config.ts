@@ -14,10 +14,10 @@ export default defineConfig({
       include: ['src'],
       exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/**/test/**'],
     }),
-    // analyzer({
-    //   analyzerMode: "server",
-    //   openAnalyzer: true
-    // }),
+    analyzer({
+      analyzerMode: "server",
+      openAnalyzer: true
+    }),
   ],
   build: {
     lib: {
