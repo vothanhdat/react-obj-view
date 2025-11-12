@@ -2860,7 +2860,6 @@ __metadata:
     jsdom: "npm:^27.1.0"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
-    react-virtuoso: "npm:^4.14.1"
     typescript: "npm:^5.9.3"
     vite: "npm:7"
     vite-bundle-analyzer: "npm:^1.1.0"
@@ -2876,16 +2875,6 @@ __metadata:
   version: 0.18.0
   resolution: "react-refresh@npm:0.18.0"
   checksum: 10c0/34a262f7fd803433a534f50deb27a148112a81adcae440c7d1cbae7ef14d21ea8f2b3d783e858cb7698968183b77755a38b4d4b5b1d79b4f4689c2f6d358fff2
-  languageName: node
-  linkType: hard
-
-"react-virtuoso@npm:^4.14.1":
-  version: 4.14.1
-  resolution: "react-virtuoso@npm:4.14.1"
-  peerDependencies:
-    react: ">=16 || >=17 || >= 18 || >= 19"
-    react-dom: ">=16 || >=17 || >= 18 || >=19"
-  checksum: 10c0/1a9287e787b14f670475928f87e2d482da6d295b3de379a0a66d25e5bd570b63d0c130860abd3b897d663e0aab427278adbc3511637b0eea6f2e40c1e1e40923
   languageName: node
   linkType: hard
 
