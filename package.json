@@ -46,6 +46,10 @@
   ],
   "author": "Your Name",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "yarn": ">=4.0.0"
+  },
   "peerDependencies": {
     "react": "19",
     "react-dom": "19"

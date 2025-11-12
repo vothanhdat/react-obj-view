@@ -5,6 +5,7 @@ This document provides comprehensive information about the testing infrastructur
 ## Table of Contents
 
 - [Overview](#overview)
+- [Prerequisites](#prerequisites)
 - [Testing Framework](#testing-framework)
 - [Running Tests](#running-tests)
 - [Test Structure](#test-structure)
@@ -14,12 +15,44 @@ This document provides comprehensive information about the testing infrastructur
 
 ## Overview
 
-The react-obj-view library uses a comprehensive test suite with 114+ tests covering:
+The react-obj-view library uses a comprehensive test suite with 230+ tests covering:
 - Utility functions
+- Core engine (CircularChecking, StateFactory, walkingToIndexFactory)
 - Resolver functions (Map, Set, Promise, Iterator)
 - React components
 - Integration scenarios
 - Edge cases
+
+## Prerequisites
+
+### System Requirements
+
+- **Node.js**: 22.x or 24.x
+- **Yarn**: 4.x (recommended package manager)
+
+### Setup
+
+1. **Install Node.js**: Use nvm (Node Version Manager) for easy version switching
+   ```bash
+   # Install nvm (if not already installed)
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+   
+   # Use the version specified in .nvmrc
+   nvm use
+   # or
+   nvm install 22
+   nvm use 22
+   ```
+
+2. **Enable Corepack** (for Yarn 4 support)
+   ```bash
+   corepack enable
+   ```
+
+3. **Install dependencies**
+   ```bash
+   yarn install
+   ```
 
 ## Testing Framework
 
@@ -297,24 +330,78 @@ it('should handle promises', async () => {
 
 ## CI/CD Integration
 
-### GitHub Actions Example
+### GitHub Actions Workflows
+
+The project includes two GitHub Actions workflows:
+
+#### 1. CI Tests (`.github/workflows/ci.yml`)
+
+Tests the library against multiple Node.js versions to ensure compatibility:
 
 ```yaml
-name: Tests
+name: CI Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x, 24.x]
+    
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npm install
-      - run: npm test
-      - run: npm run test:coverage
+          node-version: ${{ matrix.node-version }}
+          
+      - name: Enable Corepack
+        run: corepack enable
+        
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        
+      - name: Run tests
+        run: yarn test
+        
+      - name: Build
+        run: yarn build
+```
+
+This workflow:
+- Runs on every push and pull request
+- Tests against Node.js 22.x and 24.x
+- Uses Yarn 4 (enabled via Corepack)
+- Runs both tests and build to ensure everything works
+
+#### 2. Deploy Demo (`.github/workflows/deploy-demo.yml`)
+
+Deploys the demo site to GitHub Pages when changes are pushed to master.
+
+### Local CI Simulation
+
+To simulate CI locally:
+
+```bash
+# Test with Node 22
+nvm use 22
+yarn install
+yarn test
+yarn build
+
+# Test with Node 24
+nvm use 24
+yarn install
+yarn test
+yarn build
 ```
 
 ## Debugging Tests

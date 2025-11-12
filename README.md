@@ -10,6 +10,12 @@ React Object View is a TypeScript-first component for exploring deeply nested Ja
 - **Change awareness** – Optional flashing makes updates stand out during debugging.
 - **Styling hooks** – Override CSS variables or add class names to match your design system.
 
+## 📋 Requirements
+
+- **Node.js**: 22.x or 24.x
+- **Yarn**: 4.x (recommended) or npm
+- **React**: 19.x
+
 ## 🚀 Quickstart
 
 ### 1. Install
