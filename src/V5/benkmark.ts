@@ -90,6 +90,7 @@ for (let i = 0; i < 10; i++) {
 console.table({
     first_avg: times.first.reduce((e, f) => e + f, 0) / times.first.length,
     update_avg: times.update.reduce((e, f) => e + f, 0) / times.first.length,
+    half_avg: times.half.reduce((e, f) => e + f, 0) / times.first.length,
     void_avg: times.void.reduce((e, f) => e + f, 0) / times.first.length,
 })
 
