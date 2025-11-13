@@ -35,9 +35,17 @@ const config: WalkingConfig = {
 }
 
 describe('walkingToIndexFactory benchmark', () => {
+  const payload = generatePayload(10000)
   bench('flatten ~100k nodes payload', () => {
-    const payload = generatePayload(10000)
     const factory = walkingToIndexFactory()
     factory.walking(payload, config, 'root', true)
-  })
+  },{iterations: 50})
+  bench('flatten ~100k nodes payload', () => {
+    const factory = walkingToIndexFactory()
+    factory.walking(payload, config, 'root', true)
+  },{iterations: 50})
+  bench('flatten ~100k nodes payload', () => {
+    const factory = walkingToIndexFactory()
+    factory.walking(payload, config, 'root', true)
+  },{iterations: 50})
 })
