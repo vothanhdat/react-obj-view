@@ -7,6 +7,9 @@ const arr = performanceTestData.suppersupperLarge
 
 const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
+const arr3 = arr.filter((e, i) => i % 2 == 0)
+
+
 const config: WalkingConfig = {
     expandDepth: 10,
     nonEnumerable: true,
@@ -18,10 +21,14 @@ const config: WalkingConfig = {
 let times = {
     first: [] as number[],
     update: [] as number[],
+    half: [] as number[],
     void: [] as number[],
 }
 
-for (let i = 0; i < 20; i++) {
+console.log(Object.keys(times)
+    .join("\t"))
+
+for (let i = 0; i < 10; i++) {
 
     const walking = walkingToIndexFactory()
 
@@ -47,31 +54,38 @@ for (let i = 0; i < 20; i++) {
 
     const t3 = performance.now()
 
-
     walking.walking(
-        arr2,
+        arr3,
         config,
         "root",
         true
     )
+
     const t4 = performance.now()
+
+    walking.walking(
+        arr3,
+        config,
+        "root",
+        true
+    )
+
+    const t5 = performance.now()
 
     // console.log("re-walking time %s ms", t3 - t2)
 
     times.first.push((t2 - t1) | 0)
     times.update.push((t3 - t2) | 0)
-    times.void.push((t4 - t3) | 0)
-    // times.push({
-    //     first: t2 - t1,
-    //     update: t3 - t2,
-    // })
+    times.half.push((t4 - t3) | 0)
+    times.void.push((t5 - t4) | 0)
 
-    // gc?.();
-    console.log('..')
+    console.log([t2 - t1, t3 - t2, t4 - t3, t5 - t4,]
+        .map(e => e | 0)
+        .join("\t"))
 }
 
 
-console.table(times)
+// console.table(times)
 
 console.table({
     first_avg: times.first.reduce((e, f) => e + f, 0) / times.first.length,
