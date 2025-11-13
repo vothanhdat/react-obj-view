@@ -2,7 +2,7 @@ import { RefObject, useRef, useMemo, useState, useCallback } from "react";
 import { DEFAULT_RESOLVER } from "./resolvers";
 import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./resolvers/grouped";
 import { ResolverFn, WalkingConfig } from "./types";
-import { NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 
 const useObjectId = <T,>(value: any) => {
     let ref = useRef<{ value: T; id: number; }>({ value, id: 0 });
@@ -99,7 +99,7 @@ export function useFlattenObjectView(
 
     const getNodeByIndex = useMemo(
         () => {
-            let m = new Map();
+            let m = new Map<any, NodeResult>();
 
             return (index: number) => {
                 let data = m.get(index);

@@ -33,6 +33,7 @@ export class NodeResult {
         public state: WalkingResult,
         public depth: number,
         public paths: PropertyKey[],
+        public parentIndex: number[],
     ) {
         Object.assign(this, state)
     }
@@ -51,20 +52,8 @@ export class NodeResult {
     getData(): NodeResultData {
         const state = this.state
         return ({
-            value: state.value,
-            cumulate: state.cumulate,
-            name: state.name,
-            count: state.count,
+            ...state,
             depth: this.depth,
-            enumerable: state.enumerable,
-            maxDepth: state.maxDepth,
-            expandedDepth: state.expandedDepth,
-            expanded: state.expanded,
-            isCircular: state.isCircular,
-            childCanExpand: state.childCanExpand,
-            userExpand: state.userExpand,
-            updateToken: state.updateToken,
-            updateStamp: state.updateStamp,
             path: this.path,
             paths: this.paths,
         })
@@ -261,10 +250,11 @@ export const walkingToIndexFactory = () => {
         { state, getChildOnly } = stateRead,
         depth = 1,
         paths: PropertyKey[] = [],
+        parentIndex: number[] = [0]
     ): NodeResult => {
 
         if (index == 0 || depth >= 100) {
-            return new NodeResult(state, depth, paths)
+            return new NodeResult(state, depth, paths, parentIndex)
         } else {
             if (!state.cumulate || !state.keys) {
                 throw new Error("Wrong state")
@@ -290,7 +280,8 @@ export const walkingToIndexFactory = () => {
                 config,
                 getChildOnly(keyNames),
                 depth + 1,
-                [...paths, keyNames]
+                [...paths, keyNames],
+                [...parentIndex, (parentIndex.at(-1) ?? 0) + cumulate[start]]
             )
 
 

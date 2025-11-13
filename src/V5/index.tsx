@@ -8,6 +8,18 @@ import "../Components/style.css"
 import { VirtualScroller } from "../Components/VirtualScroller";
 import { joinClasses } from "../utils/joinClasses";
 
+type StickyInfo = {
+    index: number,
+    isStick: false,
+    position?: number,
+    isLastStick?: boolean
+} | {
+    index: number,
+    isStick: true
+    position: number,
+    isLastStick?: boolean
+}
+
 export const V5Index: React.FC<ObjectViewProps> = ({
     valueGetter,
     name,
@@ -23,9 +35,10 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     lineHeight = 14,
     style,
     includeSymbols = false,
+    stickyPathHeaders: stickyPathHeader = true,
 }) => {
 
-    let value = useMemo(() => valueGetter(), [valueGetter])
+    let value = useMemo(() => valueGetter?.(), [valueGetter])
 
     const { getNodeByIndex, toggleChildExpand, refreshPath, resolver, size } = useFlattenObjectView(
         value,
@@ -46,6 +59,29 @@ export const V5Index: React.FC<ObjectViewProps> = ({
         [getNodeByIndex, size]
     )
 
+    const renderIndexWithStickyHeader = useCallback(
+        (index: number, startIndexRaw: number): StickyInfo => {
+            if (!stickyPathHeader)
+                return { isStick: false, index: index }
+
+            let starIndex = Math.floor(startIndexRaw)
+            let delta = Math.floor(index - starIndex)
+
+            let currentNode = index < size ? getNodeByIndex(index) : (undefined as never)
+            let rIndex = currentNode?.parentIndex?.[delta]
+
+            if (rIndex >= 0 && currentNode?.parentIndex.length > delta) {
+                let parentNode = getNodeByIndex(rIndex)
+                let minPos = rIndex + parentNode.state.count - startIndexRaw - 1;
+                let pos = Math.min(delta, minPos)
+                if (parentNode.state.count > 1 && startIndexRaw > 0)
+                    return { isStick: true, index: rIndex, position: pos }
+            }
+            return { isStick: false, index: index }
+        },
+        [getNodeByIndex, stickyPathHeader, size]
+    )
+
     const options = useMemo(
         () => ({
             enablePreview,
@@ -62,11 +98,10 @@ export const V5Index: React.FC<ObjectViewProps> = ({
     return <>
         <div className={joinClasses("big-objview-root", className)} style={style}>
             <VirtualScroller
-            
                 height={lineHeight * size}
                 size={size}
                 Component={VirtualScrollerRender}
-
+                computeActualRederKey={renderIndexWithStickyHeader}
                 computeItemKey={computeItemKey}
                 showLineNumbers={showLineNumbers}
                 getNodeByIndex={getNodeByIndex}
@@ -79,16 +114,18 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 }
 
 const VirtualScrollerRender: React.FC<{
-    start: number, end: number,
+    start: number, end: number, offset: number,
     lineHeight: number,
     showLineNumbers: boolean,
     computeItemKey: (index: number) => string,
+    computeActualRederKey: (index: number, startIndex: number) => StickyInfo
 } & NodeRenderProps> = ({
-    start, end, size,
+    start, end, offset, size,
     lineHeight,
-    computeItemKey, showLineNumbers, getNodeByIndex, options
+    computeItemKey, showLineNumbers, getNodeByIndex, options,
+    computeActualRederKey
 }) => {
-
+        let startIndexRaw = start / lineHeight
         let startIndex = Math.floor(start / lineHeight)
         let endIndex = Math.min(size, Math.ceil(end / lineHeight))
         let renderSize = Math.min(Math.max(0, endIndex - startIndex), 500)
@@ -99,10 +136,23 @@ const VirtualScrollerRender: React.FC<{
             {new Array(renderSize)
                 .fill(0)
                 .map((_, i) => i + startIndex)
-                .map((index) => index < size && <div
+                .filter(index => index < size && index >= 0)
+                .map(index => computeActualRederKey(index, startIndexRaw))
+                .map((info, index, arr) => ({
+                    ...info,
+                    isLastStick: info.isStick && arr[index - 1] && !arr[index + 1].isStick
+                } as StickyInfo))
+                .map(({ isStick, index, isLastStick, position }) => <div
                     key={computeItemKey(index)}
                     className="row"
-                    style={{
+                    style={isStick ? {
+                        position: "sticky",
+                        top: `${position * lineHeight - offset}px`,
+                        height: `${lineHeight}px`,
+                        backgroundColor: "var(--bg-color)",
+                        zIndex: Math.floor(100 - position),
+                        borderBottom: isLastStick ? "solid 1px color-mix(in srgb, var(--color) 30%, transparent)" : ""
+                    } : {
                         position: "absolute",
                         top: `${index * lineHeight}px`,
                         height: `${lineHeight}px`,
@@ -111,7 +161,7 @@ const VirtualScrollerRender: React.FC<{
                     {showLineNumbers && <span className="line-number">
                         {String(index).padStart(lineNumberSize, " ")}:{" "}
                     </span>}
-                    <NodeRender {...{ index, getNodeByIndex, options, size }} />
+                    <NodeRender {...{ index: index, getNodeByIndex, options, size }} />
                 </div>)}
         </>
     }

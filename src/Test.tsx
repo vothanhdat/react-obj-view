@@ -221,6 +221,7 @@ export const Test = () => {
   const [selectedThemeId, setSelectedThemeId] = useState(themeOptions[0].id)
   const [liveData, setLiveData] = useState(() => createLiveSnapshot(120))
   const [useLiveStream, setUseLiveStream] = useState(false)
+  const [stickyHeaders, setStickyHeaders] = useState(true)
 
   useEffect(() => {
     if (useLiveStream) {
@@ -472,14 +473,15 @@ export const Test = () => {
               </div>
               <div className="toggle-grid" role="group" aria-label="Feature switches">
                 {[{
-                  label: 'Enable grouping',
-                  value: enableGrouping,
-                  setter: setEnableGrouping,
+                  label: 'Sticky path headers',
+                  value: stickyHeaders,
+                  setter: setStickyHeaders,
                 },
                 {
-                  label: 'Class resolvers',
-                  value: enableResolvers,
-                  setter: setEnableResolvers,
+                  label: 'Highlight updates',
+                  value: enableHighlighting,
+                  setter: setEnableHighlighting,
+
                 },
                 {
                   label: 'Preview mode',
@@ -487,9 +489,9 @@ export const Test = () => {
                   setter: setEnablePreviewMode,
                 },
                 {
-                  label: 'Highlight updates',
-                  value: enableHighlighting,
-                  setter: setEnableHighlighting,
+                  label: 'Class resolvers',
+                  value: enableResolvers,
+                  setter: setEnableResolvers,
                 },
                 {
                   label: 'Show non-enum',
@@ -500,6 +502,11 @@ export const Test = () => {
                   label: 'Include symbols',
                   value: showSymbols,
                   setter: setShowSymbols,
+                },
+                {
+                  label: 'Enable grouping',
+                  value: enableGrouping,
+                  setter: setEnableGrouping,
                 }].map((item) => (
                   <button
                     key={item.label}
@@ -593,6 +600,7 @@ export const Test = () => {
               lineHeight={14}
               includeSymbols={showSymbols}
               style={selectedTheme}
+              stickyPathHeaders={stickyHeaders}
             />
           </div>
         </section>

@@ -33,6 +33,7 @@ export type ObjectViewProps = {
     arrayGroupSize?: number; // >= 2 or no grouping
     resolver?: Map<any, ResolverFn>;
     highlightUpdate?: boolean;
+    stickyPathHeaders?:boolean;
     preview?: boolean;
     nonEnumerable?: boolean;
     showLineNumbers?: boolean;
