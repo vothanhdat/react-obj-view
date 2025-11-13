@@ -32,7 +32,7 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
 
     const ref = useRef<HTMLDivElement>(null)
 
-    const [{ start, end }, setState] = useState({ start: 0, end: 0 })
+    const [{ start, end, offset }, setState] = useState({ start: 0, end: 0, offset: 0 })
 
     useEffect(() => {
         if (!ref.current) {
@@ -61,11 +61,15 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
             const nextStart = Math.min(height, Math.max(0, viewportTop))
             const nextEnd = Math.min(height, Math.max(0, viewportBottom))
 
+            const parentScrollTop = isDocumentScroll ? window.scrollY : parent.scrollTop
+
+            const nextOffset = Math.min(height, Math.max(0, parentScrollTop - viewportTop))
+
             setState(prev => {
-                if (prev.start === nextStart && prev.end === nextEnd) {
+                if (prev.start === nextStart && prev.end === nextEnd && prev.offset == nextOffset) {
                     return prev
                 }
-                return { start: nextStart, end: nextEnd }
+                return { start: nextStart, end: nextEnd, offset: nextOffset }
             })
             // console.timeEnd("measure")
 
@@ -94,6 +98,6 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
     }, [height])
 
     return <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
-        <Component start={start} end={end} {...props} />
+        <Component start={start} end={end} offset={offset} {...props} />
     </div>
 }
