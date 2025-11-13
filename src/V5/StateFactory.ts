@@ -7,7 +7,7 @@ type StateMap<T> = {
     childs: Map<PropertyKey, StateMap<T>>
 }
 
-let touchedCounter = 1
+let touchTokenCounter = 1
 
 export type GetStateFn<T> = (currentMap: StateMap<T>) => {
     state: T;
@@ -24,7 +24,7 @@ export type GetStateOnlyFn<T> = (map: StateMap<T>) => ({
 const getChildFn = <T>(
     getState: GetStateFn<T>,
     currentMap: StateMap<T>,
-    state: StateDiff
+    touchToken: any
 ) => (key: PropertyKey) => {
 
     if (!currentMap.childs) {
@@ -34,35 +34,29 @@ const getChildFn = <T>(
     let childMap = currentMap.childs.get(key)!;
 
     if (!childMap) {
-        childMap = { state: undefined, touched: undefined, childs: undefined } as any as StateMap<T>;
+        childMap = { state: undefined, touched: touchToken, childs: undefined } as any as StateMap<T>;
         currentMap.childs.set(key, childMap);
+    }else {
+        childMap.touched = touchToken;
     }
-
-    state.isDiff ||= (childMap.touched !== state.touchedValue);
-
-    childMap.touched = state.touchedValue;
 
     return getState(childMap);
 };
 
 const cleanChildFn = <T>(
     currentMap: StateMap<T>,
-    state: StateDiff
+    touchToken: any,
 ) => () => {
-    if (!state.isDiff) {
-        return;
-    }
-    let touchedValue = state.touchedValue
     let map = currentMap.childs
+    if(!map) return;
     for (const [key, value] of map) {
-
-        if (value.touched !== touchedValue) {
+        if (value.touched !== touchToken) {
             map.delete(key);
         }
     }
-    state.isDiff = false;
-    state.touchedValue = touchedCounter++;
 };
+
+const voidFn = () => {}
 
 const getChildOnly = <T>(
     getState: GetStateOnlyFn<T>,
@@ -79,11 +73,12 @@ export const StateFactory = <T>(onNew: () => T) => {
         if (!currentMap) {
             throw new Error("currentMap not found")
         }
-        const state: StateDiff = { isDiff: false, touchedValue: touchedCounter++ }
+        const touchToken = touchTokenCounter++;
+        const isNew = !currentMap.state
         return {
             state: currentMap.state ||= onNew(),
-            getChild: getChildFn(stateFactory, currentMap, state),
-            cleanChild: cleanChildFn(currentMap, state),
+            getChild: getChildFn(stateFactory, currentMap, touchToken),
+            cleanChild: isNew ? voidFn : cleanChildFn(currentMap, touchToken),
         };
     };
 
