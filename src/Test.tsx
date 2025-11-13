@@ -12,7 +12,7 @@ import {
   themeSepia,
 } from './themes'
 
-const packageVersion = '1.0.5'
+const packageVersion = '1.0.7'
 
 class User {
   constructor(public name: string, public email: string, public role: string = 'user') { }
