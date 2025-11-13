@@ -192,6 +192,20 @@ return (
 );
 ```
 
+### Sticky Path Headers
+
+Deeply nested trees can feel disorienting because the parent context scrolls away. Leave `stickyPathHeaders` enabled (default) to pin the current ancestor row while you browse its children, or flip it off when you prefer pure free-flow scrolling:
+
+```tsx
+<ObjectView
+  valueGetter={counterGetter}
+  expandLevel={2}
+  stickyPathHeaders={false} // opt out of the pinning behaviour
+/>
+```
+
+Use this prop when embedding the viewer inside panels with their own sticky headers so you can decide which element controls the vertical stacking order.
+
 ### Line Numbers & Layout Tweaks
 
 Control how each row is rendered and surfaced:

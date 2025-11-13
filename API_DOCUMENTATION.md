@@ -43,6 +43,7 @@ export type ObjectViewProps = {
   arrayGroupSize?: number;
   resolver?: Map<any, ResolverFn>;
   highlightUpdate?: boolean;
+  stickyPathHeaders?: boolean;
   preview?: boolean;
   nonEnumerable?: boolean;
   includeSymbols?: boolean;
@@ -64,6 +65,7 @@ export type ObjectViewProps = {
 | `arrayGroupSize` | `0` | When greater than `1`, adds an array grouping resolver that presents ranges like `[0…49]`. |
 | `resolver` | `undefined` | Custom resolver map merged on top of the built-in resolver map. Keys are constructors; values are `ResolverFn`s. |
 | `highlightUpdate` | `false` | Enables flash-highlighting when a node's value changes. |
+| `stickyPathHeaders` | `true` | Keeps the current ancestor row pinned to the top of the viewport while its children scroll; set to `false` for legacy, non-sticky behaviour. |
 | `preview` | `true` | Shows inline previews (e.g. `Array(10)` or string snippets) for collapsed nodes. |
 | `nonEnumerable` | `false` | Includes non-enumerable properties when traversing objects. |
 | `includeSymbols` | `false` | Includes symbol-keyed properties during traversal and in previews. |

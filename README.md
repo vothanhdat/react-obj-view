@@ -12,6 +12,7 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 ## ✨ Features
 
 - **Virtualized tree view** – only visible rows render, so 100k+ nodes stay smooth.
+- **Sticky path headers** – pin ancestor rows while scrolling so nested contexts stay visible.
 - **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, and custom classes.
 - **Lazy `valueGetter`** – keeps data fresh without forcing heavy re-renders.
 - **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
@@ -76,6 +77,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. |
 | `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. |
 | `highlightUpdate` | `boolean` | `false` | Flash updated values via `useChangeFlashClasses`. |
+| `stickyPathHeaders` | `boolean` | `true` | Pins the current node's ancestor label while you scroll through its children; disable to revert to free-scrolling rows. |
 | `preview` | `boolean` | `true` | Show inline previews (`Array(5)`, `'abc…'`) on collapsed rows. |
 | `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties during traversal. |
 | `includeSymbols` | `boolean` | `false` | Include symbol keys when enumerating or previewing objects. |
