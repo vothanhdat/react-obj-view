@@ -20,6 +20,22 @@ export type ObjectWalkerAdapterOptions = {
     nonEnumerable: boolean;
 };
 
+const metaCache = {
+    true: {
+        true: { enumerable: true, isCircular: true } as ObjectNodeMeta,
+        false: { enumerable: true, isCircular: false } as ObjectNodeMeta,
+    },
+    false: {
+        true: { enumerable: false, isCircular: true } as ObjectNodeMeta,
+        false: { enumerable: false, isCircular: false } as ObjectNodeMeta,
+    },
+};
+
+export const getObjectNodeMeta = (
+    enumerable = true,
+    isCircular = false,
+): ObjectNodeMeta => metaCache[enumerable ? "true" : "false"][isCircular ? "true" : "false"];
+
 export const createObjectWalkerAdapter = (
     options: ObjectWalkerAdapterOptions,
 ): TreeWalkerAdapter<unknown, PropertyKey, ObjectNodeMeta> => {
@@ -31,14 +47,10 @@ export const createObjectWalkerAdapter = (
         symbol: options.includeSymbols,
     };
 
-    const normalizeValue = (value: unknown) =>
-        value instanceof LazyValue && value.inited
-            ? value.value ?? value.error
-            : value;
-
     return {
         canHaveChildren: (value, meta) =>
             !meta?.isCircular && objectHasChild(value),
+        createMeta: (value) => getObjectNodeMeta(true, circularChecking.checkCircular(value)),
         getChildren: (value) => {
             if (!objectHasChild(value) || circularChecking.checkCircular(value)) {
                 return [];
@@ -57,21 +69,26 @@ export const createObjectWalkerAdapter = (
                 false,
                 value,
                 (key, childValue, enumerable) => {
-                    const normalized = normalizeValue(childValue);
+                    const normalized =
+                        childValue instanceof LazyValue && childValue.inited
+                            ? childValue.value ?? childValue.error
+                            : childValue;
                     const isCircular = circularChecking.checkCircular(normalized);
                     children.push({
                         key,
                         value: normalized,
-                        meta: {
-                            enumerable,
-                            isCircular,
-                        },
+                        meta: getObjectNodeMeta(enumerable, isCircular),
                     });
                 },
             );
             circularChecking.exitNode(value);
 
             return children;
+        },
+        shouldExpand: (_value, meta, { depth }, config) => {
+            if (meta?.isCircular) return false;
+            const isEnumerable = meta?.enumerable !== false;
+            return isEnumerable && depth <= config.expandDepth;
         },
     };
 };

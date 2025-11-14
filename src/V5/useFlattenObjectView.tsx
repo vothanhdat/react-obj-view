@@ -13,6 +13,7 @@ import {
     type ResolverFn,
     createObjectWalkerAdapter,
     getObjectWalkerVersionToken,
+    getObjectNodeMeta,
     type ObjectNodeMeta,
 } from "../objectWalker";
 
@@ -94,7 +95,7 @@ export function useFlattenObjectView(
                 value,
                 config,
                 (name ?? "ROOT") as PropertyKey,
-                { enumerable: true }
+                getObjectNodeMeta(true, false)
             );
 
             return { ...result };

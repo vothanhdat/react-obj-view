@@ -14,6 +14,13 @@ export type TreeWalkerAdapter<Value, Key extends PropertyKey = PropertyKey, Meta
     ) => Iterable<WalkerChild<Value, Key, Meta>> | void;
     stringifyPath?: (path: readonly Key[]) => string;
     isSameValue?: (previous: Value | undefined, next: Value | undefined) => boolean;
+    shouldExpand?: (
+        value: Value,
+        meta: Meta | undefined,
+        context: WalkerAdapterContext,
+        config: WalkingConfig
+    ) => boolean;
+    createMeta?: (value: Value, context: WalkerAdapterContext) => Meta;
 };
 
 export type WalkerAdapterContext = {

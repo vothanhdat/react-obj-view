@@ -9,8 +9,11 @@ type MockNode = {
     meta?: Record<string, unknown>;
 };
 
-const createAdapter = (): TreeWalkerAdapter<MockNode, string, Record<string, unknown>> => ({
+const createAdapter = (
+  overrides: Partial<TreeWalkerAdapter<MockNode, string, Record<string, unknown>>> = {},
+): TreeWalkerAdapter<MockNode, string, Record<string, unknown>> => ({
     canHaveChildren: (node) => Array.isArray(node.children) && node.children.length > 0,
+    createMeta: (node) => node.meta,
     getChildren: (node) =>
         node.children?.map((child) => ({
             key: child.key,
@@ -18,6 +21,7 @@ const createAdapter = (): TreeWalkerAdapter<MockNode, string, Record<string, unk
             meta: { ...child.meta },
         })),
     stringifyPath: (path) => path.join("."),
+    ...overrides,
 });
 
 describe("walkingToIndexFactory", () => {
@@ -123,5 +127,29 @@ describe("walkingToIndexFactory", () => {
         const second = factory.getNode(1, config).getData();
 
         expect(first.updateToken).not.toBe(second.updateToken);
+    });
+
+    it("respects adapter-provided shouldExpand", () => {
+        const adapter = createAdapter({
+            shouldExpand: (_value, meta, ctx) => Boolean(meta?.expandable) && ctx.depth <= 1,
+        });
+        factory = walkingToIndexFactory(adapter);
+
+        const tree: MockNode = {
+            key: "root",
+            meta: { expandable: true },
+            children: [
+                {
+                    key: "locked",
+                    meta: { expandable: false },
+                    children: [{ key: "locked-child", meta: { expandable: true } }],
+                },
+            ],
+        };
+
+        factory.walking(tree, config, tree.key);
+        const locked = factory.getNode(1, config).getData();
+        expect(locked.expanded).toBe(false);
+        expect(locked.childCanExpand).toBe(true);
     });
 });

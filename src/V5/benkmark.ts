@@ -1,9 +1,10 @@
-import { walkingToIndexFactory, type WalkingConfig } from "@react-obj-view/tree-core";
+import { walkingToIndexFactory, type WalkingConfig } from "../../packages/tree-core/src";
 import { performanceTestData } from "../exampleData";
 import {
     createObjectWalkerAdapter,
     DEFAULT_RESOLVER,
     getObjectWalkerVersionToken,
+    getObjectNodeMeta,
     type ObjectNodeMeta,
 } from "../objectWalker";
 
@@ -46,44 +47,44 @@ for (let i = 0; i < 10; i++) {
 
     const walking = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter)
 
+    // console.log("t1")
     const t1 = performance.now()
 
-    let r1 = walking.walking(
+    walking.walking(
         arr,
         config,
         "root",
-        { enumerable: true },
     )
 
+    // console.log("t2")
     const t2 = performance.now()
-    // console.log("walking time %s ms", t2 - t1)
 
 
     walking.walking(
         arr2,
         config,
         "root",
-        { enumerable: true }
     )
 
+    // console.log("t3")
     const t3 = performance.now()
 
     walking.walking(
         arr3,
         config,
         "root",
-        { enumerable: true }
     )
 
+    // console.log("t4")
     const t4 = performance.now()
 
     walking.walking(
         arr3,
         config,
         "root",
-        { enumerable: true }
     )
 
+    // console.log("t5")
     const t5 = performance.now()
 
     // console.log("re-walking time %s ms", t3 - t2)

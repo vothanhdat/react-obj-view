@@ -1,4 +1,4 @@
-import { walkingToIndexFactory } from "@react-obj-view/tree-core";
+import { walkingToIndexFactory } from "../../packages/tree-core/src";
 import { performanceTestData } from "../exampleData";
 import {
     createObjectWalkerAdapter,
@@ -36,7 +36,6 @@ let r1 = walking.walking(
     arr,
     config,
     "root",
-    { enumerable: true },
 )
 
 const t2 = performance.now()
@@ -47,7 +46,6 @@ let r2 = walking.walking(
     arr2,
     config,
     "root",
-    { enumerable: true }
 )
 
 const t3 = performance.now()

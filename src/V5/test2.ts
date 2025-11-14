@@ -44,9 +44,9 @@ const config = {
 
 const walking = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter);
 
-walking.walking(data1, config, "root", { enumerable: true })
+walking.walking(data1, config, "root")
 
-walking.walking(data2, config, "root", { enumerable: true })
+walking.walking(data2, config, "root")
 
 
 // const arr = performanceTestData.suppersupperLarge

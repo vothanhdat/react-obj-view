@@ -148,7 +148,9 @@ export const walkingToIndexFactory = <
         let count = 1;
         let maxDepth = depth;
         const canExpand = adapter.canHaveChildren(value, meta);
-        const defaultExpanded = depth <= config.expandDepth;
+        const defaultExpanded = adapter.shouldExpand
+            ? adapter.shouldExpand(value, meta, { depth }, config)
+            : depth <= config.expandDepth;
         const isExpanded = canExpand && (state.userExpand ?? defaultExpanded);
         let childCanExpand = canExpand && !isExpanded;
 
@@ -216,11 +218,13 @@ export const walkingToIndexFactory = <
         meta?: Meta,
     ) => {
         updateStamp++;
+        const resolvedMeta =
+            meta ?? adapter.createMeta?.(value, { depth: 1 });
         return walkingInternal(
             value,
             config,
             name,
-            meta,
+            resolvedMeta,
             config.versionToken ?? 0,
             1,
             stateRoot,

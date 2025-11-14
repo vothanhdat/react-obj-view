@@ -24,6 +24,7 @@ export { objectHasChild } from "./objectHasChild";
 export {
     createObjectWalkerAdapter,
     getObjectWalkerVersionToken,
+    getObjectNodeMeta,
     type ObjectNodeMeta,
     type ObjectWalkerAdapterOptions,
 } from "./objectWalkerAdapter";
