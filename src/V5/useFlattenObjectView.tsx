@@ -4,14 +4,6 @@ import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./resolvers/grouped
 import { ResolverFn, WalkingConfig } from "./types";
 import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
 
-const useObjectId = <T,>(value: any) => {
-    let ref = useRef<{ value: T; id: number; }>({ value, id: 0 });
-    if (ref.current.value !== value) {
-        ref.current.value = value;
-        ref.current.id++;
-    }
-    return ref.current.id;
-};
 
 export type FlattenObjectConfig = {
     expandDepth: number;
