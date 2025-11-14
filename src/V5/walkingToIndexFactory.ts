@@ -144,8 +144,6 @@ export const walkingToIndexFactory = () => {
             ? _value.value ?? _value.error
             : _value;
 
-        let count = 1;
-        let maxDepth = depth
         let hasChild = objectHasChild(value)
         let isCircular = cirularChecking.checkCircular(value)
         let canExpand = hasChild && !isCircular
@@ -169,8 +167,8 @@ export const walkingToIndexFactory = () => {
 
         if (shoudUpdate) {
 
-            // console.group(name)
-            // console.log(value)
+            let count = 1;
+            let maxDepth = depth
 
             let cumulate = undefined
             let keys = undefined
