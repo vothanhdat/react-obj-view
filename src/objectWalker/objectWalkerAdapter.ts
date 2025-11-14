@@ -6,10 +6,18 @@ import { objectHasChild } from "./objectHasChild";
 import type { ResolverFn } from "./types";
 import { getObjectUniqueId } from "./getObjectUniqueId";
 
-export type ObjectNodeMeta = {
-    enumerable?: boolean;
-    isCircular?: boolean;
-};
+export type ObjectNodeMeta = number;
+
+export const META_ENUMERABLE_BIT = 1 << 0;
+export const META_CIRCULAR_BIT = 1 << 1;
+
+const packMeta = (enumerable: boolean = true, isCircular: boolean = false): ObjectNodeMeta =>
+    (enumerable ? META_ENUMERABLE_BIT : 0) |
+    (isCircular ? META_CIRCULAR_BIT : 0);
+export const metaIsEnumerable = (meta?: ObjectNodeMeta) =>
+    meta === undefined || Boolean(meta & META_ENUMERABLE_BIT);
+export const metaIsCircular = (meta?: ObjectNodeMeta) =>
+    Boolean(meta && (meta & META_CIRCULAR_BIT));
 
 export type ObjectWalkerAdapterOptions = {
     resolver: Map<any, ResolverFn> | undefined;
@@ -17,21 +25,12 @@ export type ObjectWalkerAdapterOptions = {
     nonEnumerable: boolean;
 };
 
-const metaCache = {
-    true: {
-        true: { enumerable: true, isCircular: true } as ObjectNodeMeta,
-        false: { enumerable: true, isCircular: false } as ObjectNodeMeta,
-    },
-    false: {
-        true: { enumerable: false, isCircular: true } as ObjectNodeMeta,
-        false: { enumerable: false, isCircular: false } as ObjectNodeMeta,
-    },
-};
+
 
 export const getObjectNodeMeta = (
     enumerable = true,
     isCircular = false,
-): ObjectNodeMeta => metaCache[enumerable ? "true" : "false"][isCircular ? "true" : "false"];
+): ObjectNodeMeta => packMeta(enumerable, isCircular);
 
 export const createObjectWalkerAdapter = (
     options: ObjectWalkerAdapterOptions,
@@ -46,8 +45,8 @@ export const createObjectWalkerAdapter = (
 
     return {
         canHaveChildren: (value, meta) =>
-            !meta?.isCircular && objectHasChild(value),
-        createMeta: (value) => getObjectNodeMeta(true, circularChecking.checkCircular(value)),
+            !metaIsCircular(meta) && objectHasChild(value),
+        createMeta: (value) => packMeta(true, circularChecking.checkCircular(value)),
         getChildren: (value, _meta, _ctx, emit) => {
             if (!objectHasChild(value) || circularChecking.checkCircular(value)) {
                 return;
@@ -68,15 +67,15 @@ export const createObjectWalkerAdapter = (
                     emit({
                         key,
                         value: normalized,
-                        meta: getObjectNodeMeta(enumerable, isCircular),
+                        meta: packMeta(enumerable, isCircular),
                     });
                 },
             );
             circularChecking.exitNode(value);
         },
         shouldExpand: (_value, meta, { depth }, config) => {
-            if (meta?.isCircular) return false;
-            const isEnumerable = meta?.enumerable !== false;
+            if (metaIsCircular(meta)) return false;
+            const isEnumerable = metaIsEnumerable(meta);
             return isEnumerable && depth <= config.expandDepth;
         },
     };

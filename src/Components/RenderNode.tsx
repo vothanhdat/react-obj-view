@@ -5,6 +5,8 @@ import {
     GroupedProxy,
     LazyValueError,
     objectHasChild,
+    metaIsEnumerable,
+    metaIsCircular,
 } from "../objectWalker";
 import type { ObjectNodeMeta } from "../objectWalker";
 import { RenderName } from "./RenderName";
@@ -35,11 +37,11 @@ export const RenderNode: React.FC<{
 
     const { enablePreview, toggleChildExpand } = options
 
-    const nodeMeta = (nodeData.meta ?? {}) as ObjectNodeMeta;
+    const nodeMeta = nodeData.meta as ObjectNodeMeta | undefined;
 
     const isExpanded = nodeData.expanded
 
-    const isCircular = Boolean(nodeMeta.isCircular);
+    const isCircular = metaIsCircular(nodeMeta);
 
     const hasChild = objectHasChild(value)
         && !(value instanceof LazyValueError);
@@ -77,7 +79,7 @@ export const RenderNode: React.FC<{
         <span
             className="node-default"
             data-child={hasChild}
-            data-nonenumrable={nodeMeta.enumerable === false}
+            data-nonenumrable={!metaIsEnumerable(nodeMeta)}
             onClick={() => hasChild && toggleChildExpand(nodeData)}
         >
             <span style={{ whiteSpace: 'preserve', opacity: 0.05 }}>
@@ -98,7 +100,7 @@ export const RenderNode: React.FC<{
 
             <RenderValue {...{
                 valueWrapper,
-                enumrable: nodeMeta.enumerable !== false,
+                enumrable: metaIsEnumerable(nodeMeta),
                 options: overrideOptions,
                 isPreview,
             }} />

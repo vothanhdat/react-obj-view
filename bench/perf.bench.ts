@@ -58,17 +58,17 @@ describe('walkingToIndexFactory benchmark', () => {
 
     bench('flatten ~100k nodes payload', () => {
       const factory = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter)
-      factory.walking(payload100k, config, 'root', { enumerable: true })
+      factory.walking(payload100k, config, 'root')
     }, { iterations: 50 })
 
     bench('flatten ~1m nodes payload', () => {
       const factory = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter)
-      factory.walking(payload1M, config, 'root', { enumerable: true })
+      factory.walking(payload1M, config, 'root')
     }, { iterations: 5 })
 
     bench('flatten ~2m nodes payload', () => {
       const factory = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter)
-      factory.walking(payload2M, config, 'root', { enumerable: true })
+      factory.walking(payload2M, config, 'root')
     }, { iterations: 5 })
 
   })

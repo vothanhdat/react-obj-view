@@ -25,6 +25,10 @@ export {
     createObjectWalkerAdapter,
     getObjectWalkerVersionToken,
     getObjectNodeMeta,
+    metaIsEnumerable,
+    metaIsCircular,
+    META_ENUMERABLE_BIT,
+    META_CIRCULAR_BIT,
     type ObjectNodeMeta,
     type ObjectWalkerAdapterOptions,
 } from "./objectWalkerAdapter";
