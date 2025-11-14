@@ -1,5 +1,5 @@
 import { GetStateFn, StateFactory } from "./StateFactory";
-import { TreeWalkerAdapter, WalkerChild, WalkingConfig } from "./types";
+import { TreeWalkerAdapter, WalkingConfig } from "./types";
 
 export type WalkingResult<Value = unknown, Key = unknown, Meta = unknown> = {
     value: Value;
@@ -110,10 +110,7 @@ export const walkingToIndexFactory = <
         let childOffsets: number[] = [count];
         let childKeys: Key[] = [];
 
-        const children: Iterable<WalkerChild<Value, Key, Meta>> =
-            adapter.getChildren(value, meta, { depth }) ?? [];
-
-        for (const child of children) {
+        adapter.getChildren(value, meta, { depth }, (child) => {
             const childResult = walking(
                 child.value,
                 config,
@@ -129,7 +126,7 @@ export const walkingToIndexFactory = <
             childCanExpand ||= childResult.childCanExpand;
             childOffsets.push(count);
             childKeys.push(child.key);
-        }
+        });
 
         return { count, maxDepth, childCanExpand, childOffsets, childKeys };
     };

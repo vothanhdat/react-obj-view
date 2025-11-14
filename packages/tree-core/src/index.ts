@@ -7,7 +7,6 @@ export {
 export { StateFactory } from "./StateFactory";
 export type {
     TreeWalkerAdapter,
-    WalkerChild,
     WalkerAdapterContext,
     WalkingConfig,
 } from "./types";

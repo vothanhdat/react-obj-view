@@ -1,7 +1,4 @@
-import type {
-    TreeWalkerAdapter,
-    WalkerChild,
-} from "@react-obj-view/tree-core";
+import type { TreeWalkerAdapter } from "@react-obj-view/tree-core";
 import { CircularChecking } from "./CircularChecking";
 import { getEntriesCb } from "./getEntries";
 import { LazyValue } from "./LazyValueWrapper";
@@ -51,16 +48,10 @@ export const createObjectWalkerAdapter = (
         canHaveChildren: (value, meta) =>
             !meta?.isCircular && objectHasChild(value),
         createMeta: (value) => getObjectNodeMeta(true, circularChecking.checkCircular(value)),
-        getChildren: (value) => {
+        getChildren: (value, _meta, _ctx, emit) => {
             if (!objectHasChild(value) || circularChecking.checkCircular(value)) {
-                return [];
+                return;
             }
-
-            const children: WalkerChild<
-                unknown,
-                PropertyKey,
-                ObjectNodeMeta
-            >[] = [];
 
             circularChecking.enterNode(value);
             getEntriesCb(
@@ -74,7 +65,7 @@ export const createObjectWalkerAdapter = (
                             ? childValue.value ?? childValue.error
                             : childValue;
                     const isCircular = circularChecking.checkCircular(normalized);
-                    children.push({
+                    emit({
                         key,
                         value: normalized,
                         meta: getObjectNodeMeta(enumerable, isCircular),
@@ -82,8 +73,6 @@ export const createObjectWalkerAdapter = (
                 },
             );
             circularChecking.exitNode(value);
-
-            return children;
         },
         shouldExpand: (_value, meta, { depth }, config) => {
             if (meta?.isCircular) return false;

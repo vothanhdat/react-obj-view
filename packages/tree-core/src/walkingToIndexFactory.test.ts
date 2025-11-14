@@ -14,12 +14,15 @@ const createAdapter = (
 ): TreeWalkerAdapter<MockNode, string, Record<string, unknown>> => ({
     canHaveChildren: (node) => Array.isArray(node.children) && node.children.length > 0,
     createMeta: (node) => node.meta,
-    getChildren: (node) =>
-        node.children?.map((child) => ({
-            key: child.key,
-            value: child,
-            meta: { ...child.meta },
-        })),
+    getChildren: (node, _meta, _ctx, emit) => {
+        node.children?.forEach((child) => {
+            emit({
+                key: child.key,
+                value: child,
+                meta: { ...child.meta },
+            });
+        });
+    },
     stringifyPath: (path) => path.join("."),
     ...overrides,
 });
@@ -151,5 +154,23 @@ describe("walkingToIndexFactory", () => {
         const locked = factory.getNode(1, config).getData();
         expect(locked.expanded).toBe(false);
         expect(locked.childCanExpand).toBe(true);
+    });
+
+    it("can stop emitting children via adapter", () => {
+        const adapter = createAdapter({
+            getChildren: (node, _meta, _ctx, emit) => {
+                node.children?.slice(0, 1).forEach((child) => emit({
+                    key: child.key,
+                    value: child,
+                    meta: child.meta,
+                }));
+            },
+        });
+        factory = walkingToIndexFactory(adapter);
+
+        const tree = buildTree();
+        factory.walking(tree, config, tree.key);
+
+        expect(() => factory.getNode(2, config)).toThrow();
     });
 });
