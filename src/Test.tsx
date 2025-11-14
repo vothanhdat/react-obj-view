@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
 import { V5Index } from './V5'
-import { ResolverFn } from './V5/types'
+import type { ResolverFn } from './V5/types'
 import {
   themeDefault,
   themeDracula,

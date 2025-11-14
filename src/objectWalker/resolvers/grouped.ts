@@ -1,7 +1,19 @@
-import { GroupedProxy, objectGroupProxyFactory } from "../../utils/groupedProxy";
+import { GroupedProxy, objectGroupProxyFactory } from "../utils/groupedProxy";
 import { ResolverFn } from "../types";
 
-const weakMapCache = new WeakMap()
+const weakMapCache = new WeakMap<object, ReturnType<typeof objectGroupProxyFactory>>();
+
+const getProxyFactory = (stableRef: unknown) => {
+    if (typeof stableRef === "object" && stableRef !== null) {
+        let factory = weakMapCache.get(stableRef);
+        if (!factory) {
+            factory = objectGroupProxyFactory();
+            weakMapCache.set(stableRef, factory);
+        }
+        return factory;
+    }
+    return objectGroupProxyFactory();
+};
 
 export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: number) => (
     arr: any[],
@@ -12,11 +24,8 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
     stableRef,
 ) => {
     if (!isPreview && arr instanceof Array && arr.length > size) {
-        let groupProxyFactory = weakMapCache.get(stableRef)
-        if (!groupProxyFactory) {
-            weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
-        }
-        next(groupProxyFactory(arr, size));
+        const factory = getProxyFactory(stableRef);
+        next(factory(arr, size));
     } else {
         next(arr);
     }
@@ -31,11 +40,8 @@ export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: n
     stableRef,
 ) => {
     if (!isPreview) {
-        let groupProxyFactory = weakMapCache.get(stableRef)
-        if (!groupProxyFactory) {
-            weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
-        }
-        next(groupProxyFactory(value, size));
+        const factory = getProxyFactory(stableRef);
+        next(factory(value, size));
     } else {
         next(value);
     }

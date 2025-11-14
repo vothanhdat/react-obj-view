@@ -87,14 +87,14 @@ Resolvers control how entries are produced for a specific constructor. Each reso
 
 ### Built-in Resolvers
 
-Located in [`src/V5/resolvers/index.ts`](src/V5/resolvers/index.ts):
+Located in [`src/objectWalker/resolvers/index.ts`](src/objectWalker/resolvers/index.ts):
 
 - **Promises** (`Promise`, `InternalPromise`) – surfaces `status`, resolved value, or rejection reason using the async-aware wrapper from [`PromiseWrapper.tsx`](src/Components/PromiseWrapper.tsx).
 - **Lazy Values** (`LazyValue`) – ensures property getter evaluation happens on demand.
-- **Custom Iterables** (`CustomIterator`) – powers `Map`/`Set` entry rendering through [`CustomEntry`](src/V5/resolvers/collections.ts).
+- **Custom Iterables** (`CustomIterator`) – powers `Map`/`Set` entry rendering through [`CustomEntry`](src/objectWalker/resolvers/collections.ts).
 - **Collections** (`Map`, `Set`) – preview entries inline and expose `[[Entries]]`/`size` metadata.
 
-Grouping helpers from [`src/V5/resolvers/grouped.ts`](src/V5/resolvers/grouped.ts) are attached when `arrayGroupSize`/`objectGroupSize` are provided. They emit [`GroupedProxy`](src/utils/groupedProxy.ts) instances that lazily expand ranges like `items[0…49]` only when needed.
+Grouping helpers from [`src/objectWalker/resolvers/grouped.ts`](src/objectWalker/resolvers/grouped.ts) are attached when `arrayGroupSize`/`objectGroupSize` are provided. They emit [`GroupedProxy`](src/objectWalker/utils/groupedProxy.ts) instances that lazily expand ranges like `items[0…49]` only when needed.
 
 ### Creating Custom Resolvers
 
@@ -122,7 +122,7 @@ Resolvers participate in both preview and expanded phases, so make sure to call 
 
 The renderer is implemented in [`src/V5/index.tsx`](src/V5/index.tsx) and combines several layers:
 
-1. **Flattening** – [`useFlattenObjectView`](src/V5/useFlattenObjectView.tsx) builds a flat list of nodes by running [`walkingToIndexFactory`](src/V5/walkingToIndexFactory.ts). It memoises traversal state, tracks circular references via [`CircularChecking`](src/V5/CircularChecking.ts), and reacts to resolver changes.
+1. **Flattening** – [`useFlattenObjectView`](src/V5/useFlattenObjectView.tsx) builds a flat list of nodes by running [`walkingToIndexFactory`](packages/tree-core/src/walkingToIndexFactory.ts). It memoises traversal state, tracks circular references via [`CircularChecking`](src/objectWalker/CircularChecking.ts), and reacts to resolver changes.
 2. **Virtualisation** – The internal [`VirtualScroller`](src/Components/VirtualScroller.tsx) measures the viewport and only renders the visible slice of nodes. `computeItemKey` uses the node path for stable identity.
 3. **Node Rendering** – [`RenderNode`](src/Components/RenderNode.tsx) composes [`RenderName`](src/Components/RenderName.tsx), [`RenderValue`](src/Components/RenderValue.tsx), and change-flash logic. It controls expand/collapse state, preview detection, and circular badges.
 4. **Value Rendering** – [`RenderValue`](src/Components/RenderValue.tsx) decides between preview and raw modes and delegates to [`RenderRawValue`](src/Components/RenderRawValue.tsx) or [`RenderPreview`](src/Components/RenderPreview.tsx). Promise-like values are wrapped with [`withPromiseWrapper`](src/Components/PromiseWrapper.tsx) so pending async results update automatically.
@@ -194,10 +194,10 @@ Each preset exposes the same set of CSS custom properties as `themeDefault`, so 
 
 ## Supporting Utilities
 
-- [`src/utils/groupedProxy.ts`](src/utils/groupedProxy.ts) – Implements proxy objects for grouped ranges and helpers like `groupedProxyIsEqual`.
-- [`src/V5/getEntries.ts`](src/V5/getEntries.ts) – Normalises property enumeration respecting `nonEnumerable` and resolver output.
-- [`src/V5/getObjectUniqueId.ts`](src/V5/getObjectUniqueId.ts) – Provides stable identifiers for resolver maps used in memoisation.
-- [`src/V5/StateFactory.ts`](src/V5/StateFactory.ts) – Creates persistent node state objects reused between renders.
+- [`src/objectWalker/getEntries.ts`](src/objectWalker/getEntries.ts) – Normalises property enumeration respecting `nonEnumerable` and resolver output.
+- [`src/objectWalker/getObjectUniqueId.ts`](src/objectWalker/getObjectUniqueId.ts) – Provides stable identifiers for resolver maps used in memoisation.
+- [`packages/tree-core/src/StateFactory.ts`](packages/tree-core/src/StateFactory.ts) – Creates persistent node state objects reused between renders.
+- [`src/objectWalker/utils/groupedProxy.ts`](src/objectWalker/utils/groupedProxy.ts) – Implements proxy objects for grouped ranges and helpers like `groupedProxyIsEqual`.
 
 ## Troubleshooting
 

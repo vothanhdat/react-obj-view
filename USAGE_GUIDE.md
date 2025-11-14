@@ -275,7 +275,7 @@ const largeArray = Array.from({ length: 5000 }, (_, index) => ({ id: index }));
 />;
 ```
 
-Grouping resolvers emit [`GroupedProxy`](src/utils/groupedProxy.ts) ranges that open lazily when clicked.
+Grouping resolvers emit [`GroupedProxy`](src/objectWalker/utils/groupedProxy.ts) ranges that open lazily when clicked.
 
 ### Handling Non-Enumerable Properties
 

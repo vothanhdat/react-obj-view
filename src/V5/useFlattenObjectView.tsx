@@ -1,17 +1,23 @@
 import { RefObject, useRef, useMemo, useState, useCallback } from "react";
-import { DEFAULT_RESOLVER } from "./resolvers";
-import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./resolvers/grouped";
-import { ResolverFn, WalkingConfig } from "./types";
-import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
+import {
+    walkingToIndexFactory,
+    type WalkingConfig,
+    type NodeResult,
+    type NodeResultData,
+    type TreeWalkerAdapter,
+} from "@react-obj-view/tree-core";
+import {
+    DEFAULT_RESOLVER,
+    GROUP_ARRAY_RESOLVER,
+    GROUP_OBJECT_RESOLVER,
+    type ResolverFn,
+    createObjectWalkerAdapter,
+    getObjectWalkerVersionToken,
+    type ObjectNodeMeta,
+} from "../objectWalker";
 
-const useObjectId = <T,>(value: any) => {
-    let ref = useRef<{ value: T; id: number; }>({ value, id: 0 });
-    if (ref.current.value !== value) {
-        ref.current.value = value;
-        ref.current.id++;
-    }
-    return ref.current.id;
-};
+type WalkerNode = NodeResult<unknown, PropertyKey, ObjectNodeMeta>;
+type WalkerNodeData = NodeResultData<unknown, PropertyKey, ObjectNodeMeta>;
 
 export type FlattenObjectConfig = {
     expandDepth: number;
@@ -48,39 +54,61 @@ export function useFlattenObjectView(
                 ? GROUP_OBJECT_RESOLVER(Number(objectGroupSize))
                 : [],
         ]),
-        [_resolver, arrayGroupSize, objectGroupSize, DEFAULT_RESOLVER]
+        [_resolver, arrayGroupSize, objectGroupSize]
+    );
+
+    const adapter = useMemo(
+        () => createObjectWalkerAdapter({
+            resolver,
+            includeSymbols: Boolean(symbol),
+            nonEnumerable,
+        }),
+        [resolver, symbol, nonEnumerable]
+    );
+
+    const versionToken = useMemo(
+        () => getObjectWalkerVersionToken({
+            resolver,
+            includeSymbols: Boolean(symbol),
+            nonEnumerable,
+        }),
+        [resolver, symbol, nonEnumerable]
     );
 
     const config = useMemo(
-        () => ({ expandDepth, resolver, nonEnumerable, symbol, }) as WalkingConfig,
-        [nonEnumerable, expandDepth, resolver, symbol]
+        () => ({ expandDepth, versionToken }) as WalkingConfig,
+        [expandDepth, versionToken]
     );
 
     const [reload, setReload] = useState(0);
 
-    const { refWalk } = useWalkingFn();
+    const { refWalk } = useWalkingFn(adapter);
 
     const refWalkResult = useMemo(
         () => {
-            // console.time("walking");
-            const result = refWalk.current!.walking(
+            if (!refWalk.current) {
+                return null;
+            }
+
+            const result = refWalk.current.walking(
                 value,
                 config,
-                name ?? "ROOT",
-                true
+                (name ?? "ROOT") as PropertyKey,
+                { enumerable: true }
             );
 
-            // console.log("updateStamp", result.updateStamp);
-            // console.timeEnd("walking");
             return { ...result };
         },
         [refWalk.current, value, name, reload, config]
     );
 
     const refreshPath = useCallback(
-        (node: NodeResultData) => {
+        (node: WalkerNodeData) => {
             // console.time("refreshPath");
-            refWalk.current?.refreshPath(node.paths);
+        if (!refWalk.current) {
+            return;
+        }
+        refWalk.current.refreshPath(node.paths as PropertyKey[]);
             // console.timeEnd("refreshPath");
             setReload(e => e + 1);
         },
@@ -88,9 +116,12 @@ export function useFlattenObjectView(
     );
 
     const toggleChildExpand = useCallback(
-        (node: NodeResultData) => {
+        (node: WalkerNodeData) => {
             // console.time("toggleExpand");
-            refWalk.current?.toggleExpand(node.paths, config);
+        if (!refWalk.current) {
+            return;
+        }
+        refWalk.current.toggleExpand(node.paths as PropertyKey[], config);
             // console.timeEnd("toggleExpand");
             setReload(e => e + 1);
         },
@@ -99,13 +130,17 @@ export function useFlattenObjectView(
 
     const getNodeByIndex = useMemo(
         () => {
-            let m = new Map<any, NodeResult>();
+            let m = new Map<number, WalkerNode>();
 
-            return (index: number) => {
+            return (index: number): WalkerNode => {
                 let data = m.get(index);
 
                 if (!data) {
-                    m.set(index, data = refWalk.current?.getNode(index, config)!);
+                    if (!refWalk.current) {
+                        throw new Error("Tree walker not initialised");
+                    }
+                    const node = refWalk.current.getNode(index, config);
+                    m.set(index, data = node);
                 }
 
                 return data;
@@ -114,31 +149,31 @@ export function useFlattenObjectView(
         [refWalk.current, config, refWalkResult, reload]
     );
 
+    const size = refWalkResult?.count ?? 0;
+
     return {
         toggleChildExpand,
         refreshPath,
         resolver,
         getNodeByIndex,
-        size: refWalkResult.count,
+        size,
     };
 }
 
-type Factory = typeof walkingToIndexFactory;
+type WalkerInstance = ReturnType<typeof walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>>;
 
-function useWalkingFn(): {
-    refWalk: RefObject<ReturnType<Factory> | undefined>;
+function useWalkingFn(
+    adapter: TreeWalkerAdapter<unknown, PropertyKey, ObjectNodeMeta>,
+): {
+    refWalk: RefObject<WalkerInstance | null>;
 } {
-    const refWalkFn = useRef<Factory>(undefined);
-    const refWalk = useRef<ReturnType<Factory>>(undefined);
+    const refAdapter = useRef<typeof adapter | null>(null);
+    const refWalk = useRef<WalkerInstance | null>(null);
 
-    const factory = walkingToIndexFactory;
+    if (!refWalk.current || refAdapter.current !== adapter) {
+        refAdapter.current = adapter;
+        refWalk.current = walkingToIndexFactory(adapter);
+    }
 
-    if (!refWalk.current || refWalkFn.current != factory) {
-        refWalkFn.current = factory;
-        refWalk.current = factory();
-    };
-
-    return {
-        refWalk,
-    };
+    return { refWalk };
 }

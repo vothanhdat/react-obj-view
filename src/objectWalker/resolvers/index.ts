@@ -1,4 +1,4 @@
-import { GroupedProxy } from "../../utils/groupedProxy";
+import { GroupedProxy } from "../utils/groupedProxy";
 import { LazyValue } from "../LazyValueWrapper";
 import { ResolverFn } from "../types";
 import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./collections";
@@ -21,4 +21,3 @@ export const PROTOTYPE_DISABLE = new Set([
     GroupedProxy,
     CustomIterator,
 ])
-

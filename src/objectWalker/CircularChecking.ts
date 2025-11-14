@@ -1,4 +1,4 @@
-import { isRef } from "../utils/isRef";
+import { isRef } from "./utils/isRef";
 
 export class CircularChecking {
 

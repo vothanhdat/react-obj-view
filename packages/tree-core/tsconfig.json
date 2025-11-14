@@ -2,22 +2,17 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["dom", "esnext"],
     "moduleResolution": "node",
-    "jsx": "react-jsx",
+    "lib": ["dom", "esnext"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
     "declaration": true,
     "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@react-obj-view/tree-core": ["packages/tree-core/src"],
-      "@react-obj-view/tree-core/*": ["packages/tree-core/src/*"]
-    }
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["dist", "node_modules"]
 }

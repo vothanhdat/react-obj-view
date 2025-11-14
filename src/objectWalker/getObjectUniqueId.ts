@@ -1,4 +1,4 @@
-import { isRef } from "../utils/isRef";
+import { isRef } from "./utils/isRef";
 
 export const getObjectUniqueId = (() => {
     let counter = 0;

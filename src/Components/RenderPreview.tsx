@@ -1,7 +1,5 @@
 import { Fragment, useMemo } from "react";
-import { getEntriesCb } from "../V5/getEntries";
-import { CustomIterator, CustomEntry } from "../V5/resolvers/collections";
-import { ResolverFn, Entry } from "../V5/types";
+import { getEntriesCb, CustomIterator, CustomEntry, Entry, ResolverFn } from "../objectWalker";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { RenderOptions } from "./RenderNode";
@@ -22,7 +20,6 @@ export const RenderPreview: React.FC<{
             getEntriesCb(
                 value,
                 {
-                    expandDepth: 0,
                     nonEnumerable: false,
                     resolver: options.resolver,
                     symbol: options.includeSymbols,

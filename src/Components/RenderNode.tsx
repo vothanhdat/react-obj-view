@@ -1,11 +1,14 @@
 import { useCallback, useMemo } from "react";
-import { ResolverFn } from "../V5/types";
-
-import { NodeResultData, objectHasChild, WalkingResult } from "../V5/walkingToIndexFactory";
+import type { ResolverFn } from "../V5/types";
+import { type NodeResultData } from "@react-obj-view/tree-core";
+import {
+    GroupedProxy,
+    LazyValueError,
+    objectHasChild,
+} from "../objectWalker";
+import type { ObjectNodeMeta } from "../objectWalker";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
-import { LazyValueError } from "../V5/LazyValueWrapper";
-import { GroupedProxy } from "../utils/groupedProxy";
 import { useChangeFlashClasses } from "../utils/useChangeFlashClasses";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 
@@ -32,9 +35,11 @@ export const RenderNode: React.FC<{
 
     const { enablePreview, toggleChildExpand } = options
 
+    const nodeMeta = (nodeData.meta ?? {}) as ObjectNodeMeta;
+
     const isExpanded = nodeData.expanded
 
-    const isCircular = nodeData.isCircular;
+    const isCircular = Boolean(nodeMeta.isCircular);
 
     const hasChild = objectHasChild(value)
         && !(value instanceof LazyValueError);
@@ -72,7 +77,7 @@ export const RenderNode: React.FC<{
         <span
             className="node-default"
             data-child={hasChild}
-            data-nonenumrable={!nodeData.enumerable}
+            data-nonenumrable={nodeMeta.enumerable === false}
             onClick={() => hasChild && toggleChildExpand(nodeData)}
         >
             <span style={{ whiteSpace: 'preserve', opacity: 0.05 }}>
@@ -93,7 +98,7 @@ export const RenderNode: React.FC<{
 
             <RenderValue {...{
                 valueWrapper,
-                enumrable: nodeData.enumerable,
+                enumrable: nodeMeta.enumerable !== false,
                 options: overrideOptions,
                 isPreview,
             }} />

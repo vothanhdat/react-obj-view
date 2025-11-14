@@ -1,6 +1,11 @@
-import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { walkingToIndexFactory, type WalkingConfig } from "@react-obj-view/tree-core";
 import { performanceTestData } from "../exampleData";
-import { WalkingConfig } from "./types";
+import {
+    createObjectWalkerAdapter,
+    DEFAULT_RESOLVER,
+    getObjectWalkerVersionToken,
+    type ObjectNodeMeta,
+} from "../objectWalker";
 
 
 const arr = performanceTestData.suppersupperLarge
@@ -10,12 +15,21 @@ const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 const arr3 = arr.filter((e, i) => i % 2 == 0)
 
 
+const resolver = new Map(DEFAULT_RESOLVER);
+const adapter = createObjectWalkerAdapter({
+    resolver,
+    includeSymbols: false,
+    nonEnumerable: true,
+});
+
 const config: WalkingConfig = {
     expandDepth: 10,
-    nonEnumerable: true,
-    resolver: undefined as any,
-    symbol: false,
-}
+    versionToken: getObjectWalkerVersionToken({
+        resolver,
+        includeSymbols: false,
+        nonEnumerable: true,
+    }),
+};
 
 
 let times = {
@@ -30,7 +44,7 @@ console.log(Object.keys(times)
 
 for (let i = 0; i < 10; i++) {
 
-    const walking = walkingToIndexFactory()
+    const walking = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter)
 
     const t1 = performance.now()
 
@@ -38,7 +52,7 @@ for (let i = 0; i < 10; i++) {
         arr,
         config,
         "root",
-        true,
+        { enumerable: true },
     )
 
     const t2 = performance.now()
@@ -49,7 +63,7 @@ for (let i = 0; i < 10; i++) {
         arr2,
         config,
         "root",
-        true
+        { enumerable: true }
     )
 
     const t3 = performance.now()
@@ -58,7 +72,7 @@ for (let i = 0; i < 10; i++) {
         arr3,
         config,
         "root",
-        true
+        { enumerable: true }
     )
 
     const t4 = performance.now()
@@ -67,7 +81,7 @@ for (let i = 0; i < 10; i++) {
         arr3,
         config,
         "root",
-        true
+        { enumerable: true }
     )
 
     const t5 = performance.now()
@@ -93,4 +107,3 @@ console.table({
     half_avg: times.half.reduce((e, f) => e + f, 0) / times.first.length,
     void_avg: times.void.reduce((e, f) => e + f, 0) / times.first.length,
 })
-

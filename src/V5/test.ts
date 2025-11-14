@@ -1,5 +1,11 @@
-import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { walkingToIndexFactory } from "@react-obj-view/tree-core";
 import { performanceTestData } from "../exampleData";
+import {
+    createObjectWalkerAdapter,
+    DEFAULT_RESOLVER,
+    getObjectWalkerVersionToken,
+    type ObjectNodeMeta,
+} from "../objectWalker";
 
 
 const arr = performanceTestData.supperLarge
@@ -7,9 +13,22 @@ const arr = performanceTestData.supperLarge
 const arr2 = arr.map((e, i) => i % 100 == 0 ? ({ ...e, }) : e)
 
 
-const walking = walkingToIndexFactory()
+const resolver = new Map(DEFAULT_RESOLVER);
+const adapter = createObjectWalkerAdapter({
+    resolver,
+    includeSymbols: false,
+    nonEnumerable: true,
+});
+const walking = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter);
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const config = {
+    expandDepth: 10,
+    versionToken: getObjectWalkerVersionToken({
+        resolver,
+        includeSymbols: false,
+        nonEnumerable: true,
+    }),
+};
 
 const t1 = performance.now()
 
@@ -17,7 +36,7 @@ let r1 = walking.walking(
     arr,
     config,
     "root",
-    true,
+    { enumerable: true },
 )
 
 const t2 = performance.now()
@@ -28,7 +47,7 @@ let r2 = walking.walking(
     arr2,
     config,
     "root",
-    true
+    { enumerable: true }
 )
 
 const t3 = performance.now()
@@ -44,7 +63,7 @@ let preGetNodes = [
         .fill(0).map((_, i) => i + (r2.count >> 1)),
     ...new Array(5)
         .fill(0).map((_, i) => r2.count - 5 + i),
-].map((i) => [i, walking.getNode(i, config).getData()]) as [number, NodeResultData][]
+].map((i) => [i, walking.getNode(i, config).getData()] as [number, any])
 
 const t5 = performance.now()
 

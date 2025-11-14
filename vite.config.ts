@@ -2,8 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts'
 import { analyzer } from 'vite-bundle-analyzer'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 
 const ENABLE_BUILD_ANALYZER = !!(process.env.ANALYZER)
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const TREE_CORE_SRC = resolve(__dirname, 'packages/tree-core/src')
 
 export default defineConfig({
   plugins: [
@@ -41,6 +45,11 @@ export default defineConfig({
       },
     },
     sourcemap: true
+  },
+  resolve: {
+    alias: {
+      '@react-obj-view/tree-core': TREE_CORE_SRC,
+    },
   },
   server: {
     port: 3000,

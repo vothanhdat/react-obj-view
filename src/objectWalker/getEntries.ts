@@ -1,12 +1,12 @@
-import { propertyIsEnumerable } from "../utils/object";
+import { propertyIsEnumerable } from "./utils/object";
 import { LazyValue } from "./LazyValueWrapper";
-import { WalkingConfig } from "./types";
+import type { ResolverConfig } from "./types";
 
 export const hidePrototype = Symbol()
 
 export const getEntriesCbOriginal = (
     value: any,
-    config: WalkingConfig,
+    config: ResolverConfig,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
 ) => {
 
@@ -65,11 +65,11 @@ export const getEntriesCbOriginal = (
 
 };
 
-// const bindGetEntriesCbOriginal = (config: WalkingConfig, cb) => (value: unknown) => getEntriesCbOriginal(value, config, cb)
+// const bindGetEntriesCbOriginal = (config: ResolverConfig, cb) => (value: unknown) => getEntriesCbOriginal(value, config, cb)
 
 export const getEntriesCb = (
     value: unknown,
-    config: WalkingConfig,
+    config: ResolverConfig,
     isPreview: boolean,
     stableRef: unknown,
     cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void

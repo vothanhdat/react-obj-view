@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useId } from "react";
-import { GroupedProxy, groupedProxyIsEqual, proxyInfo } from "./groupedProxy";
+import { GroupedProxy, groupedProxyIsEqual, proxyInfo } from "../objectWalker";
 
 
 export const useChangeFlashClasses = ({ value, enable = true, flashClassname = 'jv-updated' }: { value: any; flashClassname?: string; enable?: boolean }) => {

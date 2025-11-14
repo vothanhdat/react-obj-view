@@ -1,4 +1,4 @@
-import { CustomEntry } from "../V5/resolvers/collections";
+import { CustomEntry } from "../objectWalker";
 import { useWrapper } from "../hooks/useWrapper";
 import { RenderOptions } from "./RenderNode";
 import { RenderValue } from "./RenderValue";

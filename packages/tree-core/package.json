@@ -1,0 +1,33 @@
+{
+  "name": "@react-obj-view/tree-core",
+  "version": "0.1.0",
+  "description": "Tree-walking core shared by react-obj-view",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "tree",
+    "inspector",
+    "react-obj-view"
+  ],
+  "author": "react-obj-view",
+  "license": "MIT",
+  "peerDependencies": {
+    "typescript": ">=5"
+  }
+}

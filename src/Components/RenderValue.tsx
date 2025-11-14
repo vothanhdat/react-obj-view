@@ -1,5 +1,5 @@
 import { joinClasses } from "../utils/joinClasses";
-import { ResolverFn } from "../V5/types";
+import type { ResolverFn } from "../V5/types";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../hooks/useWrapper";
@@ -43,4 +43,3 @@ export const RenderValue: React.FC<{
             : children}
     </span>;
 });
-

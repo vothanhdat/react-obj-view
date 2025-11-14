@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { ObjectViewProps } from "./types";
-import { NodeResult, NodeResultData } from "./walkingToIndexFactory";
+import { NodeResult, type NodeResultData } from "@react-obj-view/tree-core";
 import { RenderNode, RenderOptions } from "../Components/RenderNode";
 import { useFlattenObjectView } from "./useFlattenObjectView";
 import { useWrapper } from "../hooks/useWrapper";
@@ -55,7 +55,11 @@ export const V5Index: React.FC<ObjectViewProps> = ({
 
 
     const computeItemKey = useCallback(
-        (index: number) => index < size ? getNodeByIndex(index).path : "",
+        (index: number) => {
+            if (index >= size) return "";
+            const node = getNodeByIndex(index);
+            return node?.path ?? "";
+        },
         [getNodeByIndex, size]
     )
 
@@ -67,15 +71,18 @@ export const V5Index: React.FC<ObjectViewProps> = ({
             let starIndex = Math.floor(startIndexRaw)
             let delta = Math.floor(index - starIndex)
 
-            let currentNode = index < size ? getNodeByIndex(index) : (undefined as never)
-            let rIndex = currentNode?.parentIndex?.[delta]
+            const currentNode = index < size ? getNodeByIndex(index) : undefined;
+            const rIndex = currentNode?.parentIndex?.[delta];
 
-            if (rIndex >= 0 && currentNode?.parentIndex.length > delta) {
-                let parentNode = getNodeByIndex(rIndex)
-                let minPos = rIndex + parentNode.state.count - startIndexRaw - 1;
-                let pos = Math.min(delta, minPos)
-                if (parentNode.state.count > 1 && startIndexRaw > 0)
-                    return { isStick: true, index: rIndex, position: pos }
+            if (typeof rIndex === "number" && currentNode?.parentIndex && currentNode.parentIndex.length > delta) {
+                const parentNode = getNodeByIndex(rIndex);
+                if (parentNode) {
+                    const minPos = rIndex + parentNode.state.count - startIndexRaw - 1;
+                    const pos = Math.min(delta, minPos);
+                    if (parentNode.state.count > 1 && startIndexRaw > 0) {
+                        return { isStick: true, index: rIndex, position: pos };
+                    }
+                }
             }
             return { isStick: false, index: index }
         },

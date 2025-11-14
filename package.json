@@ -25,12 +25,14 @@
     "url": "https://github.com/vothanhdat/react-obj-view.git"
   },
   "scripts": {
-    "build": "vite build",
-    "build:analyzer": "ANALYZER=1 vite build",
+    "build:core": "tsc -p packages/tree-core/tsconfig.build.json",
+    "build": "npm run build:core && vite build",
+    "build:analyzer": "ANALYZER=1 npm run build",
     "build:demo": "vite build --config vite.config.demo.ts",
     "dev": "vite --config vite.config.dev.ts",
     "preview:demo": "vite preview --config vite.config.demo.ts",
-    "test": "vitest run",
+    "test:core": "vitest run --config packages/tree-core/vitest.config.ts",
+    "test": "npm run test:core && vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"

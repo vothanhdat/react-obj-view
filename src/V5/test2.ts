@@ -1,5 +1,11 @@
-import { NodeResult, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { walkingToIndexFactory } from "@react-obj-view/tree-core";
 import { performanceTestData } from "../exampleData";
+import {
+    createObjectWalkerAdapter,
+    DEFAULT_RESOLVER,
+    getObjectWalkerVersionToken,
+    type ObjectNodeMeta,
+} from "../objectWalker";
 
 
 
@@ -21,13 +27,26 @@ let data2 = {
     },
 }
 
-const config = { expandDepth: 10, nonEnumerable: true, resolver: undefined as any }
+const resolver = new Map(DEFAULT_RESOLVER);
+const adapter = createObjectWalkerAdapter({
+    resolver,
+    includeSymbols: false,
+    nonEnumerable: true,
+});
+const config = {
+    expandDepth: 10,
+    versionToken: getObjectWalkerVersionToken({
+        resolver,
+        includeSymbols: false,
+        nonEnumerable: true,
+    }),
+};
 
-const walking = walkingToIndexFactory()
+const walking = walkingToIndexFactory<unknown, PropertyKey, ObjectNodeMeta>(adapter);
 
-walking.walking(data1, config, "root", true)
+walking.walking(data1, config, "root", { enumerable: true })
 
-walking.walking(data2, config, "root", true)
+walking.walking(data2, config, "root", { enumerable: true })
 
 
 // const arr = performanceTestData.suppersupperLarge

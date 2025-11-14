@@ -1,28 +1,11 @@
 import { ThemeColor } from "../themes";
-
-type ResolverFnCb = (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
-
-export type ResolverFn<T = any> = (
-    value: T,
-    cb: ResolverFnCb,
-    next: (value: unknown, cb?: ResolverFnCb) => void,
-    isPreview: boolean,
-    config: WalkingConfig,
-    stableRef: any,
-) => void
-
-export type Entry = {
-    key: PropertyKey
-    value: unknown,
-    enumerable: boolean
-};
-
-export type WalkingConfig = {
-    expandDepth: number;
-    nonEnumerable: boolean;
-    symbol?: boolean;
-    resolver: Map<any, ResolverFn> | undefined;
-};
+import type { ResolverFn } from "../objectWalker";
+export { type WalkingConfig } from "@react-obj-view/tree-core";
+export {
+    type ResolverFn,
+    type ResolverFnCb,
+    type Entry,
+} from "../objectWalker";
 
 export type ObjectViewProps = {
     valueGetter: () => unknown;

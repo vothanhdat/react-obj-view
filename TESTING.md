@@ -131,12 +131,20 @@ export default defineConfig({
 src/
 ├── utils/
 │   ├── joinClasses.ts
-│   ├── joinClasses.test.ts          # 6 tests
-│   ├── object.ts
-│   ├── object.test.ts                # 8 tests
-│   ├── groupedProxy.ts
-│   └── groupedProxy.test.ts          # 12 tests
+│   └── joinClasses.test.ts           # 6 tests
 ├── V5/
+│   ├── index.tsx
+│   ├── index.test.tsx                # 26 tests (component)
+│   ├── integration.test.tsx          # 22 tests (integration)
+│   ├── useFlattenObjectView.tsx
+│   ├── test.ts / test2.ts / benkmark.ts
+│   └── (hooks, components, themes…)
+├── objectWalker/
+│   ├── utils/
+│   │   ├── object.ts
+│   │   ├── object.test.ts            # 8 tests
+│   │   ├── groupedProxy.ts
+│   │   └── groupedProxy.test.ts      # 12 tests
 │   ├── resolvers/
 │   │   ├── collections.ts
 │   │   ├── collections.test.ts       # 15 tests
@@ -144,19 +152,17 @@ src/
 │   │   └── promise.test.ts           # 9 tests
 │   ├── CircularChecking.ts
 │   ├── CircularChecking.test.ts      # 27 tests
-│   ├── StateFactory.ts
-│   ├── StateFactory.test.ts          # 19 tests
-│   ├── getObjectUniqueId.ts
-│   ├── getObjectUniqueId.test.ts     # 30 tests
-│   ├── walkingToIndexFactory.ts
-│   ├── walkingToIndexFactory.test.ts # 40 tests
 │   ├── LazyValueWrapper.ts
-│   ├── LazyValueWrapper.test.ts      # 16 tests
-│   ├── index.tsx
-│   ├── index.test.tsx                # 26 tests (component)
-│   └── integration.test.tsx          # 22 tests (integration)
+│   └── LazyValueWrapper.test.ts      # 16 tests
 └── test/
-    └── setup.ts                       # Test setup & globals
+    └── setup.ts                      # Test setup & globals
+
+packages/tree-core/
+└── src/
+    ├── StateFactory.ts
+    ├── StateFactory.test.ts          # 19 tests
+    ├── walkingToIndexFactory.ts
+    ├── walkingToIndexFactory.test.ts # 42 tests
 ```
 
 ### Test File Naming
@@ -181,13 +187,13 @@ src/
   - Falsy value filtering
   - Edge cases (empty, single class)
 
-- **object.test.ts** (8 tests)
+- **object.test.ts** (8 tests, `src/objectWalker/utils`)
   - Property value retrieval
   - Getter handling
   - Error handling
   - Symbol properties
 
-- **groupedProxy.test.ts** (12 tests)
+- **groupedProxy.test.ts** (12 tests, `src/objectWalker/utils`)
   - Proxy factory creation
   - Array and object grouping
   - Caching behavior
