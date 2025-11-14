@@ -201,9 +201,11 @@ See [TESTING.md](./TESTING.md) for coverage numbers, structure, and tips.
 
 | Library | Scenario | Mean time* | Command |
 |---------|----------|------------|---------|
-| **react-obj-view** | Flatten ~100k-node payload (see `bench/perf.bench.ts`) | **28.1 ms** (35.6 ops/s) | `npx vitest bench bench/perf.bench.ts` |
+| **react-obj-view** | Flatten ~100k-node payload (see `bench/perf.bench.ts`) | **23.7 ms** (42.3 ops/s) | `npx vitest bench bench/perf.bench.ts` |
+| **react-obj-view** | Flatten ~1M-node payload | **253 ms** (4.0 ops/s) | `npx vitest bench bench/perf.bench.ts` |
+| **react-obj-view** | Flatten ~2M-node payload | **525 ms** (1.9 ops/s) | `npx vitest bench bench/perf.bench.ts` |
 
-\*Measured on macOS (Apple M3 Max, Node 22.11, Vitest 4.0.8). The benchmark instantiates a fresh `walkingToIndexFactory`, generates 10k user records (~100k nodes total), and walks the tree per sample. Adjust `bench/perf.bench.ts` to match your datasets if you need environment-specific numbers.
+\*Measured on macOS (Apple M3 Max, Node 22.11, Vitest 4.0.8). Each sample instantiates a fresh `walkingToIndexFactory`, generates 10k/100k/200k user records (~100k/~1M/~2M nodes total), and walks the tree. Adjust `bench/perf.bench.ts` to mirror your datasets if you need environment-specific numbers.
 
 > Third-party libraries aren’t benchmarked here; run their official examples under the same conditions for apples-to-apples comparisons.
 
