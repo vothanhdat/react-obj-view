@@ -16,11 +16,11 @@ const createAdapter = (
     createMeta: (node) => node.meta,
     getChildren: (node, _meta, _ctx, emit) => {
         node.children?.forEach((child) => {
-            emit({
-                key: child.key,
-                value: child,
-                meta: { ...child.meta },
-            });
+            emit(
+                child.key,
+                child,
+                { ...child.meta },
+            );
         });
     },
     stringifyPath: (path) => path.join("."),
@@ -30,7 +30,7 @@ const createAdapter = (
 describe("walkingToIndexFactory", () => {
     let config: WalkingConfig;
     let adapter: TreeWalkerAdapter<MockNode, string, Record<string, unknown>>;
-    let factory: ReturnType<typeof walkingToIndexFactory>;
+    let factory: ReturnType<typeof walkingToIndexFactory<MockNode, string, Record<string, unknown>>>;
 
     const buildTree = (): MockNode => ({
         key: "root",
@@ -159,11 +159,9 @@ describe("walkingToIndexFactory", () => {
     it("can stop emitting children via adapter", () => {
         const adapter = createAdapter({
             getChildren: (node, _meta, _ctx, emit) => {
-                node.children?.slice(0, 1).forEach((child) => emit({
-                    key: child.key,
-                    value: child,
-                    meta: child.meta,
-                }));
+                node.children?.slice(0, 1).forEach((child) =>
+                    emit(child.key, child, child.meta),
+                );
             },
         });
         factory = walkingToIndexFactory(adapter);

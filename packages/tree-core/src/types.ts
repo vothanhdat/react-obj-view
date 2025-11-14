@@ -4,11 +4,7 @@ export type TreeWalkerAdapter<Value, Key extends PropertyKey = PropertyKey, Meta
         value: Value,
         meta: Meta | undefined,
         context: WalkerAdapterContext,
-        emit: (child: {
-            key: Key;
-            value: Value;
-            meta?: Meta;
-        }) => boolean | void,
+        emit: (key: Key, value: Value, meta?: Meta) => boolean | void,
     ) => void;
     stringifyPath?: (path: readonly Key[]) => string;
     isSameValue?: (previous: Value | undefined, next: Value | undefined) => boolean;
@@ -18,7 +14,7 @@ export type TreeWalkerAdapter<Value, Key extends PropertyKey = PropertyKey, Meta
         context: WalkerAdapterContext,
         config: WalkingConfig
     ) => boolean;
-    createMeta?: (value: Value, context: WalkerAdapterContext) => Meta;
+    createMeta?: (value: Value, context: WalkerAdapterContext) => Meta | undefined;
 };
 
 export type WalkerAdapterContext = {

@@ -64,11 +64,11 @@ export const createObjectWalkerAdapter = (
                             ? childValue.value ?? childValue.error
                             : childValue;
                     const isCircular = circularChecking.checkCircular(normalized);
-                    emit({
+                    emit(
                         key,
-                        value: normalized,
-                        meta: packMeta(enumerable, isCircular),
-                    });
+                        normalized,
+                        packMeta(enumerable, isCircular),
+                    );
                 },
             );
             circularChecking.exitNode(value);

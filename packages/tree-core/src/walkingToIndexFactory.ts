@@ -110,22 +110,22 @@ export const walkingToIndexFactory = <
         let childOffsets: number[] = [count];
         let childKeys: Key[] = [];
 
-        adapter.getChildren(value, meta, { depth }, (child) => {
+        adapter.getChildren(value, meta, { depth }, (childKey, childValue, childMeta) => {
             const childResult = walking(
-                child.value,
+                childValue,
                 config,
-                child.key,
-                child.meta,
+                childKey,
+                childMeta,
                 updateToken,
                 depth + 1,
-                getChild(child.key),
+                getChild(childKey),
             );
 
             count += childResult.count;
             maxDepth = Math.max(maxDepth, childResult.maxDepth);
             childCanExpand ||= childResult.childCanExpand;
             childOffsets.push(count);
-            childKeys.push(child.key);
+            childKeys.push(childKey);
         });
 
         return { count, maxDepth, childCanExpand, childOffsets, childKeys };
