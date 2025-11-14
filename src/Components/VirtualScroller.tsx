@@ -11,6 +11,7 @@ export type VirtualScrollerProps<T> = {
 export type VirtualScrollerRenderProps<T> = {
     start: number
     end: number
+    offset: number
 } & T
 
 
