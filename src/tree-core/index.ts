@@ -246,7 +246,9 @@ export const walkingFactory = <Value, Key, Meta, Config>(
     const stateRoot = stateFactory(rootMapState)
     const stateRead = getStateOnly(rootMapState)
 
-    const walking = (value: Value, key: Key, config: Config, expandDepth: number) => walkingRecursiveFactory(adapter)(
+    const walkingInternal = walkingRecursiveFactory(adapter)
+
+    const walking = (value: Value, key: Key, config: Config, expandDepth: number) => walkingInternal(
         value,
         key,
         defaultMeta(value, key),

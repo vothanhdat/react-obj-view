@@ -35,9 +35,9 @@ const generatePayload = (rows: number) => {
 describe('walking benchmark', () => {
 
   for (let [name, payload, iterate] of [
+    ["10k nodes", generatePayload(1000), 10],
     ["100k nodes", generatePayload(10000), 10],
-    ["~1M nodes", generatePayload(100000), 2],
-    ["~2M nodes", generatePayload(200000), 2],
+    ["~1M nodes", generatePayload(100000), 10],
   ] as [string, any, number][]) {
     describe(name, () => {
       bench('current version', () => {
