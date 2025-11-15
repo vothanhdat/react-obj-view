@@ -212,6 +212,28 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
     }
 }
 
+const unsetSymbol = Symbol()
+
+const stateFn = () => ({
+    value: unsetSymbol as any,
+    key: undefined,
+    childKeys: undefined,
+    childOffsets: undefined,
+
+    childCount: 0,
+    childCanExpand: false,
+    childDepth: 0,
+
+    expandedDepth: 0,
+    expanded: false,
+    updateToken: 0,
+    updateStamp: 0,
+
+    userExpand: undefined,
+
+    meta: undefined,
+})
+
 export const walkingFactory = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
     adapter: WalkingAdaper<Value, Key, Meta, Config, Context>
 ) => {
@@ -219,27 +241,8 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
     type WalkingResultAlias = WalkingResult<Value, Key, Meta>
 
-    const unsetSymbol = Symbol()
 
-    const { stateFactory, getStateOnly } = StateFactory<WalkingResultAlias>(() => ({
-        value: unsetSymbol as any,
-        key: undefined,
-        childKeys: undefined,
-        childOffsets: undefined,
-
-        childCount: 0,
-        childCanExpand: false,
-        childDepth: 0,
-
-        expandedDepth: 0,
-        expanded: false,
-        updateToken: 0,
-        updateStamp: 0,
-
-        userExpand: undefined,
-
-        meta: undefined,
-    }))
+    const { stateFactory, getStateOnly } = StateFactory<WalkingResultAlias>(stateFn)
 
     let updateStamp = 0
 
