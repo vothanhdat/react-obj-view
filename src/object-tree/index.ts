@@ -56,7 +56,7 @@ const objectWalkingAdaper: ObjectWalkingAdater = {
         )
         circularChecking.exitNode(value);
     },
-    valueDefaultExpaned(value, key, meta, config) {
+    valueDefaultExpaned(meta, config) {
         return meta == 0b11
     },
 }

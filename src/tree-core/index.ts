@@ -46,7 +46,7 @@ export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingConte
     ) => void,
     defaultMeta: (value: Value, key: Key) => Meta,
     defaultContext: (ctx: WalkingContext<Config>) => Context,
-    valueDefaultExpaned?: (value: Value, key: Key, meta: Meta, ctx: Context) => boolean,
+    valueDefaultExpaned?: (meta: Meta, ctx: Context) => boolean,
     isValueChange?: (a: Value | undefined, b: Value | undefined) => boolean,
     transformValue?: (value: Value) => Value,
     onEnterNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void,
@@ -128,7 +128,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
         const limitByDepth = currentDepth <= ctx.expandDepth
 
         const defaultExpand = valueDefaultExpaned
-            ? limitByDepth && valueDefaultExpaned(value, key, meta, ctx)
+            ? limitByDepth && valueDefaultExpaned(meta, ctx)
             : limitByDepth
 
         const isExpand = state.userExpand
