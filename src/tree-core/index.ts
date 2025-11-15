@@ -22,7 +22,7 @@ export type WalkingResult<Value, Key, Meta = number> = {
     meta?: Meta,
 }
 
-type NodeResult<Value, Key, Meta = number> = {
+export type NodeResult<Value, Key, Meta = number> = {
     state: WalkingResult<Value, Key, Meta>,
     depth: number,
     paths: Key[],
@@ -357,3 +357,12 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     }
 
 }
+
+export type InferWalkingResult<T> = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+    ? WalkingResult<Value, Key, Meta>
+    : WalkingResult<any, any, any>
+
+
+export type InferNodeResult<T> = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+    ? NodeResult<Value, Key, Meta>
+    : NodeResult<any, any, any>

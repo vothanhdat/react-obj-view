@@ -1,4 +1,4 @@
-import { WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
+import { InferNodeResult, InferWalkingResult, WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
 import { isRef } from "../utils/isRef";
 import { getEntriesCb } from "../V5/getEntries";
 import { ResolverFn } from "../V5/types";
@@ -6,7 +6,7 @@ import { LazyValue } from "../V5/LazyValueWrapper";
 import { CircularChecking } from "../V5/CircularChecking";
 
 
-export type ObjectWalkingMeta = number
+export type WalkingMeta = number
 
 export type ObjectWalkingConfig = {
     nonEnumerable: boolean;
@@ -21,11 +21,14 @@ export type ObjectWalkingContext = WalkingContext<ObjectWalkingConfig> & {
 type ObjectWalkingAdater = WalkingAdaper<
     unknown,
     PropertyKey,
-    ObjectWalkingMeta,
+    WalkingMeta,
     ObjectWalkingConfig,
     ObjectWalkingContext
 >
 
+export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdater>
+
+export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdater>
 
 const objectWalkingAdaper: ObjectWalkingAdater = {
     defaultMeta() { return 0b11 },
@@ -59,6 +62,13 @@ const objectWalkingAdaper: ObjectWalkingAdater = {
     valueDefaultExpaned(meta, context) {
         return meta == 0b11
     },
+}
+
+export const parseWalkingMeta = (e: WalkingMeta) => {
+    return {
+        enumerable: Boolean(e & 0b01),
+        circular: !Boolean(e & 0b10),
+    }
 }
 
 export const objectTreeWalking = () => walkingFactory(objectWalkingAdaper)
