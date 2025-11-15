@@ -1,4 +1,4 @@
-export { V5Index as ObjectView } from "./object-view/index"
+export { ReactObjView as ObjectView } from "./object-view/index"
 export { type ObjectViewProps, type ResolverFn } from "./object-tree/types"
 export {
     type ThemeColor,

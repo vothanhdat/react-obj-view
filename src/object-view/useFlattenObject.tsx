@@ -1,49 +1,10 @@
-import { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ResolverFn } from "../object-tree/types";
-import { objectTreeWalking, ObjectWalkingConfig, ObjectWalkingNode, ObjectWalkingResult, parseWalkingMeta } from "../object-tree";
+import { objectTreeWalking, ObjectWalkingConfig } from "../object-tree";
 import { DEFAULT_RESOLVER } from "../object-tree/resolver";
 import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "../object-tree/resolver/grouped";
-
-
-
-export type NodeResultData = ObjectWalkingResult & {
-    depth: number, path: string, paths: PropertyKey[]
-} & ReturnType<typeof parseWalkingMeta>
-
-export class NodeResult {
-
-    constructor(
-        public state: ObjectWalkingResult,
-        public depth: number,
-        public paths: PropertyKey[],
-        public parentIndex: number[],
-    ) {
-        Object.assign(this, state)
-    }
-
-    public get path(): string {
-        return this.paths
-            .map(e => {
-                try {
-                    return String(e);
-                } catch (error) {
-                    return "";
-                }
-            }).join("/");
-    }
-
-    getData(): NodeResultData {
-        const state = this.state
-        return ({
-            ...state,
-            ...parseWalkingMeta(state.meta!),
-            depth: this.depth,
-            path: this.path,
-            paths: this.paths,
-        })
-    }
-
-}
+import { useFactoryFn } from "./useFactoryFn";
+import { NodeResult } from "../object-tree/NodeResult";
 
 export type FlattenObjectConfig = {
     expandDepth: number;
@@ -90,43 +51,35 @@ export function useFlattenObject(
 
     const [reload, setReload] = useState(0);
 
-    const { refWalk } = useWalkingFn();
+    const indexWalkingRef = useFactoryFn(objectTreeWalking);
 
     const refWalkResult = useMemo(
         () => {
-            // console.time("walking");
-            const result = refWalk.current!.walking(
+            const result = indexWalkingRef.current!.walking(
                 value,
                 name ?? "ROOT",
                 config,
                 expandDepth,
             );
-
-            // console.log("updateStamp", result.updateStamp);
-            // console.timeEnd("walking");
             return { ...result };
         },
-        [refWalk.current, expandDepth, value, name, reload, config]
+        [indexWalkingRef.current, expandDepth, value, name, reload, config]
     );
 
     const refreshPath = useCallback(
         (node: { paths: any[] }) => {
-            // console.time("refreshPath");
-            refWalk.current?.refreshPath(node.paths);
-            // console.timeEnd("refreshPath");
+            indexWalkingRef.current?.refreshPath(node.paths);
             setReload(e => e + 1);
         },
-        [refWalk.current, config]
+        [indexWalkingRef.current, config]
     );
 
     const toggleChildExpand = useCallback(
         (node: { paths: any[] }) => {
-            // console.time("toggleExpand");
-            refWalk.current?.toggleExpand(node.paths);
-            // console.timeEnd("toggleExpand");
+            indexWalkingRef.current?.toggleExpand(node.paths);
             setReload(e => e + 1);
         },
-        [refWalk.current]
+        [indexWalkingRef.current]
     );
 
     const getNodeByIndex = useMemo(
@@ -137,7 +90,7 @@ export function useFlattenObject(
                 let data = m.get(index);
 
                 if (!data) {
-                    let state = refWalk.current?.getNode(index)!
+                    let state = indexWalkingRef.current?.getNode(index)!
                     data = new NodeResult(
                         state.state,
                         state.depth,
@@ -151,7 +104,7 @@ export function useFlattenObject(
                 return data;
             };
         },
-        [refWalk.current, refWalkResult, reload]
+        [indexWalkingRef.current, refWalkResult, reload]
     );
 
     return {
@@ -163,22 +116,6 @@ export function useFlattenObject(
     };
 }
 
-type Factory = typeof objectTreeWalking;
 
-function useWalkingFn(): {
-    refWalk: RefObject<ReturnType<Factory> | undefined>;
-} {
-    const refWalkFn = useRef<Factory>(undefined);
-    const refWalk = useRef<ReturnType<Factory>>(undefined);
 
-    const factory = objectTreeWalking;
 
-    if (!refWalk.current || refWalkFn.current != factory) {
-        refWalkFn.current = factory;
-        refWalk.current = factory();
-    };
-
-    return {
-        refWalk,
-    };
-}

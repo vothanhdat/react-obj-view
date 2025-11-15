@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
-import { ObjectViewProps } from "../object-tree/types";
 import { NodeResult } from "./walkingToIndexFactory";
 import { useWrapper } from "../hooks/useWrapper";
 import { joinClasses } from "../utils/joinClasses";
@@ -7,6 +6,7 @@ import { useFlattenObject } from "./useFlattenObject";
 import { VirtualScroller } from "../virtual-scroller/VirtualScroller";
 import { RenderNode, RenderOptions } from "./components/RenderNode";
 import "./components/style.css"
+import { ObjectViewProps } from "./types";
 
 type StickyInfo = {
     index: number,
@@ -20,7 +20,7 @@ type StickyInfo = {
     isLastStick?: boolean
 }
 
-export const V5Index: React.FC<ObjectViewProps> = ({
+export const ReactObjView: React.FC<ObjectViewProps> = ({
     valueGetter,
     name,
     expandLevel,
@@ -122,7 +122,10 @@ const VirtualScrollerRender: React.FC<{
 } & NodeRenderProps> = ({
     start, end, offset, size,
     lineHeight,
-    computeItemKey, showLineNumbers, getNodeByIndex, options,
+    computeItemKey,
+    showLineNumbers,
+    getNodeByIndex,
+    options,
     computeActualRederKey
 }) => {
         let startIndexRaw = start / lineHeight
@@ -161,7 +164,7 @@ const VirtualScrollerRender: React.FC<{
                     {showLineNumbers && <span className="line-number">
                         {String(index).padStart(lineNumberSize, " ")}:{" "}
                     </span>}
-                    <NodeRender {...{ index: index, getNodeByIndex, options, size }} />
+                    <NodeRowRender {...{ index: index, getNodeByIndex, options, size }} />
                 </div>)}
         </>
     }
@@ -173,7 +176,7 @@ type NodeRenderProps = {
     options: RenderOptions,
 }
 
-const NodeRender: React.FC<NodeRenderProps> = ({ index, getNodeByIndex, options, size }) => {
+const NodeRowRender: React.FC<NodeRenderProps> = ({ index, getNodeByIndex, options, size }) => {
 
     const nodeResult = index < size
         ? getNodeByIndex?.(index)
