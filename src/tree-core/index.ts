@@ -29,7 +29,7 @@ type NodeResult<Value, Key, Meta = number> = {
     parentIndex: number[],
 }
 
-type WalkingContext<Config> = {
+export type WalkingContext<Config> = {
     config: Config,
     updateToken: number
     expandDepth: number
@@ -38,26 +38,27 @@ type WalkingContext<Config> = {
 
 
 
-export type WalkingAdaper<Value, Key, Meta, Config> = {
+export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingContext<Config>> = {
     valueHasChild: (value: Value) => boolean,
     iterateChilds: (
-        value: Value, config: Config, stableRef: unknown,
+        value: Value, ctx: Context, stableRef: unknown,
         cb: (value: Value, key: Key, meta: Meta) => boolean,
     ) => void,
     defaultMeta: (value: Value, key: Key) => Meta,
-    valueDefaultExpaned?: (value: Value, key: Key, meta: Meta, config: Config) => boolean,
+    defaultContext: (ctx: WalkingContext<Config>) => Context,
+    valueDefaultExpaned?: (value: Value, key: Key, meta: Meta, ctx: Context) => boolean,
     isValueChange?: (a: Value | undefined, b: Value | undefined) => boolean,
     transformValue?: (value: Value) => Value,
-    onEnterNode?: (value: Value, key: Key, meta: Meta, config: Config) => void,
-    onExitNode?: (value: Value, key: Key, meta: Meta, config: Config) => void,
+    onEnterNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void,
+    onExitNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void,
 }
 
 
-const iterateChildWrap = <Value, Key, Meta, Config>(
-    iterateChilds: WalkingAdaper<Value, Key, Meta, Config>['iterateChilds'],
+const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
+    iterateChilds: WalkingAdaper<Value, Key, Meta, Config, Context>['iterateChilds'],
     walkingInternal: any,
     value: Value,
-    ctx: WalkingContext<Config>,
+    ctx: Context,
     currentDepth: number,
     state: WalkingResult<Value, Key, Meta>,
     getChild: (key: PropertyKey) => any,
@@ -70,7 +71,7 @@ const iterateChildWrap = <Value, Key, Meta, Config>(
     let childKeys = [] as Key[]
 
     iterateChilds(
-        value, ctx.config, state,
+        value, ctx, state,
         (value, key, meta) => {
 
             let r = walkingInternal(
@@ -103,18 +104,18 @@ const iterateChildWrap = <Value, Key, Meta, Config>(
     }
 }
 
-function walkingRecursiveFactory<Value, Key, Meta, Config>({
+function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends WalkingContext<Config>>({
     iterateChilds, valueHasChild, onEnterNode, onExitNode,
     valueDefaultExpaned,
     isValueChange,
     transformValue,
-}: WalkingAdaper<Value, Key, Meta, Config>) {
+}: WalkingAdaper<Value, Key, Meta, Config, Context>) {
 
     return function walkingInternal(
         value: Value,
         key: Key,
         meta: Meta,
-        ctx: WalkingContext<Config>,
+        ctx: Context,
         currentDepth: number,
         { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult<Value, Key, Meta>>>,
     ) {
@@ -125,9 +126,9 @@ function walkingRecursiveFactory<Value, Key, Meta, Config>({
         const hasChild = valueHasChild(value)
 
         const limitByDepth = currentDepth <= ctx.expandDepth
-        
+
         const defaultExpand = valueDefaultExpaned
-            ? limitByDepth && valueDefaultExpaned(value, key, meta, ctx.config)
+            ? limitByDepth && valueDefaultExpaned(value, key, meta, ctx)
             : limitByDepth
 
         const isExpand = state.userExpand
@@ -160,7 +161,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config>({
 
             if (hasChild && isExpand) {
 
-                onEnterNode?.(value, key, meta, ctx.config);
+                onEnterNode?.(value, key, meta, ctx);
 
                 let iterateResult = iterateChildWrap(
                     iterateChilds,
@@ -172,7 +173,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config>({
                     getChild,
                 )
 
-                onExitNode?.(value, key, meta, ctx.config);
+                onExitNode?.(value, key, meta, ctx);
 
                 childCount = iterateResult.childCount
                 childOffsets = iterateResult.childOffsets
@@ -212,10 +213,10 @@ function walkingRecursiveFactory<Value, Key, Meta, Config>({
 }
 
 
-export const walkingFactory = <Value, Key, Meta, Config>(
-    adapter: WalkingAdaper<Value, Key, Meta, Config>
+export const walkingFactory = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
+    adapter: WalkingAdaper<Value, Key, Meta, Config, Context>
 ) => {
-    const { defaultMeta, } = adapter;
+    const { defaultMeta, defaultContext } = adapter;
 
     type WalkingResultAlias = WalkingResult<Value, Key, Meta>
 
@@ -250,16 +251,18 @@ export const walkingFactory = <Value, Key, Meta, Config>(
 
     const walkingInternal = walkingRecursiveFactory(adapter)
 
+    const getContextDefault = (config: Config, expandDepth: number): WalkingContext<Config> => ({
+        config,
+        expandDepth,
+        updateToken: getObjectUniqueId(config),
+        updateStamp: updateStamp++,
+    })
+
     const walking = (value: Value, key: Key, config: Config, expandDepth: number) => walkingInternal(
         value,
         key,
         defaultMeta(value, key),
-        {
-            config,
-            expandDepth,
-            updateToken: getObjectUniqueId(config),
-            updateStamp: updateStamp++,
-        },
+        defaultContext(getContextDefault(config, expandDepth)),
         1,
         stateRoot,
     )

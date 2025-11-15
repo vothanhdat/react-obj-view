@@ -1,5 +1,5 @@
 import { objectTreeWalking, ObjectWalkingConfig } from ".";
-import { walkingToIndexFactory } from "../V5/walkingToIndexFactory";
+import { allExamples } from "../exampleData";
 
 
 
@@ -9,6 +9,8 @@ const a = {
     ff: 1,
     b: [1, 2, 3, { d: "33" }]
 };
+
+const test = allExamples.objects.circular
 
 const walkingConfig: ObjectWalkingConfig = {
     nonEnumerable: true,
@@ -22,12 +24,12 @@ console.group("Current:")
 
 const { walking, refreshPath, toggleExpand, getNode } = objectTreeWalking()
 
-const result = walking(a, 'root', walkingConfig, 10)
+const result = walking(test, 'root', walkingConfig, 10)
 
 
 for (let i = 0; i < result.childCount; i++) {
     let nodeData = getNode(i)
-    console.log(nodeData.paths)
+    console.log(nodeData.paths, (nodeData.state.meta)?.toString(2))
 }
 
 console.groupEnd()

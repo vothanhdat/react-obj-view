@@ -1,27 +1,46 @@
-import { WalkingAdaper, walkingFactory } from "../tree-core";
+import { WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
 import { isRef } from "../utils/isRef";
 import { getEntriesCb } from "../V5/getEntries";
 import { ResolverFn } from "../V5/types";
 import { LazyValue } from "../V5/LazyValueWrapper";
+import { CircularChecking } from "../V5/CircularChecking";
 
 
 export type ObjectWalkingMeta = number
+
 export type ObjectWalkingConfig = {
     nonEnumerable: boolean;
     symbol?: boolean;
     resolver: Map<any, ResolverFn> | undefined;
 }
 
+type ObjectWalkingAdater = WalkingAdaper<
+    unknown,
+    PropertyKey,
+    ObjectWalkingMeta,
+    ObjectWalkingConfig,
+    WalkingContext<ObjectWalkingConfig> & {
+        circularChecking: CircularChecking
+    }
+>
 
-const objectWalkingAdaper: WalkingAdaper<unknown, PropertyKey, ObjectWalkingMeta, ObjectWalkingConfig> = {
+
+const objectWalkingAdaper: ObjectWalkingAdater = {
+    defaultMeta() { return 0b11 },
+    defaultContext(ctx) {
+        return {
+            ...ctx,
+            circularChecking: new CircularChecking()
+        }
+    },
     valueHasChild(value) {
         return isRef(value)
             && !(value instanceof Date)
             && !(value instanceof RegExp)
             && !(value instanceof LazyValue)
     },
-    defaultMeta() { return 1 },
-    iterateChilds(value, config, ref, cb) {
+    iterateChilds(value, { config, circularChecking }, ref, cb) {
+        circularChecking.enterNode(value);
         getEntriesCb(
             value,
             config as any,
@@ -29,16 +48,16 @@ const objectWalkingAdaper: WalkingAdaper<unknown, PropertyKey, ObjectWalkingMeta
             ref,
             (key, value, enumerable) => cb(
                 value, key,
-                enumerable ? 1 : 0,
+                (enumerable ? 1 : 0)
+                | (circularChecking.checkCircular(value) ? 0 : 2),
             )
         )
+        circularChecking.exitNode(value);
     },
     valueDefaultExpaned(value, key, meta, config) {
-        return (meta & 1) as any
+        return meta == 0b11
     },
 }
 
-export const objectTreeWalking = () => walkingFactory<unknown, PropertyKey, ObjectWalkingMeta, ObjectWalkingConfig>(
-    objectWalkingAdaper
-)
+export const objectTreeWalking = () => walkingFactory(objectWalkingAdaper)
 
