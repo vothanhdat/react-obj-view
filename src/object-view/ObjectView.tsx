@@ -9,7 +9,7 @@ import "./components/style.css"
 
 
 
-export const ReactObjView: React.FC<ObjectViewProps> = ({
+export const ObjectView: React.FC<ObjectViewProps> = ({
     valueGetter,
     name,
     expandLevel,

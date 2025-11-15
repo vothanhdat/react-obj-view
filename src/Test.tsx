@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
-import { ReactObjView } from './object-view/ReactObjView'
+import { ObjectView } from './object-view/ObjectView'
 import { ResolverFn } from './object-tree/types'
 import {
   themeDefault,
@@ -586,7 +586,7 @@ export const Test = () => {
             </div>
           </div>
           <div className="viewer-body" style={selectedTheme}>
-            <ReactObjView
+            <ObjectView
               valueGetter={currentDataGetter}
               name="testData"
               expandLevel={expandLevel}

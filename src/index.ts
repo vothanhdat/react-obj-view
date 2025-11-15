@@ -1,5 +1,7 @@
-export { ReactObjView as ObjectView } from "./object-view/ReactObjView"
-export { type ObjectViewProps, type ResolverFn } from "./object-tree/types"
+export { ObjectViewProps } from "./object-view/types"
+export { ObjectView as ObjectView } from "./object-view/ObjectView"
+export { type ResolverFn } from "./object-tree/types"
+
 export {
     type ThemeColor,
     themeDefault,
