@@ -2,6 +2,9 @@ import { bench, describe } from 'vitest'
 import { walkingToIndexFactory } from '../src/V5/walkingToIndexFactory'
 import { WalkingConfig } from '../src/V5/types'
 
+import { ObjectWalkingConfig, objectTreeWalking } from '../src/object-tree'
+
+
 const generatePayload = (rows: number) => {
   return {
     users: Array.from({ length: rows }, (_, index) => ({
@@ -28,34 +31,38 @@ const generatePayload = (rows: number) => {
   }
 }
 
-const config: WalkingConfig = {
-  expandDepth: 5,
-  nonEnumerable: false,
-  resolver: undefined,
-}
 
-describe('walkingToIndexFactory benchmark', () => {
-  describe('100,000 nodes', () => {
+describe('walking benchmark', () => {
 
-    const payload100k = generatePayload(10000)
-    const payload1M = generatePayload(100000)
-    const payload2M = generatePayload(200000)
+  for (let [name, payload, iterate] of [
+    ["100k nodes", generatePayload(10000), 10],
+    ["~1M nodes", generatePayload(100000), 2],
+    ["~2M nodes", generatePayload(200000), 2],
+  ] as [string, any, number][]) {
+    describe(name, () => {
+      bench('current version', () => {
+        const config: WalkingConfig = {
+          expandDepth: 5,
+          nonEnumerable: true,
+          resolver: undefined,
+        }
+        const factory = walkingToIndexFactory()
+        factory.walking(payload, config, 'root', true)
+      }, { iterations: iterate })
 
-    bench('flatten ~100k nodes payload', () => {
-      const factory = walkingToIndexFactory()
-      factory.walking(payload100k, config, 'root', true)
-    }, { iterations: 50 })
+      bench('generic version', () => {
+        const walkingConfig: ObjectWalkingConfig = {
+          nonEnumerable: true,
+          symbol: false,
+          resolver: undefined
+        };
 
-    bench('flatten ~1m nodes payload', () => {
-      const factory = walkingToIndexFactory()
-      factory.walking(payload1M, config, 'root', true)
-    }, { iterations: 5 })
+        const factory = objectTreeWalking()
+        factory.walking(payload, 'root', walkingConfig, 5)
+      }, { iterations: iterate })
 
-    bench('flatten ~2m nodes payload', () => {
-      const factory = walkingToIndexFactory()
-      factory.walking(payload2M, config, 'root', true)
-    }, { iterations: 5 })
+    })
+  }
 
-  })
 
 })
