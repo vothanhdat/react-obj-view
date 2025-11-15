@@ -14,14 +14,16 @@ export type ObjectWalkingConfig = {
     resolver: Map<any, ResolverFn> | undefined;
 }
 
+export type ObjectWalkingContext = WalkingContext<ObjectWalkingConfig> & {
+    circularChecking: CircularChecking
+}
+
 type ObjectWalkingAdater = WalkingAdaper<
     unknown,
     PropertyKey,
     ObjectWalkingMeta,
     ObjectWalkingConfig,
-    WalkingContext<ObjectWalkingConfig> & {
-        circularChecking: CircularChecking
-    }
+    ObjectWalkingContext
 >
 
 

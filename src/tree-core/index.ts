@@ -212,7 +212,6 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
     }
 }
 
-
 export const walkingFactory = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
     adapter: WalkingAdaper<Value, Key, Meta, Config, Context>
 ) => {
@@ -251,7 +250,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
     const walkingInternal = walkingRecursiveFactory(adapter)
 
-    const getContextDefault = (config: Config, expandDepth: number): WalkingContext<Config> => ({
+    const getContextDefault = (config: Config, expandDepth: number): Context => defaultContext({
         config,
         expandDepth,
         updateToken: getObjectUniqueId(config),
@@ -262,7 +261,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         value,
         key,
         defaultMeta(value, key),
-        defaultContext(getContextDefault(config, expandDepth)),
+        getContextDefault(config, expandDepth),
         1,
         stateRoot,
     )
