@@ -84,7 +84,7 @@ export const RenderNode: React.FC<{
 
             <RenderName ref={ref} {...{
                 depth: nodeData.depth,
-                name: String(nodeData.name ?? "ROOT"),
+                name: String(nodeData.key ?? "ROOT"),
             }} />
 
             <span className="symbol">: </span>

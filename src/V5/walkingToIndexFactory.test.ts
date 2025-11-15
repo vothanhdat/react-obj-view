@@ -32,7 +32,7 @@ const collectNodeSummaries = (
       expanded: data.expanded,
       childCanExpand: data.childCanExpand,
       valueSummary: summarizeValue(data.value),
-      count: data.count,
+      count: data.childCount,
     })
   }
   return summaries
@@ -110,23 +110,23 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(obj, config, 'root', true)
       
       expect(result.value).toBe(obj)
-      expect(result.name).toBe('root')
+      expect(result.key).toBe('root')
       expect(result.enumerable).toBe(true)
-      expect(result.count).toBeGreaterThan(0)
+      expect(result.childCount).toBeGreaterThan(0)
     })
 
     it('should process primitive values', () => {
       const result1 = factory.walking(42, config, 'number', true)
       expect(result1.value).toBe(42)
-      expect(result1.count).toBe(1)
+      expect(result1.childCount).toBe(1)
       
       const result2 = factory.walking('string', config, 'text', true)
       expect(result2.value).toBe('string')
-      expect(result2.count).toBe(1)
+      expect(result2.childCount).toBe(1)
       
       const result3 = factory.walking(true, config, 'bool', true)
       expect(result3.value).toBe(true)
-      expect(result3.count).toBe(1)
+      expect(result3.childCount).toBe(1)
     })
 
     it('should process arrays', () => {
@@ -134,7 +134,7 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(arr, config, 'array', true)
       
       expect(result.value).toBe(arr)
-      expect(result.count).toBeGreaterThan(1) // 1 for array + children
+      expect(result.childCount).toBeGreaterThan(1) // 1 for array + children
       expect(result.expanded).toBe(true)
     })
 
@@ -149,8 +149,8 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(obj, config, 'root', true)
       
       expect(result.value).toBe(obj)
-      expect(result.count).toBeGreaterThan(1)
-      expect(result.maxDepth).toBeGreaterThan(1)
+      expect(result.childCount).toBeGreaterThan(1)
+      expect(result.childDepth).toBeGreaterThan(1)
     })
 
     it('should respect expandDepth setting', () => {
@@ -194,7 +194,7 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(obj, config, 'root', true)
       
       expect(result.value).toBe(obj)
-      expect(result.count).toBeGreaterThan(1)
+      expect(result.childCount).toBeGreaterThan(1)
     })
 
     it('should mark circular nodes correctly', () => {
@@ -216,7 +216,7 @@ describe('walkingToIndexFactory', () => {
       
       const result = factory.walking(parent, config, 'root', true)
       
-      expect(result.count).toBeGreaterThan(1)
+      expect(result.childCount).toBeGreaterThan(1)
     })
 
     it('should handle array circular references', () => {
@@ -226,7 +226,7 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(arr, config, 'root', true)
       
       expect(result.value).toBe(arr)
-      expect(result.count).toBeGreaterThan(1)
+      expect(result.childCount).toBeGreaterThan(1)
     })
   })
 
@@ -259,7 +259,7 @@ describe('walkingToIndexFactory', () => {
 
       const deepConfig = { ...config, expandDepth: 5 }
       const result = factory.walking(complex, deepConfig, 'root', true)
-      const summaries = collectNodeSummaries(factory, deepConfig, result.count, 20)
+      const summaries = collectNodeSummaries(factory, deepConfig, result.childCount, 20)
 
       expect(summaries).toMatchInlineSnapshot(`
         [
@@ -463,13 +463,13 @@ describe('walkingToIndexFactory', () => {
       const changedBefore = findNodeByPath(
         factory,
         deepConfig,
-        firstResult.count,
+        firstResult.childCount,
         'users/0/stats/count',
       )
       const stableBefore = findNodeByPath(
         factory,
         deepConfig,
-        firstResult.count,
+        firstResult.childCount,
         'users/1/stats/count',
       )
       const changedBeforeStamp = changedBefore.state.updateStamp
@@ -481,13 +481,13 @@ describe('walkingToIndexFactory', () => {
       const changedAfter = findNodeByPath(
         factory,
         deepConfig,
-        secondResult.count,
+        secondResult.childCount,
         'users/0/stats/count',
       )
       const stableAfter = findNodeByPath(
         factory,
         deepConfig,
-        secondResult.count,
+        secondResult.childCount,
         'users/1/stats/count',
       )
 
@@ -534,7 +534,7 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(obj, config, 'root', true)
       
       // Get various nodes
-      for (let i = 0; i < Math.min(result.count, 10); i++) {
+      for (let i = 0; i < Math.min(result.childCount, 10); i++) {
         const node = factory.getNode(i, config)
         expect(node).toBeInstanceOf(NodeResult)
       }
@@ -644,13 +644,13 @@ describe('walkingToIndexFactory', () => {
       const data = node.getData()
       
       expect(data.value).toEqual({ test: true })
-      expect(data.name).toBe('data')
-      expect(data.count).toBe(5)
+      expect(data.key).toBe('data')
+      expect(data.childCount).toBe(5)
       expect(data.depth).toBe(2)
       expect(data.path).toBe('root/child')
       expect(data.paths).toEqual(['root', 'child'])
       expect(data.enumerable).toBe(true)
-      expect(data.maxDepth).toBe(3)
+      expect(data.childDepth).toBe(3)
       expect(data.expandedDepth).toBe(2)
       expect(data.expanded).toBe(true)
       expect(data.isCircular).toBe(false)
@@ -768,7 +768,7 @@ describe('walkingToIndexFactory', () => {
       const result = factory.walking(largeArray, config, 'root', true)
       
       expect(result.value).toBe(largeArray)
-      expect(result.count).toBeGreaterThan(100)
+      expect(result.childCount).toBeGreaterThan(100)
     })
 
     it('should handle deeply nested objects', () => {
@@ -779,7 +779,7 @@ describe('walkingToIndexFactory', () => {
       
       const result = factory.walking(deep, { ...config, expandDepth: 20 }, 'root', true)
       
-      expect(result.maxDepth).toBeGreaterThan(5)
+      expect(result.childDepth).toBeGreaterThan(5)
     })
 
     it('should handle mixed data types', () => {
@@ -797,7 +797,7 @@ describe('walkingToIndexFactory', () => {
       
       const result = factory.walking(mixed, config, 'root', true)
       
-      expect(result.count).toBeGreaterThan(1)
+      expect(result.childCount).toBeGreaterThan(1)
     })
 
     it('should handle empty collections', () => {

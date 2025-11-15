@@ -10,12 +10,12 @@ import { LazyValue, LazyValueError } from "./LazyValueWrapper";
 
 export type WalkingResult = {
     value: unknown,
-    cumulate?: number[],
-    name: PropertyKey,
-    keys?: PropertyKey[],
-    count: number,
+    childOffsets?: number[],
+    key: PropertyKey,
+    childKeys?: PropertyKey[],
+    childCount: number,
     enumerable: boolean,
-    maxDepth: number,
+    childDepth: number,
     expandedDepth: number,
     expanded: boolean,
     isCircular: boolean,
@@ -87,7 +87,7 @@ const getEntriesCbBinded = (
                 getChild(key),
             );
 
-            count += result.count;
+            count += result.childCount;
             maxDepth = Math.max(maxDepth, result.maxDepth)
             childCanExpand ||= result.childCanExpand;
             cumulate.push(count)
@@ -112,9 +112,9 @@ export const walkingToIndexFactory = () => {
 
     const { stateFactory, getStateOnly } = StateFactory<WalkingResult>(() => ({
         value: undefined,
-        count: 0,
-        name: "",
-        maxDepth: 0,
+        key: "",
+        childCount: 0,
+        childDepth: 0,
         expandedDepth: 0,
         enumerable: false,
         childCanExpand: false,
@@ -160,7 +160,7 @@ export const walkingToIndexFactory = () => {
                 && state.expandedDepth < config.expandDepth
                 && state.childCanExpand
             ) || (isExpand
-                && state.maxDepth >= config.expandDepth
+                && state.childDepth >= config.expandDepth
                 && state.expandedDepth > config.expandDepth
             )
         )
@@ -193,16 +193,16 @@ export const walkingToIndexFactory = () => {
 
             }
 
-            state.name = name;
+            state.key = name;
             state.value = value
             state.enumerable = enumerable
 
-            state.count = count
-            state.maxDepth = maxDepth
+            state.childCount = count
+            state.childDepth = maxDepth
             state.childCanExpand = childCanExpand
 
-            state.keys = keys;
-            state.cumulate = cumulate
+            state.childKeys = keys;
+            state.childOffsets = cumulate
 
             state.expanded = isExpand
             state.expandedDepth = config.expandDepth
@@ -254,10 +254,10 @@ export const walkingToIndexFactory = () => {
         if (index == 0 || depth >= 100) {
             return new NodeResult(state, depth, paths, parentIndex)
         } else {
-            if (!state.cumulate || !state.keys) {
+            if (!state.childOffsets || !state.childKeys) {
                 throw new Error("Wrong state")
             }
-            const { cumulate, value } = state;
+            const { childOffsets: cumulate, value } = state;
 
             let start = 0, end = cumulate.length - 1
             let c = 0
@@ -271,7 +271,7 @@ export const walkingToIndexFactory = () => {
                 }
             }
 
-            let keyNames = state.keys[start]
+            let keyNames = state.childKeys[start]
 
             return getNode(
                 index - cumulate[start],

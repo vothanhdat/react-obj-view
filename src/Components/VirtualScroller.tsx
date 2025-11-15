@@ -35,10 +35,17 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
 
     const [{ start, end, offset }, setState] = useState({ start: 0, end: 0, offset: 0 })
 
+
     useEffect(() => {
+
+        if (!isFinite(height)) {
+            console.error("Height is not valid", { height })
+        }
+        
         if (!ref.current) {
             return
         }
+
 
         const parent = getScrollContainer(ref.current)
         const isDocumentScroll = parent === document.documentElement || parent === document.body
@@ -98,7 +105,7 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
         }
     }, [height])
 
-    return <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
+    return isFinite(height) && <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
         <Component start={start} end={end} offset={offset} {...props} />
     </div>
 }

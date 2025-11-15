@@ -1,9 +1,49 @@
-import { RefObject, useRef, useMemo, useState, useCallback } from "react";
+import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { DEFAULT_RESOLVER } from "./resolvers";
 import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./resolvers/grouped";
-import { ResolverFn, WalkingConfig } from "./types";
-import { NodeResult, NodeResultData, walkingToIndexFactory } from "./walkingToIndexFactory";
+import { ResolverFn } from "./types";
+import { objectTreeWalking, ObjectWalkingConfig, ObjectWalkingNode, ObjectWalkingResult, parseWalkingMeta } from "../object-tree";
 
+
+
+export type NodeResultData = ObjectWalkingResult & {
+    depth: number, path: string, paths: PropertyKey[]
+} & ReturnType<typeof parseWalkingMeta>
+
+export class NodeResult {
+
+    constructor(
+        public state: ObjectWalkingResult,
+        public depth: number,
+        public paths: PropertyKey[],
+        public parentIndex: number[],
+    ) {
+        Object.assign(this, state)
+    }
+
+    public get path(): string {
+        return this.paths
+            .map(e => {
+                try {
+                    return String(e);
+                } catch (error) {
+                    return "";
+                }
+            }).join("/");
+    }
+
+    getData(): NodeResultData {
+        const state = this.state
+        return ({
+            ...state,
+            ...parseWalkingMeta(state.meta!),
+            depth: this.depth,
+            path: this.path,
+            paths: this.paths,
+        })
+    }
+
+}
 
 export type FlattenObjectConfig = {
     expandDepth: number;
@@ -14,7 +54,7 @@ export type FlattenObjectConfig = {
     symbol?: boolean;
 };
 
-export function useFlattenObjectView(
+export function useFlattenObject(
     value: unknown,
     name: string | undefined,
     flattenConfig: FlattenObjectConfig
@@ -44,8 +84,8 @@ export function useFlattenObjectView(
     );
 
     const config = useMemo(
-        () => ({ expandDepth, resolver, nonEnumerable, symbol, }) as WalkingConfig,
-        [nonEnumerable, expandDepth, resolver, symbol]
+        () => ({ resolver, nonEnumerable, symbol, }) as ObjectWalkingConfig,
+        [nonEnumerable, resolver, symbol]
     );
 
     const [reload, setReload] = useState(0);
@@ -57,20 +97,20 @@ export function useFlattenObjectView(
             // console.time("walking");
             const result = refWalk.current!.walking(
                 value,
-                config,
                 name ?? "ROOT",
-                true
+                config,
+                expandDepth,
             );
 
             // console.log("updateStamp", result.updateStamp);
             // console.timeEnd("walking");
             return { ...result };
         },
-        [refWalk.current, value, name, reload, config]
+        [refWalk.current, expandDepth, value, name, reload, config]
     );
 
     const refreshPath = useCallback(
-        (node: NodeResultData) => {
+        (node: { paths: any[] }) => {
             // console.time("refreshPath");
             refWalk.current?.refreshPath(node.paths);
             // console.timeEnd("refreshPath");
@@ -80,13 +120,13 @@ export function useFlattenObjectView(
     );
 
     const toggleChildExpand = useCallback(
-        (node: NodeResultData) => {
+        (node: { paths: any[] }) => {
             // console.time("toggleExpand");
-            refWalk.current?.toggleExpand(node.paths, config);
+            refWalk.current?.toggleExpand(node.paths);
             // console.timeEnd("toggleExpand");
             setReload(e => e + 1);
         },
-        [refWalk.current, config]
+        [refWalk.current]
     );
 
     const getNodeByIndex = useMemo(
@@ -97,16 +137,22 @@ export function useFlattenObjectView(
                 let data = m.get(index);
 
                 if (!data) {
-                    m.set(index, data = refWalk.current?.getNode(index, config)!);
+                    let state = refWalk.current?.getNode(index)!
+                    data = new NodeResult(
+                        state.state,
+                        state.depth,
+                        state.paths,
+                        state.parentIndex
+                    )
+
+                    m.set(index, data);
                 }
 
                 return data;
             };
         },
-        [refWalk.current, config, refWalkResult, reload]
+        [refWalk.current, refWalkResult, reload]
     );
-
-    console.log({refWalkResult})
 
     return {
         toggleChildExpand,
@@ -117,7 +163,7 @@ export function useFlattenObjectView(
     };
 }
 
-type Factory = typeof walkingToIndexFactory;
+type Factory = typeof objectTreeWalking;
 
 function useWalkingFn(): {
     refWalk: RefObject<ReturnType<Factory> | undefined>;
@@ -125,7 +171,7 @@ function useWalkingFn(): {
     const refWalkFn = useRef<Factory>(undefined);
     const refWalk = useRef<ReturnType<Factory>>(undefined);
 
-    const factory = walkingToIndexFactory;
+    const factory = objectTreeWalking;
 
     if (!refWalk.current || refWalkFn.current != factory) {
         refWalkFn.current = factory;
