@@ -1,13 +1,14 @@
 import { useCallback, useMemo } from "react";
-import { ResolverFn } from "../../object-tree/types";
-import { NodeResultData } from "../../object-view/walkingToIndexFactory";
-import { objectHasChild } from "../../object-tree/objectHasChild";
+import { ResolverFn } from "../object-tree/types";
+
+import { NodeResultData } from "../object-view/walkingToIndexFactory";
+import { objectHasChild } from "../object-tree/objectHasChild";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
-import { GroupedProxy } from "../../object-tree/custom-class/groupedProxy";
-import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
-import { useInternalPromiseResolve } from "../../hooks/useInternalPromiseResolve";
-import { LazyValueError } from "../../object-tree/custom-class/LazyValueWrapper";
+import { GroupedProxy } from "../object-tree/custom-class/groupedProxy";
+import { useChangeFlashClasses } from "../object-view/hooks/useChangeFlashClasses";
+import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
+import { LazyValueError } from "../object-tree/custom-class/LazyValueWrapper";
 
 
 export type RenderOptions = {

@@ -1,6 +1,5 @@
 
 
-
 export type WalkingResult = {
     value: unknown,
     childOffsets?: number[],
