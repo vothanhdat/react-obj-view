@@ -124,9 +124,11 @@ function walkingRecursiveFactory<Value, Key, Meta, Config>({
 
         const hasChild = valueHasChild(value)
 
+        const limitByDepth = currentDepth <= ctx.expandDepth
+        
         const defaultExpand = valueDefaultExpaned
-            ? valueDefaultExpaned(value, key, meta, ctx.config)
-            : true
+            ? limitByDepth && valueDefaultExpaned(value, key, meta, ctx.config)
+            : limitByDepth
 
         const isExpand = state.userExpand
             ?? (hasChild && defaultExpand);
