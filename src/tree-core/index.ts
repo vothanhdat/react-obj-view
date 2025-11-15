@@ -39,7 +39,7 @@ export type WalkingContext<Config> = {
 
 
 export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingContext<Config>> = {
-    valueHasChild: (value: Value) => boolean,
+    valueHasChild: (value: Value, key: Key, meta: Meta) => boolean,
     iterateChilds: (
         value: Value, ctx: Context, stableRef: unknown,
         cb: (value: Value, key: Key, meta: Meta) => boolean,
@@ -48,7 +48,7 @@ export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingConte
     defaultContext: (ctx: WalkingContext<Config>) => Context,
     valueDefaultExpaned?: (meta: Meta, ctx: Context) => boolean,
     isValueChange?: (a: Value | undefined, b: Value | undefined) => boolean,
-    transformValue?: (value: Value) => Value,
+    transformValue?: (value: Value, stableRef: unknown) => Value,
     onEnterNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void,
     onExitNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void,
 }
@@ -120,10 +120,10 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
         { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult<Value, Key, Meta>>>,
     ) {
         value = transformValue
-            ? transformValue(value)
+            ? transformValue(value, state)
             : value;
 
-        const hasChild = valueHasChild(value)
+        const hasChild = valueHasChild(value, key, meta)
 
         const limitByDepth = currentDepth <= ctx.expandDepth
 
@@ -162,7 +162,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
             if (hasChild && isExpand) {
 
-                onEnterNode?.(value, key, meta, ctx);
+                // onEnterNode?.(value, key, meta, ctx);
 
                 let iterateResult = iterateChildWrap(
                     iterateChilds,
@@ -174,7 +174,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
                     getChild,
                 )
 
-                onExitNode?.(value, key, meta, ctx);
+                // onExitNode?.(value, key, meta, ctx);
 
                 childCount = iterateResult.childCount
                 childOffsets = iterateResult.childOffsets

@@ -31,6 +31,11 @@ export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdater>
 export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdater>
 
 const objectWalkingAdaper: ObjectWalkingAdater = {
+    transformValue(value) {
+        return value instanceof LazyValue && value.inited
+            ? value.value ?? value.error
+            : value;
+    },
     defaultMeta() { return 0b11 },
     defaultContext(ctx) {
         return {
@@ -38,8 +43,9 @@ const objectWalkingAdaper: ObjectWalkingAdater = {
             circularChecking: new CircularChecking()
         }
     },
-    valueHasChild(value) {
+    valueHasChild(value, key, meta) {
         return isRef(value)
+            && (meta & 0b10) === 0b10
             && !(value instanceof Date)
             && !(value instanceof RegExp)
             && !(value instanceof LazyValue)
@@ -66,8 +72,8 @@ const objectWalkingAdaper: ObjectWalkingAdater = {
 
 export const parseWalkingMeta = (e: WalkingMeta) => {
     return {
-        enumerable: Boolean(e & 0b01),
-        circular: !Boolean(e & 0b10),
+        enumerable: !!(e & 0b01),
+        isCircular: !(e & 0b10),
     }
 }
 
