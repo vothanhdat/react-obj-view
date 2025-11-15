@@ -1,6 +1,6 @@
 import { LazyValue } from "./custom-class/LazyValueWrapper";
-import { propertyIsEnumerable } from "../utils/object";
 import { WalkingConfig } from "./types";
+import { propertyIsEnumerable } from "./utils/object";
 
 export const hidePrototype = Symbol()
 

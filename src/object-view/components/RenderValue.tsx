@@ -1,11 +1,10 @@
-import { joinClasses } from "../utils/joinClasses";
-import { ResolverFn } from "../object-tree/types";
+import { joinClasses } from "../../utils/joinClasses";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
-import { useWrapper } from "../hooks/useWrapper";
-import { useLazyValue } from "../hooks/useLazyValue";
+import { useWrapper } from "../../hooks/useWrapper";
+import { useLazyValue } from "../../hooks/useLazyValue";
 import { RenderOptions } from "./RenderNode";
-import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
+import { useInternalPromiseResolve } from "../../hooks/useInternalPromiseResolve";
 
 
 export const RenderValue: React.FC<{
