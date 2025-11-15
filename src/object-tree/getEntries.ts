@@ -1,5 +1,5 @@
+import { LazyValue } from "./custom-class/LazyValueWrapper";
 import { propertyIsEnumerable } from "../utils/object";
-import { LazyValue } from "./LazyValueWrapper";
 import { WalkingConfig } from "./types";
 
 export const hidePrototype = Symbol()
@@ -64,8 +64,6 @@ export const getEntriesCbOriginal = (
     }
 
 };
-
-// const bindGetEntriesCbOriginal = (config: WalkingConfig, cb) => (value: unknown) => getEntriesCbOriginal(value, config, cb)
 
 export const getEntriesCb = (
     value: unknown,

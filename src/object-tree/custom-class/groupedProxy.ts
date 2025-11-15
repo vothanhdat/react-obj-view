@@ -1,5 +1,5 @@
-import { hidePrototype } from "../V5/getEntries";
-import { simpleCache } from "../V5/resolvers/_shared";
+import { hidePrototype } from "../getEntries";
+import { simpleCache } from "../resolver/_shared";
 
 export const proxyInfo = Symbol("Info")
 

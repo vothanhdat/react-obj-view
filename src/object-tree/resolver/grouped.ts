@@ -1,4 +1,4 @@
-import { GroupedProxy, objectGroupProxyFactory } from "../../utils/groupedProxy";
+import { GroupedProxy, objectGroupProxyFactory } from "../custom-class/groupedProxy";
 import { ResolverFn } from "../types";
 
 const weakMapCache = new WeakMap()

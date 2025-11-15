@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
-import { V5Index } from './V5'
-import { ResolverFn } from './V5/types'
+import { V5Index } from './object-view'
+import { ResolverFn } from './object-tree/types'
 import {
   themeDefault,
   themeDracula,

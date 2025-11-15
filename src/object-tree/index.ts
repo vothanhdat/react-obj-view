@@ -1,9 +1,10 @@
 import { InferNodeResult, InferWalkingResult, WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
-import { isRef } from "../utils/isRef";
-import { getEntriesCb } from "../V5/getEntries";
-import { ResolverFn } from "../V5/types";
-import { LazyValue } from "../V5/LazyValueWrapper";
-import { CircularChecking } from "../V5/CircularChecking";
+import { isRef } from "./utils/isRef";
+import { getEntriesCb } from "./getEntries";
+import { ResolverFn } from "./types";
+import { LazyValue } from "./custom-class/LazyValueWrapper";
+import { CircularChecking } from "./utils/CircularChecking";
+import { getObjectUniqueId } from "./utils/getObjectUniqueId";
 
 
 export type WalkingMeta = number
@@ -67,6 +68,9 @@ const objectWalkingAdaper: ObjectWalkingAdater = {
     },
     valueDefaultExpaned(meta, context) {
         return meta == 0b11
+    },
+    getConfigTokenId(config) {
+        return getObjectUniqueId(config)
     },
 }
 

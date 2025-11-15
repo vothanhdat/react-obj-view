@@ -1,6 +1,6 @@
 import { bench, describe } from 'vitest'
-import { walkingToIndexFactory } from '../src/V5/walkingToIndexFactory'
-import { WalkingConfig } from '../src/V5/types'
+import { walkingToIndexFactory } from '../src/object-view/walkingToIndexFactory'
+import { WalkingConfig } from '../src/object-tree/types'
 
 import { ObjectWalkingConfig, objectTreeWalking } from '../src/object-tree'
 

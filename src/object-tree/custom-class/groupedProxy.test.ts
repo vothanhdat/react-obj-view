@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { objectGroupProxyFactory, GroupedProxy, proxyInfo, groupedProxyIsEqual } from './groupedProxy'
+import { objectGroupProxyFactory, GroupedProxy, proxyInfo, groupedProxyIsEqual } from '../../utils/groupedProxy'
 
 describe('groupedProxy', () => {
   describe('objectGroupProxyFactory', () => {

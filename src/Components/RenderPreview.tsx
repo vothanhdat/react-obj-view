@@ -1,10 +1,10 @@
 import { Fragment, useMemo } from "react";
-import { getEntriesCb } from "../V5/getEntries";
-import { CustomIterator, CustomEntry } from "../V5/resolvers/collections";
-import { ResolverFn, Entry } from "../V5/types";
+import { getEntriesCb } from "../object-tree/getEntries";
+import { ResolverFn, Entry } from "../object-tree/types";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { RenderOptions } from "./RenderNode";
+import { CustomEntry, CustomIterator } from "../object-tree/resolver/collections";
 
 
 

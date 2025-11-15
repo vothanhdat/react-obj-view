@@ -1,5 +1,4 @@
-import { getObjectUniqueId } from "../V5/getObjectUniqueId"
-import { GetStateFn, StateFactory } from "../V5/StateFactory"
+import { GetStateFn, StateFactory } from "./utils/StateFactory"
 
 
 export type WalkingResult<Value, Key, Meta = number> = {
@@ -44,8 +43,10 @@ export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingConte
         value: Value, ctx: Context, stableRef: unknown,
         cb: (value: Value, key: Key, meta: Meta) => boolean,
     ) => void,
+
     defaultMeta: (value: Value, key: Key) => Meta,
     defaultContext: (ctx: WalkingContext<Config>) => Context,
+    getConfigTokenId: (config: Config) => number,
     valueDefaultExpaned?: (meta: Meta, ctx: Context) => boolean,
     isValueChange?: (a: Value | undefined, b: Value | undefined) => boolean,
     transformValue?: (value: Value, stableRef: unknown) => Value,
@@ -238,7 +239,7 @@ const stateFn = () => ({
 export const walkingFactory = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
     adapter: WalkingAdaper<Value, Key, Meta, Config, Context>
 ) => {
-    const { defaultMeta, defaultContext } = adapter;
+    const { defaultMeta, defaultContext, getConfigTokenId } = adapter;
 
     type WalkingResultAlias = WalkingResult<Value, Key, Meta>
 
@@ -257,7 +258,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     const getContextDefault = (config: Config, expandDepth: number): Context => defaultContext({
         config,
         expandDepth,
-        updateToken: getObjectUniqueId(config),
+        updateToken: getConfigTokenId(config),
         updateStamp: updateStamp++,
     })
 

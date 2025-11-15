@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { LazyValue } from "../V5/LazyValueWrapper";
+import { LazyValue } from "../object-tree/custom-class/LazyValueWrapper";
 
 export const useLazyValue = ({ value, refreshPath }: { value: LazyValue; refreshPath?: () => void; }) => {
 

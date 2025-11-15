@@ -1,5 +1,5 @@
 import { joinClasses } from "../utils/joinClasses";
-import { ResolverFn } from "../V5/types";
+import { ResolverFn } from "../object-tree/types";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../hooks/useWrapper";

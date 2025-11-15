@@ -1,5 +1,5 @@
-export { V5Index as ObjectView } from "./V5/index"
-export { type ObjectViewProps, type ResolverFn } from "./V5/types"
+export { V5Index as ObjectView } from "./object-view/index"
+export { type ObjectViewProps, type ResolverFn } from "./object-tree/types"
 export {
     type ThemeColor,
     themeDefault,

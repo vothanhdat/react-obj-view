@@ -1,6 +1,6 @@
-import { GroupedProxy } from "../../utils/groupedProxy";
-import { LazyValue } from "../LazyValueWrapper";
+import { GroupedProxy } from "../custom-class/groupedProxy";
 import { ResolverFn } from "../types";
+import { LazyValue } from "../custom-class/LazyValueWrapper";
 import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./collections";
 import { lazyValueResolver } from "./lazyValueResolver";
 import { InternalPromise, internalPromiseResolver, promiseResolver } from "./promise";

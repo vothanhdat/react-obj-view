@@ -1,5 +1,5 @@
-import { CustomEntry } from "../V5/resolvers/collections";
 import { useWrapper } from "../hooks/useWrapper";
+import { CustomEntry } from "../object-tree/resolver/collections";
 import { RenderOptions } from "./RenderNode";
 import { RenderValue } from "./RenderValue";
 

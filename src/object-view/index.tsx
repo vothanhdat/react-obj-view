@@ -1,13 +1,12 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
-import { ObjectViewProps } from "./types";
-import { NodeResult, NodeResultData } from "./walkingToIndexFactory";
+import { ObjectViewProps } from "../object-tree/types";
+import { NodeResult } from "./walkingToIndexFactory";
 import { RenderNode, RenderOptions } from "../Components/RenderNode";
-import { useFlattenObjectView } from "./useFlattenObjectView";
 import { useWrapper } from "../hooks/useWrapper";
 import "../Components/style.css"
-import { VirtualScroller } from "../Components/VirtualScroller";
 import { joinClasses } from "../utils/joinClasses";
 import { useFlattenObject } from "./useFlattenObject";
+import { VirtualScroller } from "../virtual-scroller/VirtualScroller";
 
 type StickyInfo = {
     index: number,
