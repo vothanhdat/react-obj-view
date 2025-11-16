@@ -358,7 +358,6 @@ import {
   createTheme,
   extendTheme,
   themeDefault,
-  themeKeys,
 } from 'react-obj-view';
 
 const slate = createTheme({
@@ -387,8 +386,7 @@ const slateCompact = extendTheme(slate, {
 });
 ```
 
-- `themeKeys` / `themeKeyIndex` expose the canonical CSS variable names. Iterate them when building forms to avoid missing new tokens.
-- `createTheme` requires every CSS variable, guaranteeing the resulting object stays compatible with `style`.
+- `createTheme` requires every CSS variable listed in the styling reference, guaranteeing the resulting object stays compatible with `style`.
 - `extendTheme` clones a preset/custom palette and overrides only the keys you pass (plus optional standard CSS properties).
 
 ## Troubleshooting

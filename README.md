@@ -123,10 +123,9 @@ import {
   createTheme,
   extendTheme,
   themeDefault,
-  themeKeys,
 } from "react-obj-view";
 
-// Build from scratch (all keys are required; iterate themeKeys to stay in sync)
+// Build from scratch (every CSS variable from the table below is required)
 const midnight = createTheme({
   "--bigobjview-color": "#e8eaed",
   "--bigobjview-bg-color": "#0b1116",
@@ -154,7 +153,7 @@ const midnightCondensed = extendTheme(midnight, {
 });
 ```
 
-`themeKeys` and `themeKeyIndex` expose the ordered list of CSS variables (useful when generating dynamic editors).
+Refer to the “Styling reference” table in the docs whenever you need the full list of supported CSS variables.
 
 > **Line-height tip:** If your theme tweaks fonts or padding, expose a shared CSS variable (e.g. `--rov-row-height`) and set both `.row { height: var(--rov-row-height) }` and the `lineHeight` prop from the same value so scrolling math stays correct.
 

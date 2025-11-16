@@ -1,21 +1,21 @@
-import { createThemeFromValues } from "./type";
+import { ThemeColor } from "./type";
 
-export const themeDefault = createThemeFromValues([
-    "light-dark(#333b3c, #efefec)",
-    "light-dark(#f9f9f9, #212121)",
-    "rgb(255, 50, 0)",
-    "12px",
-    "#08f",
-    "red",
-    "red",
-    "orange",
-    "#0aa",
-    "#0aa",
-    "#0aa",
-    "#0aa",
-    "#0aa",
-    "#08f",
-    "red",
-    "#08f",
-    "red",
-]);
+export const themeDefault: ThemeColor = {
+    "--bigobjview-color": "light-dark(#333b3c, #efefec)",
+    "--bigobjview-bg-color": "light-dark(#f9f9f9, #212121)",
+    "--bigobjview-change-color": "rgb(255, 50, 0)",
+    "--bigobjview-fontsize": "12px",
+    "--bigobjview-type-boolean-color": "#08f",
+    "--bigobjview-type-number-color": "red",
+    "--bigobjview-type-bigint-color": "red",
+    "--bigobjview-type-string-color": "orange",
+    "--bigobjview-type-object-array-color": "#0aa",
+    "--bigobjview-type-object-object-color": "#0aa",
+    "--bigobjview-type-object-promise-color": "#0aa",
+    "--bigobjview-type-object-map-color": "#0aa",
+    "--bigobjview-type-object-set-color": "#0aa",
+    "--bigobjview-type-function-color": "#08f",
+    "--bigobjview-type-object-regexp-color": "red",
+    "--bigobjview-type-object-date-color": "#08f",
+    "--bigobjview-type-object-error-color": "red",
+};

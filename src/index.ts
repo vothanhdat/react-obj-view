@@ -13,8 +13,6 @@ export {
     type ThemeValueMap,
     createTheme,
     extendTheme,
-    themeKeys,
-    themeKeyIndex,
     themeDefault,
     themeDracula,
     themeGeneral,

@@ -1,8 +1,6 @@
 export {
     createTheme,
     extendTheme,
-    themeKeyIndex,
-    themeKeys,
     type ThemeColor,
     type ThemeOverrides,
     type ThemeValueMap,

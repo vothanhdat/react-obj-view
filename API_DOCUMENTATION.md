@@ -193,7 +193,6 @@ import {
   createTheme,
   extendTheme,
   themeDefault,
-  themeKeys,
 } from "react-obj-view";
 
 const cyberpunk = createTheme({
@@ -222,7 +221,7 @@ const cyberpunkTight = extendTheme(cyberpunk, {
 });
 ```
 
-- `createTheme(valueMap, extraStyles?)` – requires every CSS variable defined in `themeKeys`. Use `themeKeys` / `themeKeyIndex` if you want to iterate over the canonical list.
+- `createTheme(valueMap, extraStyles?)` – expects all CSS variables listed in the styling reference table so the resulting object stays compatible with the component.
 - `extendTheme(baseTheme, overrides)` – clone an existing theme (preset or custom) and override only specific CSS variables and/or vanilla `style` props such as `lineHeight`, `fontFamily`, etc.
 
 These helpers ensure the generated objects remain compatible with the component’s `style` prop while still benefiting from the smaller bundle produced by the internal tuple representation.
