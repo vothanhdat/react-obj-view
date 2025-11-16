@@ -1,24 +1,5 @@
 
 
-// export class LazyValueWrapper {
-
-//     static map = new WeakMap<any, LazyValueWrapper>;
-
-//     static getInstance(value: any) {
-//         let v = this.map.get(value);
-//         if (!v) {
-//             this.map.set(value, v = new LazyValueWrapper(value));
-//         }
-
-//         return v;
-//     }
-
-//     private constructor(
-//         public value: any
-//     ) { }
-
-// }
-
 export class LazyValue {
 
     static map = new WeakMap<any, Map<any, LazyValue>>;
@@ -64,6 +45,7 @@ export class LazyValue {
     static name = ""
     toString() { return "" }
 }
+
 
 export class LazyValueError extends Array {
     constructor(private error: any) {

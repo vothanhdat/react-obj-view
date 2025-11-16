@@ -1,4 +1,4 @@
-import { LazyValue } from "../LazyValueWrapper";
+import { LazyValue } from "../custom-class/LazyValueWrapper";
 import { ResolverFn } from "../types";
 
 export const lazyValueResolver: ResolverFn<LazyValue> = (

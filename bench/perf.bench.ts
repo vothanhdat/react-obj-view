@@ -1,6 +1,4 @@
 import { bench, describe } from 'vitest'
-import { walkingToIndexFactory } from '../src/object-view/walkingToIndexFactory'
-import { WalkingConfig } from '../src/object-tree/types'
 
 import { ObjectWalkingConfig, objectTreeWalking } from '../src/object-tree'
 
@@ -40,19 +38,20 @@ describe('walking benchmark', () => {
     ["~1M nodes", generatePayload(100000), 10],
   ] as [string, any, number][]) {
     describe(name, () => {
-      bench('current version', () => {
-        const config: WalkingConfig = {
-          expandDepth: 5,
-          nonEnumerable: true,
-          resolver: undefined,
-        }
-        const factory = walkingToIndexFactory()
-        factory.walking(payload, config, 'root', true)
-      }, { iterations: iterate })
-
-      bench('generic version', () => {
+      bench('generic version: nonEnumerable', () => {
         const walkingConfig: ObjectWalkingConfig = {
           nonEnumerable: true,
+          symbol: false,
+          resolver: undefined
+        };
+
+        const factory = objectTreeWalking()
+        factory.walking(payload, 'root', walkingConfig, 5)
+      }, { iterations: iterate })
+
+      bench('generic version: enumerable', () => {
+        const walkingConfig: ObjectWalkingConfig = {
+          nonEnumerable: false,
           symbol: false,
           resolver: undefined
         };

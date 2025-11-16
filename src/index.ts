@@ -1,6 +1,11 @@
-export { ObjectViewProps } from "./object-view/types"
-export { ObjectView as ObjectView } from "./object-view/ObjectView"
+export { type ObjectViewProps } from "./object-view/types"
 export { type ResolverFn } from "./object-tree/types"
+export { walkingFactory, type InferWalkingResult, type InferNodeResult } from "./tree-core"
+export { parseWalkingMeta, objectTreeWalking } from "./object-tree"
+
+
+export { ObjectView } from "./object-view/ObjectView"
+
 
 export {
     type ThemeColor,

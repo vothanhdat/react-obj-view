@@ -159,7 +159,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             let childCanExpand = hasChild && !isExpand;
 
             let childOffsets = undefined
-            let keys = undefined
+            let childKeys = undefined
 
             if (hasChild && isExpand) {
 
@@ -179,7 +179,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
                 childCount = iterateResult.childCount
                 childOffsets = iterateResult.childOffsets
-                keys = iterateResult.childKeys
+                childKeys = iterateResult.childKeys
                 childDepth = Math.max(iterateResult.childDepth, currentDepth)
                 childCanExpand ||= iterateResult.childCanExpand
 
@@ -188,7 +188,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             }
 
 
-            cleanChild?.();
+            cleanChild();
 
             state.key = key;
             state.value = value
@@ -198,7 +198,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             state.childDepth = childDepth
             state.childCanExpand = childCanExpand
 
-            state.childKeys = keys;
+            state.childKeys = childKeys;
             state.childOffsets = childOffsets
 
             state.expanded = isExpand
