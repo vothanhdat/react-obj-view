@@ -1,6 +1,6 @@
 import { WalkingAdaperBase } from "../tree-core"
 import { MetaParserBase } from "./FlattenNodeWrapper";
-import { VirtualScroller } from "../virtual-scroller/VirtualScroller";
+import { VirtualScroller } from "../virtual-scroller";
 import { ReactTreeViewProps } from "./types";
 import { VirtualScrollRender } from "./VirtualScrollRender";
 

@@ -1,33 +1,7 @@
-import React, { JSX, ReactNode, useEffect, useRef, useState } from "react"
+import React, { ReactNode, useEffect, useRef, useState } from "react"
+import { getScrollContainer } from "./getScrollContainer"
+import type { VirtualScrollerProps } from "./types"
 
-
-
-export type VirtualScrollerProps<T> = {
-    height: number,
-    Component: React.FC<VirtualScrollerRenderProps<T>>
-} & T
-
-
-export type VirtualScrollerRenderProps<T> = {
-    start: number
-    end: number
-    offset: number
-} & T
-
-
-
-const getScrollContainer = (e: HTMLElement): HTMLElement => {
-    let current: HTMLElement | null = e
-    while (current) {
-        const style = window.getComputedStyle(current)
-        const overflowY = style.overflowY ?? style.overflow
-        if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
-            return current
-        }
-        current = current.parentElement
-    }
-    return document.documentElement
-}
 
 export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode = ({ height, Component = React.Fragment, ...props }) => {
 
