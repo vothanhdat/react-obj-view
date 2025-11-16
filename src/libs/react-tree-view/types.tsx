@@ -43,7 +43,8 @@ export type ReactTreeViewProps<
     RowRenderer: React.FC<ReactTreeRowRenderProps<T, MetaParser, RenderOptions>>;
     containerDivProps?: React.HTMLAttributes<HTMLDivElement>;
     rowDivProps?: React.HTMLAttributes<HTMLDivElement>;
-    stickyPathHeaders?:boolean,
+    stickyPathHeaders?: boolean,
+    showLineNumbers?: boolean,
 };
 
 export type ReactTreeViewVitualRenderProps<

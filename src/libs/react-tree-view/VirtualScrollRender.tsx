@@ -16,8 +16,8 @@ export const VirtualScrollRender: <
 ) => ReactNode = (props) => {
     const {
         start, end, offset,
-        childCount, 
-        RowRenderer, 
+        childCount,
+        RowRenderer,
         lineHeight,
         options,
         rowDivProps,
@@ -26,6 +26,7 @@ export const VirtualScrollRender: <
         refreshPath,
         toggleChildExpand,
         stickyPathHeaders = true,
+        showLineNumbers = true,
         ...rest
     } = props;
 
@@ -36,6 +37,8 @@ export const VirtualScrollRender: <
         getNodeByIndex,
         stickyHeader: stickyPathHeaders,
     });
+
+    const lineNumberChars = String(renderIndexes.at(-1)?.index ?? 0).length
 
     return <>
         {renderIndexes.map(({ isStick, index, isLastStick, position }) => <div
@@ -56,6 +59,9 @@ export const VirtualScrollRender: <
                 height: `${lineHeight}px`,
             }}
         >
+            {showLineNumbers && <span className="line-number">
+                {String(index).padStart(lineNumberChars, " ")}:{" "}
+            </span>}
             <VirtualScrollRowRender
                 index={index}
                 RowRender={RowRenderer}
@@ -63,6 +69,7 @@ export const VirtualScrollRender: <
                 toggleChildExpand={toggleChildExpand}
                 refreshPath={refreshPath}
                 options={options}
+                // showLineNumbers={showLineNumbers}
                 size={childCount} />
         </div>)}
     </>;

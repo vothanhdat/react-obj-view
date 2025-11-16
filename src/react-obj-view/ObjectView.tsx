@@ -108,6 +108,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         RowRenderer={RenderNode}
         stickyPathHeaders={stickyPathHeaders}
         containerDivProps={containerDivProps}
+        showLineNumbers={showLineNumbers}
         rowDivProps={rowDivProps}
     />
 }

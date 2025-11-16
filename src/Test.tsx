@@ -222,6 +222,7 @@ export const Test = () => {
   const [liveData, setLiveData] = useState(() => createLiveSnapshot(120))
   const [useLiveStream, setUseLiveStream] = useState(false)
   const [stickyHeaders, setStickyHeaders] = useState(true)
+  const [showLineNumbers, setShowLineNumbers] = useState(true)
 
   useEffect(() => {
     if (useLiveStream) {
@@ -328,13 +329,15 @@ export const Test = () => {
 
   const viewerFlags = useMemo(
     () => [
-      { label: 'Grouping', active: enableGrouping },
-      { label: 'Resolvers', active: enableResolvers },
-      { label: 'Preview', active: enablePreviewMode },
-      { label: 'Highlight', active: enableHighlighting },
-      { label: 'Non-enum', active: showNonEnumerable },
-      { label: 'Symbols', active: showSymbols },
-      { label: 'Live stream', active: useLiveStream },
+      { label: 'Sticky Headers', active: stickyHeaders, setter: setStickyHeaders },
+      { label: 'Line numbers', active: showLineNumbers, setter: setShowLineNumbers },
+      { label: 'Grouping', active: enableGrouping, setter: setEnableGrouping },
+      { label: 'Resolvers', active: enableResolvers, setter: setEnableResolvers },
+      { label: 'Preview', active: enablePreviewMode, setter: setEnablePreviewMode },
+      { label: 'Highlight', active: enableHighlighting, setter: setEnableHighlighting },
+      { label: 'Non-enum', active: showNonEnumerable, setter: setShowNonEnumerable },
+      { label: 'Symbols', active: showSymbols, setter: setShowSymbols },
+      { label: 'Live stream', active: useLiveStream, setter: setUseLiveStream },
     ],
     [enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols, useLiveStream],
   )
@@ -478,6 +481,11 @@ export const Test = () => {
                   setter: setStickyHeaders,
                 },
                 {
+                  label: 'Show line numbers',
+                  value: showLineNumbers,
+                  setter: setShowLineNumbers,
+                },
+                {
                   label: 'Highlight updates',
                   value: enableHighlighting,
                   setter: setEnableHighlighting,
@@ -579,7 +587,10 @@ export const Test = () => {
             </div>
             <div className="viewer-flags">
               {viewerFlags.map((flag) => (
-                <span key={flag.label} className={`feature-chip ${flag.active ? 'active' : 'inactive'}`}>
+                <span
+                  key={flag.label}
+                  // onClick={() => flag.setter(e => !e)}
+                  className={`feature-chip ${flag.active ? 'active' : 'inactive'}`}>
                   {flag.label}
                 </span>
               ))}
@@ -596,7 +607,7 @@ export const Test = () => {
               resolver={resolverOverrides}
               preview={enablePreviewMode}
               nonEnumerable={showNonEnumerable}
-              showLineNumbers={true}
+              showLineNumbers={showLineNumbers}
               lineHeight={14}
               includeSymbols={showSymbols}
               style={selectedTheme}

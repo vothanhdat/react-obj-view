@@ -331,6 +331,7 @@
   border: 1px solid transparent;
   background: rgba(148, 163, 184, 0.18);
   color: #475569;
+  /* cursor: pointer; */
 }
 
 .feature-chip.active {
