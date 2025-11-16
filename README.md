@@ -254,6 +254,8 @@ See [TESTING.md](./TESTING.md) for coverage numbers, structure, and tips.
 
 - [Usage Guide](./USAGE_GUIDE.md) – end-to-end patterns, resolver recipes, styling guidance.
 - [API Documentation](./API_DOCUMENTATION.md) – deeper dive into props, hooks, and resolver authoring.
+- [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) – explains `tree-core`, `react-tree-view`, and the virtual-scroller for building custom viewers.
+- [Object Tree Adapter & React Viewer](./docs/OBJECT_TREE_VIEW.md) – details how the built-in `ObjectView` composes the generic stack with resolvers.
 - [Live demo](https://vothanhdat.github.io/react-obj-view/) – try grouping, previews, and change flashes in the browser.
 
 ---
