@@ -1,5 +1,5 @@
 import { parseWalkingMeta } from "./objectWalkingAdaper";
-import type { WalkingContext, WalkingAdaper, InferWalkingResult, InferNodeResult, InferWalkingInstance } from "../tree-core";
+import type { WalkingContext, WalkingAdaper, InferWalkingResult, InferNodeResult, InferWalkingInstance } from "../libs/tree-core";
 import { CircularChecking } from "./utils/CircularChecking";
 
 type ResolverFnCb = (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void

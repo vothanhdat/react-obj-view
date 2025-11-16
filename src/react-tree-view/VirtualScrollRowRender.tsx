@@ -1,6 +1,6 @@
 import React, { ReactNode, useMemo } from "react";
 import { useWrapper } from "./useWrapper";
-import type { WalkingAdaperBase } from "../tree-core";
+import type { WalkingAdaperBase } from "../libs/tree-core";
 import type { MetaParserBase, FlattenNodeWrapper, FlattenNodeData } from "./FlattenNodeWrapper";
 import type { ReactTreeRowRenderProps } from "./types";
 

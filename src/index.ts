@@ -6,7 +6,7 @@ export {
     walkingFactory,
     type InferWalkingResult,
     type InferNodeResult
-} from "./tree-core"
+} from "./libs/tree-core"
 
 export {
     parseWalkingMeta,

@@ -10,7 +10,7 @@ import {
     GROUP_ARRAY_RESOLVER, 
     GROUP_OBJECT_RESOLVER
 } from "../object-tree";
-import { InferWalkingType } from "../tree-core";
+import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
 import "./components/style.css"
 

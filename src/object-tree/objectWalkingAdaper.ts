@@ -1,4 +1,4 @@
-import { walkingFactory } from "../tree-core";
+import { walkingFactory } from "../libs/tree-core";
 import { LazyValue } from "./custom-class/LazyValueWrapper";
 import { getEntriesCb } from "./getEntries";
 import { ObjectWalkingAdater, WalkingMeta } from "./types";
