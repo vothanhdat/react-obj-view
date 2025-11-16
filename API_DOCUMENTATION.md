@@ -184,6 +184,49 @@ Available presets:
 
 Each preset exposes the same set of CSS custom properties as `themeDefault`, so you can start with a preset and selectively override individual tokens as needed.
 
+### Creating custom themes
+
+When presets are not enough, you can compose your own palette through helpers exported at the package root:
+
+```ts
+import {
+  createTheme,
+  extendTheme,
+  themeDefault,
+  themeKeys,
+} from "react-obj-view";
+
+const cyberpunk = createTheme({
+  "--bigobjview-color": "#f2f2f2",
+  "--bigobjview-bg-color": "#080215",
+  "--bigobjview-change-color": "#ff00ff",
+  "--bigobjview-fontsize": "12px",
+  "--bigobjview-type-boolean-color": "#00ffe1",
+  "--bigobjview-type-number-color": "#ff6f00",
+  "--bigobjview-type-bigint-color": "#ff6f00",
+  "--bigobjview-type-string-color": "#e1ff00",
+  "--bigobjview-type-object-array-color": "#00d1ff",
+  "--bigobjview-type-object-object-color": "#bd00ff",
+  "--bigobjview-type-object-promise-color": "#ff00c8",
+  "--bigobjview-type-object-map-color": "#00ffa3",
+  "--bigobjview-type-object-set-color": "#ff9100",
+  "--bigobjview-type-function-color": "#1de9b6",
+  "--bigobjview-type-object-regexp-color": "#ff4081",
+  "--bigobjview-type-object-date-color": "#7c4dff",
+  "--bigobjview-type-object-error-color": "#ff1744",
+});
+
+const cyberpunkTight = extendTheme(cyberpunk, {
+  "--bigobjview-fontsize": "11px",
+  lineHeight: 12,
+});
+```
+
+- `createTheme(valueMap, extraStyles?)` – requires every CSS variable defined in `themeKeys`. Use `themeKeys` / `themeKeyIndex` if you want to iterate over the canonical list.
+- `extendTheme(baseTheme, overrides)` – clone an existing theme (preset or custom) and override only specific CSS variables and/or vanilla `style` props such as `lineHeight`, `fontFamily`, etc.
+
+These helpers ensure the generated objects remain compatible with the component’s `style` prop while still benefiting from the smaller bundle produced by the internal tuple representation.
+
 ## Behaviour Notes
 
 - **Expansion State** – `useFlattenObjectView` stores expansion toggles keyed by the node's path. Clicking a node toggles expansion via `toggleChildExpand`.

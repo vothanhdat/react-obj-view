@@ -349,6 +349,48 @@ Presets are just `CSSProperties`, so you can reuse the same object across multip
 
 > `getter` is the memoised `valueGetter` used throughout your component examples.
 
+### Rolling a custom palette
+
+Use the exported helpers when you want a bespoke palette or to build a theme editor:
+
+```ts
+import {
+  createTheme,
+  extendTheme,
+  themeDefault,
+  themeKeys,
+} from 'react-obj-view';
+
+const slate = createTheme({
+  "--bigobjview-color": "#f1f5f9",
+  "--bigobjview-bg-color": "#0f172a",
+  "--bigobjview-change-color": "#f43f5e",
+  "--bigobjview-fontsize": "13px",
+  "--bigobjview-type-boolean-color": "#22d3ee",
+  "--bigobjview-type-number-color": "#f97316",
+  "--bigobjview-type-bigint-color": "#fb923c",
+  "--bigobjview-type-string-color": "#fde047",
+  "--bigobjview-type-object-array-color": "#38bdf8",
+  "--bigobjview-type-object-object-color": "#a855f7",
+  "--bigobjview-type-object-promise-color": "#ec4899",
+  "--bigobjview-type-object-map-color": "#2dd4bf",
+  "--bigobjview-type-object-set-color": "#14b8a6",
+  "--bigobjview-type-function-color": "#22d3ee",
+  "--bigobjview-type-object-regexp-color": "#fb7185",
+  "--bigobjview-type-object-date-color": "#bef264",
+  "--bigobjview-type-object-error-color": "#f87171",
+});
+
+const slateCompact = extendTheme(slate, {
+  "--bigobjview-fontsize": "11px",
+  lineHeight: 12,
+});
+```
+
+- `themeKeys` / `themeKeyIndex` expose the canonical CSS variable names. Iterate them when building forms to avoid missing new tokens.
+- `createTheme` requires every CSS variable, guaranteeing the resulting object stays compatible with `style`.
+- `extendTheme` clones a preset/custom palette and overrides only the keys you pass (plus optional standard CSS properties).
+
 ## Troubleshooting
 
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.

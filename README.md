@@ -116,6 +116,46 @@ Prefer CSS? Override the variables directly:
 <ObjectView valueGetter={getter} className="object-view" />
 ```
 
+Want full control? Build your own palette with the exported helpers:
+
+```ts
+import {
+  createTheme,
+  extendTheme,
+  themeDefault,
+  themeKeys,
+} from "react-obj-view";
+
+// Build from scratch (all keys are required; iterate themeKeys to stay in sync)
+const midnight = createTheme({
+  "--bigobjview-color": "#e8eaed",
+  "--bigobjview-bg-color": "#0b1116",
+  "--bigobjview-change-color": "#ff8a65",
+  "--bigobjview-fontsize": "12px",
+  "--bigobjview-type-boolean-color": "#18ffff",
+  "--bigobjview-type-number-color": "#ffab40",
+  "--bigobjview-type-bigint-color": "#ff6d00",
+  "--bigobjview-type-string-color": "#ffee58",
+  "--bigobjview-type-object-array-color": "#40c4ff",
+  "--bigobjview-type-object-object-color": "#7e57c2",
+  "--bigobjview-type-object-promise-color": "#ec407a",
+  "--bigobjview-type-object-map-color": "#00e5ff",
+  "--bigobjview-type-object-set-color": "#26c6da",
+  "--bigobjview-type-function-color": "#80cbc4",
+  "--bigobjview-type-object-regexp-color": "#ef5350",
+  "--bigobjview-type-object-date-color": "#8bc34a",
+  "--bigobjview-type-object-error-color": "#ff7043",
+});
+
+// …or extend an existing preset
+const midnightCondensed = extendTheme(midnight, {
+  "--bigobjview-fontsize": "11px",
+  lineHeight: 12,
+});
+```
+
+`themeKeys` and `themeKeyIndex` expose the ordered list of CSS variables (useful when generating dynamic editors).
+
 > **Line-height tip:** If your theme tweaks fonts or padding, expose a shared CSS variable (e.g. `--rov-row-height`) and set both `.row { height: var(--rov-row-height) }` and the `lineHeight` prop from the same value so scrolling math stays correct.
 
 ---

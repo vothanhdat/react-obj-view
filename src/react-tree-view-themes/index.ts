@@ -1,4 +1,12 @@
-export type { ThemeColor } from "./type";
+export {
+    createTheme,
+    extendTheme,
+    themeKeyIndex,
+    themeKeys,
+    type ThemeColor,
+    type ThemeOverrides,
+    type ThemeValueMap,
+} from "./type";
 export { themeDefault } from "./default";
 export { themeGeneral } from "./general";
 export {

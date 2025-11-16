@@ -9,6 +9,12 @@ export type { ObjectViewProps } from "./react-obj-view/types"
 
 export {
     type ThemeColor,
+    type ThemeOverrides,
+    type ThemeValueMap,
+    createTheme,
+    extendTheme,
+    themeKeys,
+    themeKeyIndex,
     themeDefault,
     themeDracula,
     themeGeneral,
