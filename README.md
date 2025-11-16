@@ -9,6 +9,12 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 
 ---
 
+## 🔄 Branch status
+
+This `work` branch diverges from commit `fabf432` on master and introduces a modular tree-walking/runtime stack. See [`docs/BRANCH_UPDATES.md`](./docs/BRANCH_UPDATES.md) for a curated summary of every change that landed after the fork (adapters, virtualization, theming, benchmarks, etc.). 【F:docs/BRANCH_UPDATES.md†L1-L34】
+
+---
+
 ## ✨ Features
 
 - **Virtualized tree view** – only visible rows render, so 100k+ nodes stay smooth.
