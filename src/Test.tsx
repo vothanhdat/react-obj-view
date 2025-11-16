@@ -9,7 +9,7 @@ import {
   themeMonokai,
   themeOneDark,
   themeSepia,
-} from './react-tree-view-themes'
+} from './react-obj-view-themes'
 import { ObjectView } from './react-obj-view'
 
 const packageVersion = '1.0.7'

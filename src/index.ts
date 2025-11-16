@@ -35,4 +35,4 @@ export {
     themeQuietLight,
     themeSepia,
     themeSolarizedLight
-} from "./react-tree-view-themes"
+} from "./react-obj-view-themes"
