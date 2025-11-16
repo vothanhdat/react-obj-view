@@ -127,10 +127,10 @@ describe('StateFactory', () => {
   describe('cleanChild functionality', () => {
     it('should remove untouched children', () => {
       const { stateFactory } = StateFactory(() => ({ value: 0 }))
-      
+
       const rootMap: any = {}
       const root = stateFactory(rootMap)
-      
+
       // Create children
       root.getChild('keep')
       root.getChild('remove')
@@ -141,14 +141,31 @@ describe('StateFactory', () => {
       const root2 = stateFactory(rootMap)
       root2.getChild('keep')
       root2.cleanChild()
-      
+
       // 'remove' should still exist until the next state factory call
       expect(rootMap.childs.has('keep')).toBe(true)
     })
 
+    it('should keep touched children and delete untouched ones after cleanup', () => {
+      const { stateFactory } = StateFactory(() => ({ value: 0 }))
+
+      const rootMap: any = {}
+      const root = stateFactory(rootMap)
+
+      root.getChild('keep')
+      root.getChild('remove')
+
+      const root2 = stateFactory(rootMap)
+      root2.getChild('keep')
+      root2.cleanChild()
+
+      expect(rootMap.childs.has('keep')).toBe(true)
+      expect(rootMap.childs.has('remove')).toBe(false)
+    })
+
     it('should not affect newly touched children', () => {
       const { stateFactory } = StateFactory(() => ({ value: 0 }))
-      
+
       const rootMap: any = {}
       const root = stateFactory(rootMap)
       
