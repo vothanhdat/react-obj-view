@@ -1,7 +1,7 @@
 import React from "react";
 import type { useReactTree } from "./useReactTree";
 import type { WalkingAdaperBase, InferWalkingInstance, InferWalkingType } from "../libs/tree-core";
-import type { VirtualScrollerRenderProps } from "../virtual-scroller/types";
+import type { VirtualScrollerRenderProps } from "../libs/virtual-scroller/types";
 import type { MetaParserBase, FlattenNodeData } from "./FlattenNodeWrapper";
 
 
