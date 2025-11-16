@@ -1,4 +1,4 @@
-import { objectTreeWalking, ObjectWalkingConfig } from ".";
+import { objectTreeWalkingFactory, ObjectWalkingConfig } from ".";
 import { allExamples } from "../exampleData";
 
 
@@ -22,7 +22,7 @@ const walkingConfig: ObjectWalkingConfig = {
 console.group("Current:")
 
 
-const { walking, refreshPath, toggleExpand, getNode } = objectTreeWalking()
+const { walking, refreshPath, toggleExpand, getNode } = objectTreeWalkingFactory()
 
 const result = walking(test, 'root', walkingConfig, 10)
 

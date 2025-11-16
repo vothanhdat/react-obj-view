@@ -1,4 +1,4 @@
-import { InferNodeResult, InferWalkingResult, WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
+import { InferNodeResult, InferWalkingInstance, InferWalkingResult, WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
 import { isRef } from "./utils/isRef";
 import { getEntriesCb } from "./getEntries";
 import { ResolverFn } from "./types";
@@ -30,6 +30,8 @@ type ObjectWalkingAdater = WalkingAdaper<
 export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdater>
 
 export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdater>
+
+export type ObjectWalkingInstance = InferWalkingInstance<ObjectWalkingAdater>
 
 const objectWalkingAdaper: ObjectWalkingAdater = {
     transformValue(value) {
@@ -81,5 +83,5 @@ export const parseWalkingMeta = (e: WalkingMeta) => {
     }
 }
 
-export const objectTreeWalking = () => walkingFactory(objectWalkingAdaper)
+export const objectTreeWalkingFactory = () => walkingFactory(objectWalkingAdaper)
 

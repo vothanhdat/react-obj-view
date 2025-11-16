@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { ResolverFn } from "../object-tree/types";
-import { objectTreeWalking, ObjectWalkingConfig } from "../object-tree";
+import { objectTreeWalkingFactory, ObjectWalkingConfig } from "../object-tree";
 import { DEFAULT_RESOLVER } from "../object-tree/resolver";
 import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "../object-tree/resolver/grouped";
 import { useFactoryFn } from "./useFactoryFn";
@@ -51,7 +51,7 @@ export function useFlattenObject(
 
     const [reload, setReload] = useState(0);
 
-    const indexWalkingRef = useFactoryFn(objectTreeWalking);
+    const indexWalkingRef = useFactoryFn(objectTreeWalkingFactory);
 
     const refWalkResult = useMemo(
         () => {

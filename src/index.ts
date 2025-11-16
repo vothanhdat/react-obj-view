@@ -1,7 +1,7 @@
 export { type ObjectViewProps } from "./object-view/types"
 export { type ResolverFn } from "./object-tree/types"
 export { walkingFactory, type InferWalkingResult, type InferNodeResult } from "./tree-core"
-export { parseWalkingMeta, objectTreeWalking } from "./object-tree"
+export { parseWalkingMeta, objectTreeWalkingFactory as objectTreeWalking } from "./object-tree"
 
 
 export { ObjectView } from "./object-view/ObjectView"

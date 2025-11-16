@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { JSX, ReactNode, useEffect, useRef, useState } from "react"
 
 
 
@@ -29,7 +29,7 @@ const getScrollContainer = (e: HTMLElement): HTMLElement => {
     return document.documentElement
 }
 
-export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, Component = React.Fragment, ...props }) => {
+export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode = ({ height, Component = React.Fragment, ...props }) => {
 
     const ref = useRef<HTMLDivElement>(null)
 
@@ -41,7 +41,7 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
         if (!isFinite(height)) {
             console.error("Height is not valid", { height })
         }
-        
+
         if (!ref.current) {
             return
         }
@@ -106,6 +106,6 @@ export const VirtualScroller: React.FC<VirtualScrollerProps<any>> = ({ height, C
     }, [height])
 
     return isFinite(height) && <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
-        <Component start={start} end={end} offset={offset} {...props} />
+        <Component start={start} end={end} offset={offset} {...props as any} />
     </div>
 }

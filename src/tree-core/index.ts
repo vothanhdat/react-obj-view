@@ -1,7 +1,7 @@
 import { GetStateFn, StateFactory } from "./utils/StateFactory"
 
 
-export type WalkingResult<Value, Key, Meta = number> = {
+export type WalkingResult<Value, Key, Meta> = {
     value?: Value,
     key?: Key,
     childKeys?: Key[],
@@ -21,7 +21,7 @@ export type WalkingResult<Value, Key, Meta = number> = {
     meta?: Meta,
 }
 
-export type NodeResult<Value, Key, Meta = number> = {
+export type NodeResult<Value, Key, Meta> = {
     state: WalkingResult<Value, Key, Meta>,
     depth: number,
     paths: Key[],
@@ -105,12 +105,14 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     }
 }
 
-function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends WalkingContext<Config>>({
-    iterateChilds, valueHasChild, onEnterNode, onExitNode,
-    valueDefaultExpaned,
-    isValueChange,
-    transformValue,
-}: WalkingAdaper<Value, Key, Meta, Config, Context>) {
+function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
+    {
+        iterateChilds, valueHasChild, onEnterNode, onExitNode,
+        valueDefaultExpaned,
+        isValueChange,
+        transformValue,
+    }: WalkingAdaper<Value, Key, Meta, Config, Context>
+) {
 
     return function walkingInternal(
         value: Value,
@@ -360,11 +362,24 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
 }
 
-export type InferWalkingResult<T> = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+export type WalkingAdaperBase = WalkingAdaper<any, any, any, any, any>
+
+export type InferWalkingResult<T extends WalkingAdaperBase> =
+    T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
     ? WalkingResult<Value, Key, Meta>
     : WalkingResult<any, any, any>
 
-
-export type InferNodeResult<T> = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+export type InferNodeResult<T extends WalkingAdaperBase> =
+    T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
     ? NodeResult<Value, Key, Meta>
     : NodeResult<any, any, any>
+
+export type InferWalkingInstance<T extends WalkingAdaperBase> =
+    T extends WalkingAdaper<infer Value, infer Key, infer Meta, infer Config, infer Context>
+    ? ReturnType<typeof walkingFactory<Value, Key, Meta, Config, Context>>
+    : ReturnType<typeof walkingFactory<any, any, any, any, any>>
+
+export type InferWalkingType<T extends WalkingAdaperBase> =
+    T extends WalkingAdaper<infer Value, infer Key, infer Meta, infer Config, infer Context>
+    ? { Value: Value, Key: Key, Meta: Meta, Config: Config, Context: Context }
+    : { Value: any, Key: any, Meta: any, Config: any, Context: any }
