@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
-import { ResolverFn } from './object-tree/types'
+import { ResolverFn } from './object-tree'
 import {
   themeDefault,
   themeDracula,

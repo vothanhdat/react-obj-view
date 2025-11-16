@@ -1,6 +1,6 @@
 export {
     type ResolverFn
-} from "./object-tree/types"
+} from "./object-tree"
 
 export {
     walkingFactory,

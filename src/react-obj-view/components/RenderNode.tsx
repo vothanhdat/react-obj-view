@@ -1,15 +1,21 @@
 import { useCallback, useMemo } from "react";
-import { ResolverFn } from "../../object-tree/types";
-import { objectHasChild } from "../../object-tree/objectHasChild";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
-import { GroupedProxy } from "../../object-tree/custom-class/groupedProxy";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
-import { LazyValueError } from "../../object-tree/custom-class/LazyValueWrapper";
-import { ReactTreeRowRenderProps } from "../../react-tree-view";
-import { ObjectWalkingAdater, ObjectWalkingMetaParser } from "../../object-tree";
-import { FlattenNodeData } from "../../react-tree-view/FlattenNodeWrapper";
+import {
+    type ReactTreeRowRenderProps,
+    type FlattenNodeData
+} from "../../react-tree-view";
+import {
+    type ResolverFn,
+    type ObjectWalkingAdater,
+    type ObjectWalkingMetaParser,
+
+    objectHasChild,
+    GroupedProxy,
+    LazyValueError
+} from "../../object-tree";
 
 
 export type RenderOptions = {

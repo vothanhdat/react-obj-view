@@ -5,6 +5,7 @@ import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./co
 import { lazyValueResolver } from "./lazyValueResolver";
 import { InternalPromise, internalPromiseResolver, promiseResolver } from "./promise";
 
+
 export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     [InternalPromise, internalPromiseResolver],
     [LazyValue, lazyValueResolver],
@@ -21,4 +22,9 @@ export const PROTOTYPE_DISABLE = new Set([
     GroupedProxy,
     CustomIterator,
 ])
+
+export { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "./grouped"
+
+export { CustomEntry, CustomIterator } from "./collections"
+export { InternalPromise } from "./promise"
 

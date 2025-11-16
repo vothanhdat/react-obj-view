@@ -2,9 +2,15 @@
 
 export { ReactTreeView } from "./ReactTreeView"
 export { useReactTree } from "./useReactTree"
+export { useWrapper } from "./useWrapper"
+
+export type {
+    FlattenNodeData,
+    FlattenNodeWrapper
+} from './FlattenNodeWrapper'
 
 export type {
     ReactTreeViewProps,
-    ReactTreeHookParams, 
+    ReactTreeHookParams,
     ReactTreeRowRenderProps
 } from "./types"

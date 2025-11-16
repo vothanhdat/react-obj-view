@@ -2,12 +2,17 @@ import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { RenderNode, RenderOptions } from "./components/RenderNode";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../react-tree-view";
-import { objectTreeWalkingFactory, ObjectWalkingAdater, parseWalkingMeta } from "../object-tree";
+import {
+    objectTreeWalkingFactory,
+    parseWalkingMeta,
+    ObjectWalkingAdater,
+    DEFAULT_RESOLVER,
+    GROUP_ARRAY_RESOLVER, 
+    GROUP_OBJECT_RESOLVER
+} from "../object-tree";
 import { InferWalkingType } from "../tree-core";
-import { DEFAULT_RESOLVER } from "../object-tree/resolver";
-import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "../object-tree/resolver/grouped";
-import "./components/style.css"
 import { joinClasses } from "../utils/joinClasses";
+import "./components/style.css"
 
 
 

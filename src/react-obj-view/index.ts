@@ -1,3 +1,3 @@
 export { ObjectView } from "./ObjectView"
-export { ObjectViewProps } from "./types"
-export { ResolverFn, WalkingConfig } from "../object-tree/types"
+export type { ObjectViewProps } from "./types"
+export type { ResolverFn, WalkingConfig } from "../object-tree"

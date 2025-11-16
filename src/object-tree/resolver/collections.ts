@@ -1,4 +1,4 @@
-import { hidePrototype } from "../../object-tree/getEntries";
+import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
 

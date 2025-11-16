@@ -1,12 +1,18 @@
 import { Fragment, useMemo } from "react";
-import { getEntriesCb } from "../../object-tree/getEntries";
-import { Entry } from "../../object-tree/types";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { RenderOptions } from "./RenderNode";
-import { CustomEntry, CustomIterator } from "../../object-tree/resolver/collections";
+import {
+    getEntriesCb,
+    CustomEntry,
+    CustomIterator
+} from "../../object-tree";
 
-
+export type Entry = {
+    key: PropertyKey
+    value: unknown,
+    enumerable: boolean
+};
 
 export const RenderPreview: React.FC<{
     valueWrapper: any;

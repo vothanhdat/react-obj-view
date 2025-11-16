@@ -1,4 +1,4 @@
-import { ResolverFn } from "../object-tree/types";
+import { ResolverFn } from "../object-tree";
 import { ThemeColor } from "../react-tree-view-themes";
 
 

@@ -1,5 +1,5 @@
 import { useWrapper } from "../../react-tree-view/useWrapper";
-import { CustomEntry } from "../../object-tree/resolver/collections";
+import { CustomEntry } from "../../object-tree";
 import { RenderOptions } from "./RenderNode";
 import { RenderValue } from "./RenderValue";
 
