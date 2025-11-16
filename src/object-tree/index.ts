@@ -1,4 +1,11 @@
-import { InferNodeResult, InferWalkingInstance, InferWalkingResult, WalkingAdaper, WalkingContext, walkingFactory } from "../tree-core";
+import {
+    walkingFactory,
+    type InferNodeResult,
+    type InferWalkingInstance,
+    type InferWalkingResult,
+    type WalkingAdaper,
+    type WalkingContext
+} from "../tree-core";
 import { isRef } from "./utils/isRef";
 import { getEntriesCb } from "./getEntries";
 import { ResolverFn } from "./types";

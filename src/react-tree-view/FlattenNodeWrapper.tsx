@@ -1,4 +1,4 @@
-import { WalkingAdaperBase, InferWalkingType, InferWalkingResult } from "../tree-core";
+import type { WalkingAdaperBase, InferWalkingType, InferWalkingResult } from "../tree-core";
 
 
 
@@ -26,7 +26,7 @@ export class FlattenNodeWrapper<
         public depth: number,
         public paths: InferWalkingType<T>['Key'][],
         public parentIndex: number[],
-    ) {}
+    ) { }
 
     public get path(): string {
         return this.paths

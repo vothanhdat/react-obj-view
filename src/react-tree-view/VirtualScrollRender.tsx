@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { VirtualScrollRowRender } from "./VirtualScrollRowRender";
-import { WalkingAdaperBase } from "../tree-core";
+import { type WalkingAdaperBase } from "../tree-core";
 import { MetaParserBase } from "./FlattenNodeWrapper";
 import { ReactTreeViewVitualRenderProps } from "./types";
 import { useRednerIndexesWithSticky } from "./useRednerIndexesWithSticky";
