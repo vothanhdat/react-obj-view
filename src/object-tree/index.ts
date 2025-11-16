@@ -19,7 +19,7 @@ export type ObjectWalkingContext = WalkingContext<ObjectWalkingConfig> & {
     circularChecking: CircularChecking
 }
 
-type ObjectWalkingAdater = WalkingAdaper<
+export type ObjectWalkingAdater = WalkingAdaper<
     unknown,
     PropertyKey,
     WalkingMeta,
@@ -32,6 +32,8 @@ export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdater>
 export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdater>
 
 export type ObjectWalkingInstance = InferWalkingInstance<ObjectWalkingAdater>
+
+export type ObjectWalkingMetaParser = typeof parseWalkingMeta
 
 const objectWalkingAdaper: ObjectWalkingAdater = {
     transformValue(value) {

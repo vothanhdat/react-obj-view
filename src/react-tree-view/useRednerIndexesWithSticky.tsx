@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { FlattenNodeWrapper } from "./FlattenNodeWrapper";
 
 export type StickyInfo = {
     index: number;
@@ -19,11 +20,8 @@ export const useRednerIndexesWithSticky = ({
     start: number; end: number;
     childCount: number;
     lineHeight: number;
-    getNodeByIndex: (index: number) => ({
-        parentIndex: number[];
-        childCount: number;
-    } | undefined);
     stickyHeader: boolean;
+    getNodeByIndex: (index: number) => FlattenNodeWrapper<any, any>;
 }) => {
 
     let startIndexRaw = start / lineHeight;

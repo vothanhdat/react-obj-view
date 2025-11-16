@@ -1,0 +1,192 @@
+:root {
+    color-scheme: light dark;
+    --bigobjview-color: light-dark(#333b3c, #efefec);
+    --bigobjview-bg-color: light-dark(#f9f9f9, #212121);
+    --bigobjview-change-color: rgb(255, 50, 0);
+    --bigobjview-fontsize: 12px
+    --bigobjview-type-boolean-color: #08f;
+    --bigobjview-type-number-color: red;
+    --bigobjview-type-bigint-color: red;
+    --bigobjview-type-string-color: orange;
+    --bigobjview-type-object-array-color: #0aa;
+    --bigobjview-type-object-object-color: #0aa;
+    --bigobjview-type-object-promise-color: #0aa;
+    --bigobjview-type-object-map-color: #0aa;
+    --bigobjview-type-object-set-color: #0aa;
+    --bigobjview-type-function-color: #08f;
+    --bigobjview-type-object-regexp-color: red;
+    --bigobjview-type-object-date-color: #08f;
+    --bigobjview-type-object-error-color: red;
+}
+
+.big-objview-root {
+    font-family: monospace;
+    user-select: none;
+    font-size: var(--bigobjview-fontsize, 12px);
+    --color: var(--bigobjview-color);
+    --bg-color: var(--bigobjview-bg-color);
+    --opacity: 100%;
+    background-color: var(--bg-color);
+    color: var(--color);
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        &:hover{
+            background-color: color-mix(in srgb, var(--bigobjview-color) 5%, transparent);
+        }
+    }
+
+    .line-number {
+        opacity: 0.3;
+        white-space: preserve;
+
+    }
+
+
+    .node-default {
+        display: contents;
+
+        &[data-child="true"] {
+            cursor: pointer;
+        }
+    }
+
+    .pointer-cursor {
+        cursor: pointer;
+    }
+
+    .expand-symbol {
+        width: 1em;
+        opacity: 0.5;
+        line-height: 1;
+        vertical-align: top;
+    }
+
+    .tag-circular {
+        font-size: 0.9em;
+        padding: 0.2em 0.4em;
+        margin-inline-end: 0.5em;
+        background-color: darkgrey;
+        margin-inline: "1em";
+        font-weight: bold;
+    }
+
+    .symbol {
+        opacity: 0.5;
+    }
+
+    .node-default[data-nonenumrable="true"]>.name {
+        --opacity: 30%;
+    }
+
+    .node-default>.name {
+        transition: background-color 1s;
+        background-color: #0000;
+    }
+
+    .node-default {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+    }
+
+    .value {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.type-boolean {
+            --color: var(--bigobjview-type-boolean-color, #08f);
+        }
+
+        &.type-number {
+            --color: var(--bigobjview-type-number-color, red);
+        }
+
+        &.type-bigint {
+            --color: var(--bigobjview-type-bigint-color, red);
+        }
+
+        &.type-symbol {}
+
+        &.type-undefined {
+            --opacity: 30%;
+        }
+
+        &.type-string {
+            --color: var(--bigobjview-type-string-color, orange);
+        }
+
+        &.type-object-array {
+            --color: var(--bigobjview-type-object-array-color, #0aa);
+        }
+
+        &.type-object-object {
+            --color: var(--bigobjview-type-object-object-color, #0aa);
+        }
+
+        &.type-object-promise {
+            --color: var(--bigobjview-type-object-promise-color, #0aa);
+        }
+
+        &.type-object-map {
+            --color: var(--bigobjview-type-object-map-color, #0aa);
+        }
+
+        &.type-object-set {
+            --color: var(--bigobjview-type-object-set-color, #0aa);
+        }
+
+        &.type-null {
+            --opacity: 30%;
+        }
+
+        &.type-function {
+            --color: var(--bigobjview-type-function-color, #08f);
+            font-style: italic;
+        }
+
+        &.type-object-regexp {
+            --color: var(--bigobjview-type-object-regexp-color, red);
+        }
+
+        &.type-object-date {
+            --color: var(--bigobjview-type-object-date-color, #08f);
+        }
+
+        &.type-object-error {
+            --color: var(--bigobjview-type-object-error-color, red);
+        }
+
+
+        &.value-preview {
+            --color: var(--bigobjview-color);
+
+            >.name {
+                --opacity: 30%;
+            }
+        }
+
+
+    }
+
+    .name {
+        transition: background-color 1s;
+        background-color: #0000;
+
+        &.updated {
+            transition: background-color 0.00s;
+            background-color: var(--bigobjview-change-color);
+        }
+    }
+
+    .node-default,
+    .name,
+    .value {
+        color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+    }
+
+}

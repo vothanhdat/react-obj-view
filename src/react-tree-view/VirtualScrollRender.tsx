@@ -15,7 +15,17 @@ export const VirtualScrollRender: <
     props: ReactTreeViewVitualRenderProps<T, MetaParser, RenderOptions>
 ) => ReactNode = (props) => {
     const {
-        start, end, offset, childCount, RowRenderer, computeItemKey, getNodeByIndex, lineHeight, refreshPath, toggleChildExpand, options, rowDivProps, ...rest
+        start, end, offset,
+        childCount, 
+        RowRenderer, 
+        lineHeight,
+        options,
+        rowDivProps,
+        computeItemKey,
+        getNodeByIndex,
+        refreshPath,
+        toggleChildExpand,
+        ...rest
     } = props;
 
 

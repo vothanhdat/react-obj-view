@@ -1,8 +1,8 @@
 import React, { ReactNode, useMemo } from "react";
 import { useWrapper } from "../hooks/useWrapper";
 import { WalkingAdaperBase, InferWalkingType } from "../tree-core";
-import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
-import { ReactTreeRowRenderProps } from "./types";
+import type { MetaParserBase, FlattenNodeWrapper, FlattenNodeData } from "./FlattenNodeWrapper";
+import type { ReactTreeRowRenderProps } from "./types";
 
 
 
@@ -14,12 +14,18 @@ export const VirtualScrollRowRender: <
     index: number;
     size: number;
     getNodeByIndex: (index: number) => FlattenNodeWrapper<T, MetaParser>;
-    toggleChildExpand: ({ paths }: { paths: InferWalkingType<T>['Key'][]; }) => void;
-    refreshPath: ({ paths }: { paths: InferWalkingType<T>['Key'][]; }) => void;
+    toggleChildExpand: ({ paths }: FlattenNodeData<T, MetaParser>) => void;
+    refreshPath: ({ paths }: FlattenNodeData<T, MetaParser>) => void;
     options: RenderOptions;
     RowRender: React.FC<ReactTreeRowRenderProps<T, MetaParser, RenderOptions>>;
 }) => ReactNode = ({
-    RowRender, index, options, size, getNodeByIndex, toggleChildExpand, refreshPath
+    RowRender,
+    index,
+    options,
+    size,
+    getNodeByIndex,
+    toggleChildExpand,
+    refreshPath
 }) => {
 
         const flattenNodeWrapper = useMemo(
@@ -38,11 +44,11 @@ export const VirtualScrollRowRender: <
 
         const actions = useMemo(
             () => ({
-                refreshPath: toggleChildExpand.bind(undefined, { paths: flattenNodeData?.paths }),
-                toggleChildExpand: refreshPath.bind(undefined, { paths: flattenNodeData?.paths }),
+                refreshPath: toggleChildExpand.bind(undefined, flattenNodeData),
+                toggleChildExpand: refreshPath.bind(undefined, flattenNodeData),
             }),
             [
-                flattenNodeData?.paths,
+                flattenNodeData,
                 toggleChildExpand,
                 refreshPath,
             ]
