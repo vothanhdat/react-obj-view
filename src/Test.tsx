@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
-import { ObjectView } from './object-view/ObjectView'
 import { ResolverFn } from './object-tree/types'
 import {
   themeDefault,
@@ -11,6 +10,7 @@ import {
   themeOneDark,
   themeSepia,
 } from './themes'
+import { ObjectView } from './react-obj-view/ObjectView'
 
 const packageVersion = '1.0.7'
 

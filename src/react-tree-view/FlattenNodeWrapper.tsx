@@ -26,9 +26,7 @@ export class FlattenNodeWrapper<
         public depth: number,
         public paths: InferWalkingType<T>['Key'][],
         public parentIndex: number[],
-    ) {
-        Object.assign(this, state);
-    }
+    ) {}
 
     public get path(): string {
         return this.paths

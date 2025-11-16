@@ -40,9 +40,10 @@ export type ReactTreeViewProps<
 > = ReturnType<typeof useReactTree<T, MetaParser>> & {
     lineHeight: number;
     options: RenderOptions;
+    RowRenderer: React.FC<ReactTreeRowRenderProps<T, MetaParser, RenderOptions>>;
     containerDivProps?: React.HTMLAttributes<HTMLDivElement>;
     rowDivProps?: React.HTMLAttributes<HTMLDivElement>;
-    RowRenderer: React.FC<ReactTreeRowRenderProps<T, MetaParser, RenderOptions>>;
+    stickyPathHeaders?:boolean,
 };
 
 export type ReactTreeViewVitualRenderProps<

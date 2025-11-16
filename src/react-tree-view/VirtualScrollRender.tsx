@@ -25,6 +25,7 @@ export const VirtualScrollRender: <
         getNodeByIndex,
         refreshPath,
         toggleChildExpand,
+        stickyPathHeaders = true,
         ...rest
     } = props;
 
@@ -33,7 +34,7 @@ export const VirtualScrollRender: <
         start, end,
         lineHeight, childCount,
         getNodeByIndex,
-        stickyHeader: true,
+        stickyHeader: stickyPathHeaders,
     });
 
     return <>

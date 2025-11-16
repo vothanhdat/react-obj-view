@@ -1,12 +1,13 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { RenderNode, RenderOptions } from "./components/RenderNode";
 import { ObjectViewProps } from "./types";
-import "./components/style.css"
 import { ReactTreeView, useReactTree } from "../react-tree-view";
 import { objectTreeWalkingFactory, ObjectWalkingAdater, parseWalkingMeta } from "../object-tree";
 import { InferWalkingType } from "../tree-core";
 import { DEFAULT_RESOLVER } from "../object-tree/resolver";
 import { GROUP_ARRAY_RESOLVER, GROUP_OBJECT_RESOLVER } from "../object-tree/resolver/grouped";
+import "./components/style.css"
+import { joinClasses } from "../utils/joinClasses";
 
 
 
@@ -25,7 +26,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     lineHeight = 14,
     style,
     includeSymbols = false,
-    stickyPathHeaders: stickyPathHeader = true,
+    stickyPathHeaders = true,
 }) => {
 
     const value = useMemo(() => valueGetter?.(), [valueGetter])
@@ -84,12 +85,25 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         ]
     )
 
+    const { containerDivProps, rowDivProps } = useMemo(
+        () => ({
+            containerDivProps: {
+                className: joinClasses(className, 'big-objview-root'),
+                style,
+            },
+            rowDivProps: { className: "row" }
+        }),
+        [style, className]
+    )
+
     return <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
         {...objectTree}
         lineHeight={lineHeight}
         options={options}
         RowRenderer={RenderNode}
-        containerDivProps={{ className, style }}
+        stickyPathHeaders={stickyPathHeaders}
+        containerDivProps={containerDivProps}
+        rowDivProps={rowDivProps}
     />
 }
 
