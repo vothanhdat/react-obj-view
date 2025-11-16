@@ -62,7 +62,7 @@ export const useRednerIndexesWithSticky = ({
             .map(index => computeStickyInfo(index, startIndexRaw))
             .map((info, index, arr) => ({
                 ...info,
-                isLastStick: info.isStick && arr[index - 1] && !arr[index + 1].isStick
+                isLastStick: info.isStick && arr[index + 1] && !arr[index + 1].isStick
             } as StickyInfo)),
         [renderSize, startIndex, childCount, Math.round(startIndexRaw * 10), computeStickyInfo]
     );
