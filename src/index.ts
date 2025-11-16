@@ -19,4 +19,4 @@ export {
     themeQuietLight,
     themeSepia,
     themeSolarizedLight
-} from "./themes"
+} from "./react-tree-view-themes"

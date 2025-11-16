@@ -1,5 +1,5 @@
 import { ResolverFn } from "../object-tree/types";
-import { ThemeColor } from "../themes";
+import { ThemeColor } from "../react-tree-view-themes";
 
 
 export type ObjectViewProps = {
