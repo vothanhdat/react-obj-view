@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from "react";
 import { ResolverFn } from "../../object-tree/types";
-import { NodeResultData } from "../../object-view/walkingToIndexFactory";
 import { objectHasChild } from "../../object-tree/objectHasChild";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";

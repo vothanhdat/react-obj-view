@@ -4,7 +4,7 @@ export { parseWalkingMeta, objectTreeWalkingFactory as objectTreeWalking } from 
 
 
 export { ObjectView } from "./react-obj-view/ObjectView"
-export { ObjectViewProps } from "./react-obj-view/types"
+export type { ObjectViewProps } from "./react-obj-view/types"
 
 
 export {
