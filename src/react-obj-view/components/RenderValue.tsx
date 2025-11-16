@@ -1,7 +1,7 @@
 import { joinClasses } from "../../utils/joinClasses";
 import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
-import { useWrapper } from "../../react-tree-view/useWrapper";
+import { useWrapper } from "../../libs/react-tree-view/useWrapper";
 import { useLazyValue } from "../hooks/useLazyValue";
 import { RenderOptions } from "./RenderNode";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";

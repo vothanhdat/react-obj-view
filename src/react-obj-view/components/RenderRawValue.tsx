@@ -1,4 +1,4 @@
-import { useWrapper } from "../../react-tree-view/useWrapper";
+import { useWrapper } from "../../libs/react-tree-view/useWrapper";
 import { CustomEntry } from "../../object-tree";
 import { RenderOptions } from "./RenderNode";
 import { RenderValue } from "./RenderValue";

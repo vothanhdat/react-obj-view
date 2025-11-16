@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { RenderNode, RenderOptions } from "./components/RenderNode";
 import { ObjectViewProps } from "./types";
-import { ReactTreeView, useReactTree } from "../react-tree-view";
+import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
     objectTreeWalkingFactory,
     parseWalkingMeta,

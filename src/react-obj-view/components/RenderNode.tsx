@@ -6,7 +6,7 @@ import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 import {
     type ReactTreeRowRenderProps,
     type FlattenNodeData
-} from "../../react-tree-view";
+} from "../../libs/react-tree-view";
 import {
     type ResolverFn,
     type ObjectWalkingAdater,

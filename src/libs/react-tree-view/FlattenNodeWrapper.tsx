@@ -1,4 +1,4 @@
-import type { WalkingAdaperBase, InferWalkingType, InferWalkingResult } from "../libs/tree-core";
+import type { WalkingAdaperBase, InferWalkingType, InferWalkingResult } from "../tree-core";
 
 
 
