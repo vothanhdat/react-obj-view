@@ -87,14 +87,14 @@ Resolvers control how entries are produced for a specific constructor. Each reso
 
 ### Built-in Resolvers
 
-Located in [`src/V5/resolvers/index.ts`](src/V5/resolvers/index.ts):
+Located in [`src/object-tree/resolver`](src/object-tree/resolver):
 
-- **Promises** (`Promise`, `InternalPromise`) – surfaces `status`, resolved value, or rejection reason using the async-aware wrapper from [`PromiseWrapper.tsx`](src/Components/PromiseWrapper.tsx).
-- **Lazy Values** (`LazyValue`) – ensures property getter evaluation happens on demand.
-- **Custom Iterables** (`CustomIterator`) – powers `Map`/`Set` entry rendering through [`CustomEntry`](src/V5/resolvers/collections.ts).
-- **Collections** (`Map`, `Set`) – preview entries inline and expose `[[Entries]]`/`size` metadata.
+- **Promises** (`Promise`, `InternalPromise`) – [`promise.ts`](src/object-tree/resolver/promise.ts) surfaces `[[status]]` and `[[result]]` entries so async state is visible while the underlying promise resolves.
+- **Lazy values** (`LazyValue`) – [`lazyValueResolver.ts`](src/object-tree/resolver/lazyValueResolver.ts) defers getter execution until the node is expanded and caches either the returned value or thrown error.
+- **Collections** (`Map`, `Set`, iterables) – [`collections.ts`](src/object-tree/resolver/collections.ts) exposes `[[Entries]]`, previews the first few members, and renders metadata such as `size`.
+- **Errors, dates, regexes, custom wrappers** – handled via [`index.ts`](src/object-tree/resolver/index.ts), which wires every resolver into a shared `Map` ready for `ObjectView`.
 
-Grouping helpers from [`src/V5/resolvers/grouped.ts`](src/V5/resolvers/grouped.ts) are attached when `arrayGroupSize`/`objectGroupSize` are provided. They emit [`GroupedProxy`](src/utils/groupedProxy.ts) instances that lazily expand ranges like `items[0…49]` only when needed.
+Grouping helpers from [`src/object-tree/resolver/grouped.ts`](src/object-tree/resolver/grouped.ts) are attached when `arrayGroupSize`/`objectGroupSize` are provided. They emit [`GroupedProxy`](src/utils/groupedProxy.ts) instances that lazily expand ranges like `items[0…49]` only when needed.
 
 ### Creating Custom Resolvers
 
@@ -120,17 +120,18 @@ Resolvers participate in both preview and expanded phases, so make sure to call 
 
 ## Rendering Pipeline
 
-The renderer is implemented in [`src/V5/index.tsx`](src/V5/index.tsx) and combines several layers:
+`ObjectView` composes the new tree stack described in [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md):
 
-1. **Flattening** – [`useFlattenObjectView`](src/V5/useFlattenObjectView.tsx) builds a flat list of nodes by running [`walkingToIndexFactory`](src/V5/walkingToIndexFactory.ts). It memoises traversal state, tracks circular references via [`CircularChecking`](src/V5/CircularChecking.ts), and reacts to resolver changes.
-2. **Virtualisation** – The internal [`VirtualScroller`](src/Components/VirtualScroller.tsx) measures the viewport and only renders the visible slice of nodes. `computeItemKey` uses the node path for stable identity.
-3. **Node Rendering** – [`RenderNode`](src/Components/RenderNode.tsx) composes [`RenderName`](src/Components/RenderName.tsx), [`RenderValue`](src/Components/RenderValue.tsx), and change-flash logic. It controls expand/collapse state, preview detection, and circular badges.
-4. **Value Rendering** – [`RenderValue`](src/Components/RenderValue.tsx) decides between preview and raw modes and delegates to [`RenderRawValue`](src/Components/RenderRawValue.tsx) or [`RenderPreview`](src/Components/RenderPreview.tsx). Promise-like values are wrapped with [`withPromiseWrapper`](src/Components/PromiseWrapper.tsx) so pending async results update automatically.
-5. **Hooks** – `useWrapper` memoises getter functions, `useLazyValue` (from [`src/hooks/useLazyValue.tsx`](src/hooks/useLazyValue.tsx)) triggers lazy getters on demand, and `useChangeFlashClasses` applies the `updated` class when `highlightUpdate` is enabled.
+1. **Flattening** – [`useReactTree`](src/libs/react-tree-view/useReactTree.tsx) memoises `objectTreeWalkingFactory` and runs the adapter-defined traversal from [`src/object-tree/objectWalkingAdaper.ts`](src/object-tree/objectWalkingAdaper.ts). Circular references are handled via [`CircularChecking`](src/object-tree/utils/CircularChecking.ts).
+2. **Virtualisation** – [`ReactTreeView`](src/libs/react-tree-view/ReactTreeView.tsx) pipes walker output into [`VirtualScroller`](src/libs/virtual-scroller/VirtualScroller.tsx). [`VirtualScrollRender`](src/libs/react-tree-view/VirtualScrollRender.tsx) renders only the visible slice of rows while keeping sticky path headers in sync.
+3. **Node Rendering** – [`RenderNode`](src/react-obj-view/components/RenderNode.tsx) composes [`RenderName`](src/react-obj-view/components/RenderName.tsx) and [`RenderValue`](src/react-obj-view/components/RenderValue.tsx). It controls expand/collapse state, circular badges, previews, and click handling.
+4. **Value Rendering** – [`RenderValue`](src/react-obj-view/components/RenderValue.tsx) decides between preview and raw modes before delegating to [`RenderRawValue`](src/react-obj-view/components/RenderRawValue.tsx) or [`RenderPreview`](src/react-obj-view/components/RenderPreview.tsx).
+5. **Hooks & helpers** – [`useWrapper`](src/libs/react-tree-view/useWrapper.tsx) memoises getter functions, change-highlighting lives inside [`RenderName`](src/react-obj-view/components/RenderName.tsx), and resolver metadata flows through [`parseWalkingMeta`](src/object-tree/objectWalkingAdaper.ts#L6-L15).
+
 
 ## Styling Reference
 
-Component styles live in [`src/Components/style.css`](src/Components/style.css). Key selectors:
+Component styles live in [`src/react-obj-view/components/style.css`](src/react-obj-view/components/style.css). Key selectors:
 
 - `.big-objview-root` – root container that defines fonts, colours, and CSS variables (`--bigobjview-color`, `--bigobjview-bg-color`, `--bigobjview-change-color`). The default height is `400px`; override it in your stylesheet to fit your layout.
 - `.node-container` – row wrapper that indents nodes based on depth.
@@ -228,18 +229,18 @@ These helpers ensure the generated objects remain compatible with the component�
 
 ## Behaviour Notes
 
-- **Expansion State** – `useFlattenObjectView` stores expansion toggles keyed by the node's path. Clicking a node toggles expansion via `toggleChildExpand`.
-- **Circular References** – Each traversal records visited objects; repeated references are marked with the `CIRCULAR` badge and do not recurse.
-- **Lazy Properties** – Getters are wrapped by `LazyValue`. Clicking the preview evaluates the getter, caches the value (or error via `LazyValueError`), and refreshes the node.
-- **Change Detection** – `highlightUpdate` enables `useChangeFlashClasses`, which compares previous values and briefly applies the `updated` class.
-- **Grouping** – `GroupedProxy` instances expose `getSize`, `getKey`, and `getObject` helpers so large collections render in constant time until expanded.
+- **Expansion state** – `useReactTree` keeps expansion toggles inside the walker state keyed by each node path. Clicking a caret invokes `toggleChildExpand`, which mutates the cached node and triggers a re-render.
+- **Circular references** – [`CircularChecking`](src/object-tree/utils/CircularChecking.ts) records visited objects per traversal; repeated references are marked with the `CIRCULAR` badge and do not recurse.
+- **Lazy properties** – Getters are wrapped by [`LazyValue`](src/object-tree/custom-class/LazyValueWrapper.ts). Clicking the preview evaluates the getter, caches the value (or error via `LazyValueError`), and refreshes the node.
+- **Change detection** – `highlightUpdate` enables [`useChangeFlashClasses`](src/react-obj-view/hooks/useChangeFlashClasses.tsx), which compares previous values and briefly applies the `updated` class.
+- **Grouping** – [`GroupedProxy`](src/utils/groupedProxy.ts) instances expose `getSize`, `getKey`, and `getObject` helpers so large collections render in constant time until expanded.
 
 ## Supporting Utilities
 
 - [`src/utils/groupedProxy.ts`](src/utils/groupedProxy.ts) – Implements proxy objects for grouped ranges and helpers like `groupedProxyIsEqual`.
-- [`src/V5/getEntries.ts`](src/V5/getEntries.ts) – Normalises property enumeration respecting `nonEnumerable` and resolver output.
-- [`src/V5/getObjectUniqueId.ts`](src/V5/getObjectUniqueId.ts) – Provides stable identifiers for resolver maps used in memoisation.
-- [`src/V5/StateFactory.ts`](src/V5/StateFactory.ts) – Creates persistent node state objects reused between renders.
+- [`src/object-tree/getEntries.ts`](src/object-tree/getEntries.ts) – Normalises property enumeration respecting `nonEnumerable`, `includeSymbols`, and resolver output.
+- [`src/object-tree/utils/getObjectUniqueId.ts`](src/object-tree/utils/getObjectUniqueId.ts) – Provides stable identifiers for resolver maps used in memoisation.
+- [`src/libs/tree-core/utils/StateFactory.ts`](src/libs/tree-core/utils/StateFactory.ts) – Creates persistent node state objects reused between renders.
 
 ## Troubleshooting
 
@@ -252,4 +253,6 @@ These helpers ensure the generated objects remain compatible with the component�
 
 - [README](README.md) – Overview and examples.
 - [USAGE_GUIDE](USAGE_GUIDE.md) – Practical recipes.
+- [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) – Architecture of `tree-core`, `react-tree-view`, and the virtual-scroller.
+- [Object Tree Adapter & React Viewer](./docs/OBJECT_TREE_VIEW.md) – How the built-in adapter composes resolvers with the React renderer.
 - [DEMO_SETUP](DEMO_SETUP.md) – Instructions for the GitHub Pages demo.
