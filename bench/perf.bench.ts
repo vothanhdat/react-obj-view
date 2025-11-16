@@ -1,6 +1,6 @@
 import { bench, describe } from 'vitest'
 
-import { ObjectWalkingConfig, objectTreeWalking } from '../src/object-tree'
+import { objectTreeWalkingFactory, ObjectWalkingConfig } from '../src/object-tree'
 
 
 const generatePayload = (rows: number) => {
@@ -45,7 +45,7 @@ describe('walking benchmark', () => {
           resolver: undefined
         };
 
-        const factory = objectTreeWalking()
+        const factory = objectTreeWalkingFactory()
         factory.walking(payload, 'root', walkingConfig, 5)
       }, { iterations: iterate })
 
@@ -56,7 +56,7 @@ describe('walking benchmark', () => {
           resolver: undefined
         };
 
-        const factory = objectTreeWalking()
+        const factory = objectTreeWalkingFactory()
         factory.walking(payload, 'root', walkingConfig, 5)
       }, { iterations: iterate })
 
