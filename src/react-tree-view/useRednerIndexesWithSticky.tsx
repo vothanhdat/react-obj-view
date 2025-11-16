@@ -1,6 +1,16 @@
 import { useCallback, useMemo } from "react";
-import { StickyInfo } from ".";
 
+export type StickyInfo = {
+    index: number;
+    isStick: false;
+    position?: number;
+    isLastStick?: boolean;
+} | {
+    index: number;
+    isStick: true;
+    position: number;
+    isLastStick?: boolean;
+};
 
 
 export const useRednerIndexesWithSticky = ({
@@ -59,3 +69,4 @@ export const useRednerIndexesWithSticky = ({
         [renderSize, startIndex, childCount, Math.round(startIndexRaw * 10), computeStickyInfo]
     );
 };
+
