@@ -222,7 +222,6 @@ describe("walkingFactory", () => {
 
         walker.walking(clone, "root", { ...config, version: 2, expandAll: true }, 10)
         expect(iterations.length).toBeGreaterThan(7)
-        console.log(transforms)
         expect(transforms.slice(-7)).toEqual([
             "root",
             "alpha",

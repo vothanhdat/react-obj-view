@@ -254,6 +254,15 @@ src/
   - Edge cases (empty, sparse arrays, typed arrays, frozen objects)
   - Data updates and highlighting
 
+#### 7. React Tree View Hooks (5 tests)
+- **useReactTree.test.tsx** (3 tests)
+  - Verifies the walking factory lifecycle (factory reuse vs. replacement)
+  - Ensures node caching/meta parsing when flattening entries
+  - Confirms refresh/toggle helpers proxy to the underlying adapter
+- **useRednerIndexesWithSticky.test.tsx** (2 tests)
+  - Covers virtualization math for contiguous ranges
+  - Validates sticky parent calculation and last-stick detection
+
 ## Writing Tests
 
 ### Test Structure Example
