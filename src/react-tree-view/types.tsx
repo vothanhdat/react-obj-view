@@ -33,7 +33,6 @@ export type ReactTreeRowRenderProps<
     };
 };
 
-
 export type ReactTreeViewProps<
     T extends WalkingAdaperBase,
     MetaParser extends MetaParserBase<T>,
@@ -45,9 +44,11 @@ export type ReactTreeViewProps<
     rowDivProps?: React.HTMLAttributes<HTMLDivElement>;
     RowRenderer: React.FC<ReactTreeRowRenderProps<T, MetaParser, RenderOptions>>;
 };
+
 export type ReactTreeViewVitualRenderProps<
     T extends WalkingAdaperBase,
     MetaParser extends MetaParserBase<T>,
-    RenderOptions> = VirtualScrollerRenderProps<Omit<
-        ReactTreeViewProps<T, MetaParser, RenderOptions>, 'containerDivProps'
-    >>;
+    RenderOptions
+> = VirtualScrollerRenderProps<Omit<
+    ReactTreeViewProps<T, MetaParser, RenderOptions>, 'containerDivProps'
+>>;
