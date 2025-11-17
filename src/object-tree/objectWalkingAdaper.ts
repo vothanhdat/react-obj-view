@@ -15,7 +15,7 @@ export const parseWalkingMeta = (e: WalkingMeta) => {
 
 
 export const objectWalkingAdaper: ObjectWalkingAdater = {
-    transformValue(value) {
+    transformValue(value, ref) {
         return value instanceof LazyValue && value.inited
             ? value.value ?? value.error
             : value;
