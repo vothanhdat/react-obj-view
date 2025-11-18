@@ -21,7 +21,7 @@
 
 .big-objview-root {
     font-family: monospace;
-    user-select: none;
+    /* user-select: none; */
     font-size: var(--bigobjview-fontsize, 12px);
     --color: var(--bigobjview-color);
     --bg-color: var(--bigobjview-bg-color);
@@ -50,10 +50,6 @@
 
     .node-default {
         display: contents;
-
-        &[data-child="true"] {
-            cursor: pointer;
-        }
     }
 
     .pointer-cursor {
@@ -66,6 +62,10 @@
         line-height: 1;
         vertical-align: top;
     }
+
+    [data-child="true"] .expand-symbol {
+        cursor: pointer;
+    } 
 
     .tag-circular {
         font-size: 0.9em;

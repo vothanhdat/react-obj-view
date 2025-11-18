@@ -1,7 +1,8 @@
-import { useWrapper } from "../../libs/react-tree-view/useWrapper";
 import { CustomEntry } from "../../object-tree";
 import { RenderOptions } from "./RenderNode";
-import { RenderValue } from "./RenderValue";
+import { RenderRawEntry } from "../value-renders/RenderRawEntry";
+import { RenderString } from "../value-renders/RenderString";
+import { RenderFunction } from "../value-renders/RenderFunction";
 
 
 export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: RenderOptions }> = ({ valueWrapper, depth, options }) => {
@@ -17,21 +18,10 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
         case "bigint":
             return String(value) + "n";
         case "function": {
-            if (depth > 0)
-                return "ƒ";
-            let render = String(value)
-                .replace(/^function/, 'ƒ')
-                .replace(/^async function/, 'async ƒ')
-                .replace('{ [native code] }', '');
-            return render?.split(" => ")?.at(0) + ' => {…}';
+            return <RenderFunction {...{ value, depth }} />
         }
         case "string": {
-            let preview = JSON.stringify(value);
-            let max = depth == 0 ? 100 : 20;
-            let addChar = preview.length > max ? '…' : '';
-            return depth > 0
-                ? "'" + preview.slice(1, -1).slice(0, max) + addChar + "'"
-                : preview.slice(0, max) + addChar;
+            return <RenderString {...{ value, depth }} />
         }
         case "object": {
             if (!value)
@@ -55,14 +45,4 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
     return "";
 };
 
-export const RenderRawEntry = ({ depth, valueWrapper, options }: { valueWrapper: any; depth: any; options: RenderOptions }) => {
-    const value = valueWrapper()
 
-    const wrapperKey = useWrapper(value.key)
-    const wrapperValue = useWrapper(value.value)
-    return <>
-        <RenderValue {...{ valueWrapper: wrapperKey, isPreview: false, depth: depth + 1, options }} />
-        <span className="symbol">{" => "}</span>
-        <RenderValue {...{ valueWrapper: wrapperValue, isPreview: false, depth: depth + 1, options }} />
-    </>
-}

@@ -1,0 +1,36 @@
+.popover-anchor {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover+.popover-content {
+    display: unset;
+  }
+}
+
+.popover-content {
+  transition: opacity 0.4s;
+  position: fixed;
+  inset-block-start: anchor(start);
+  inset-inline-start: anchor(start);
+  inset-inline-end: anchor(end);
+
+  padding: 0.2em 0.5em 0.5em 0.5em;
+  margin: -0.1em;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  background-color: var(--bg-color);
+  border: solid 1px color-mix(in srgb, currentColor 30%, transparent);
+  z-index: 1;
+  box-shadow: 2px 2px 8px light-dark(#333b3c66, #efefec66);
+  max-height: 20em;
+  overflow: auto;
+
+  &:not(:hover) {
+    display: none;
+  }
+
+  @starting-style {
+    opacity: 0;
+  }
+}
