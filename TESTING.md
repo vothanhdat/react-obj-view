@@ -15,12 +15,15 @@ This document provides comprehensive information about the testing infrastructur
 
 ## Overview
 
-The react-obj-view library uses a comprehensive test suite with 230+ tests covering:
+The react-obj-view library uses a comprehensive test suite with 182 tests covering:
 - Utility functions
-- Core engine (CircularChecking, StateFactory, walkingToIndexFactory)
-- Resolver functions (Map, Set, Promise, Iterator)
-- React components
-- Integration scenarios
+- Core tree engine (walkingFactory, StateFactory)
+- Tree-core and react-tree-view modules
+- Virtual scroller
+- Object tree adapter and resolvers (Map, Set, Promise, Iterator, LazyValue, GroupedProxy)
+- React hooks (useCopy, useHoverInteractions, useReactTree)
+- React components (Actions, RenderNode)
+- Circular reference detection
 - Edge cases
 
 ## Prerequisites
@@ -131,30 +134,54 @@ export default defineConfig({
 src/
 ├── utils/
 │   ├── joinClasses.ts
-│   ├── joinClasses.test.ts          # 6 tests
-│   ├── object.ts
-│   ├── object.test.ts                # 8 tests
-│   ├── groupedProxy.ts
-│   └── groupedProxy.test.ts          # 12 tests
-├── V5/
-│   ├── resolvers/
+│   └── joinClasses.test.ts                      # 6 tests
+├── libs/
+│   ├── tree-core/
+│   │   ├── utils/
+│   │   │   ├── StateFactory.ts
+│   │   │   └── StateFactory.test.ts             # 20 tests
+│   │   ├── walkingFactory.ts
+│   │   └── walkingFactory.test.ts               # 4 tests
+│   ├── react-tree-view/
+│   │   ├── useReactTree.tsx
+│   │   ├── useReactTree.test.tsx                # 3 tests
+│   │   ├── useRednerIndexesWithSticky.tsx
+│   │   ├── useRednerIndexesWithSticky.test.tsx  # 2 tests
+│   │   ├── useWrapper.tsx
+│   │   └── useWrapper.test.tsx                  # 2 tests
+│   └── virtual-scroller/
+│       ├── getScrollContainer.tsx
+│       └── getScrollContainer.test.ts           # 3 tests
+├── object-tree/
+│   ├── custom-class/
+│   │   ├── LazyValueWrapper.ts
+│   │   ├── LazyValueWrapper.test.ts             # 16 tests
+│   │   ├── groupedProxy.ts
+│   │   └── groupedProxy.test.ts                 # 12 tests
+│   ├── resolver/
 │   │   ├── collections.ts
-│   │   ├── collections.test.ts       # 15 tests
+│   │   ├── collections.test.ts                  # 15 tests
 │   │   ├── promise.ts
-│   │   └── promise.test.ts           # 9 tests
-│   ├── CircularChecking.ts
-│   ├── CircularChecking.test.ts      # 27 tests
-│   ├── StateFactory.ts
-│   ├── StateFactory.test.ts          # 19 tests
-│   ├── getObjectUniqueId.ts
-│   ├── getObjectUniqueId.test.ts     # 30 tests
-│   ├── walkingToIndexFactory.ts
-│   ├── walkingToIndexFactory.test.ts # 40 tests
-│   ├── LazyValueWrapper.ts
-│   ├── LazyValueWrapper.test.ts      # 16 tests
-│   ├── index.tsx
-│   ├── index.test.tsx                # 26 tests (component)
-│   └── integration.test.tsx          # 22 tests (integration)
+│   │   └── promise.test.ts                      # 9 tests
+│   ├── utils/
+│   │   ├── CircularChecking.ts
+│   │   ├── CircularChecking.test.ts             # 27 tests
+│   │   ├── getObjectUniqueId.ts
+│   │   ├── getObjectUniqueId.test.ts            # 30 tests
+│   │   ├── object.ts
+│   │   └── object.test.ts                       # 8 tests
+│   ├── objectWalkingAdaper.ts
+│   └── objectTreeWalkingFactory.test.ts         # 2 tests
+└── react-obj-view/
+    ├── hooks/
+    │   ├── useCopy.tsx
+    │   ├── useCopy.test.tsx                     # 5 tests
+    │   ├── useHoverInteractions.tsx
+    │   └── useHoverInteractions.test.tsx        # 8 tests
+    └── value-renders/
+        ├── Actions.tsx
+        └── Actions.test.tsx                     # 10 tests
+```
 └── test/
     └── setup.ts                       # Test setup & globals
 ```
@@ -169,42 +196,56 @@ src/
 
 ### Current Test Statistics
 
-- **Total Tests**: 230
-- **Test Files**: 12
+- **Total Tests**: 182
+- **Test Files**: 18
 - **Pass Rate**: 100%
 
 ### Coverage by Category
 
-#### 1. Utility Functions (26 tests)
+#### 1. Utility Functions (6 tests)
 - **joinClasses.test.ts** (6 tests)
   - Class name joining
   - Falsy value filtering
   - Edge cases (empty, single class)
 
-- **object.test.ts** (8 tests)
-  - Property value retrieval
-  - Getter handling
-  - Error handling
-  - Symbol properties
+#### 2. Tree Core Engine (24 tests)
+- **walkingFactory.test.ts** (4 tests)
+  - Generic tree walking
+  - Node expansion and collapse
+  - State management
+  
+- **StateFactory.test.ts** (20 tests)
+  - State creation and caching
+  - Child state management
+  - State persistence
+  - Read-only state access
 
-- **groupedProxy.test.ts** (12 tests)
-  - Proxy factory creation
-  - Array and object grouping
-  - Caching behavior
-  - Equality checking
+#### 3. React Tree View (7 tests)
+- **useReactTree.test.tsx** (3 tests)
+  - Walker instance memoization
+  - Refresh path handling
+  - Toggle child expansion
 
-#### 2. Core Engine (116 tests)
+- **useRednerIndexesWithSticky.test.tsx** (2 tests)
+  - Sticky header calculation
+  - Visible index computation
+
+- **useWrapper.test.tsx** (2 tests)
+  - Getter wrapper stability
+  - Value memoization
+
+#### 4. Virtual Scroller (3 tests)
+- **getScrollContainer.test.ts** (3 tests)
+  - Scroll container detection
+  - Parent traversal
+  - Fallback to document element
+
+#### 5. Object Tree Adapter & Utilities (107 tests)
 - **CircularChecking.test.ts** (27 tests)
   - Circular reference detection
   - Enter/exit node tracking
   - LIFO stack management
   - Multiple object handling
-
-- **StateFactory.test.ts** (19 tests)
-  - State creation and caching
-  - Child state management
-  - State persistence
-  - Read-only state access
 
 - **getObjectUniqueId.test.ts** (30 tests)
   - Unique ID generation
@@ -212,14 +253,24 @@ src/
   - ID consistency and caching
   - Memory management with WeakMap
 
-- **walkingToIndexFactory.test.ts** (40 tests)
-  - Tree walking and indexing
-  - Node expansion and collapse
-  - Circular reference handling
-  - State caching and updates
-  - Path navigation
+- **object.test.ts** (8 tests)
+  - Property value retrieval
+  - Getter handling
+  - Error handling
+  - Symbol properties
 
-#### 4. Resolver Functions (40 tests)
+- **LazyValueWrapper.test.ts** (16 tests)
+  - Instance creation and caching
+  - Property initialization
+  - Getter evaluation
+  - Error handling
+
+- **groupedProxy.test.ts** (12 tests)
+  - Proxy factory creation
+  - Array and object grouping
+  - Caching behavior
+  - Equality checking
+
 - **collections.test.ts** (15 tests)
   - Map resolver (preview & normal modes)
   - Set resolver (preview & normal modes)
@@ -232,36 +283,28 @@ src/
   - Rejected promise handling
   - InternalPromise wrapper
 
-- **LazyValueWrapper.test.ts** (16 tests)
-  - Instance creation and caching
-  - Property initialization
-  - Getter evaluation
-  - Error handling
+- **objectTreeWalkingFactory.test.ts** (2 tests)
+  - Object tree walking integration
+  - Adapter configuration
 
-#### 5. Component Tests (26 tests)
-- **index.test.tsx** (26 tests)
-  - Primitive value rendering
-  - Object and array rendering
-  - Special data types (Map, Set, Date, RegExp, Error)
-  - Props (expandLevel, className, style, lineHeight)
-  - Complex scenarios (nested structures, large arrays)
+#### 6. React Object View Components & Hooks (23 tests)
+- **useCopy.test.tsx** (5 tests)
+  - Clipboard copy operations
+  - Success and error states
+  - Manual reset functionality
+  - Async callback handling
 
-#### 6. Integration Tests (22 tests)
-- **integration.test.tsx** (22 tests)
-  - Circular references (simple, nested, array, mutual)
-  - Complex nested structures
-  - Performance scenarios (large arrays/objects)
-  - Edge cases (empty, sparse arrays, typed arrays, frozen objects)
-  - Data updates and highlighting
+- **useHoverInteractions.test.tsx** (8 tests)
+  - Mouse enter/leave events
+  - CSS property updates
+  - Debounced hover effects
+  - Parent index calculation
 
-#### 7. React Tree View Hooks (5 tests)
-- **useReactTree.test.tsx** (3 tests)
-  - Verifies the walking factory lifecycle (factory reuse vs. replacement)
-  - Ensures node caching/meta parsing when flattening entries
-  - Confirms refresh/toggle helpers proxy to the underlying adapter
-- **useRednerIndexesWithSticky.test.tsx** (2 tests)
-  - Covers virtualization math for contiguous ranges
-  - Validates sticky parent calculation and last-stick detection
+- **Actions.test.tsx** (10 tests)
+  - Copy button rendering (primitives)
+  - Copy JSON button rendering (objects/arrays)
+  - Click handlers
+  - Type detection logic
 
 ## Writing Tests
 
