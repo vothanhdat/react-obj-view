@@ -19,7 +19,11 @@ export function useHoverInteractions(
             const { getNodeByIndex, childCount } = ref.current
             let containerStyles = containerRef?.current?.style;
             if (index < childCount && containerStyles) {
-                let parentIndex = getNodeByIndex(index).parentIndex.at(-2) ?? 0;
+                let node = getNodeByIndex(index)
+                let parentIndex = node.childCount > 1
+                    ? node.parentIndex.at(-1)
+                    : node.parentIndex.at(-2)
+                    ?? 0
                 // console.log({ parentIndex })
                 containerStyles.setProperty('--active-index', String(index));
                 containerStyles.setProperty('--active-parent', String(parentIndex));
