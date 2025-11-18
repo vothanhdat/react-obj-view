@@ -13,6 +13,7 @@ export type FlattenNodeData<
         depth: number;
         path: string;
         paths: PropertyKey[];
+        parents: number[];
     };
 
 export class FlattenNodeWrapper<
@@ -51,6 +52,7 @@ export class FlattenNodeWrapper<
             depth: this.depth,
             path: this.path,
             paths: this.paths,
+            parents: this.parentIndex
         });
     }
 

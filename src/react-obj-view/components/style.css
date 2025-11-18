@@ -3,7 +3,7 @@
     --bigobjview-color: light-dark(#333b3c, #efefec);
     --bigobjview-bg-color: light-dark(#f9f9f9, #212121);
     --bigobjview-change-color: rgb(255, 50, 0);
-    --bigobjview-fontsize: 12px
+    --bigobjview-fontsize: 12px;
     --bigobjview-type-boolean-color: #08f;
     --bigobjview-type-number-color: red;
     --bigobjview-type-bigint-color: red;
@@ -61,6 +61,17 @@
         opacity: 0.5;
         line-height: 1;
         vertical-align: top;
+    }
+
+    .tree-indents {
+        white-space: preserve;
+        
+        >span {
+            --compare: calc(clamp(0, abs(var(--indent-index) - var(--active-parent)), 1 ));
+            opacity: calc(0.4 - var(--compare) * 0.35);
+            transition: opacity 0.3s;
+        }
+
     }
 
     [data-child="true"] .expand-symbol {

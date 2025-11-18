@@ -26,6 +26,8 @@ export type RenderOptions = {
     refreshPath: (node?: FlattenNodeData<ObjectWalkingAdater, ObjectWalkingMetaParser>) => void
     showLineNumbers: boolean
     includeSymbols: boolean
+    onMouseEnter: (index: number) => void
+    onMouseLeave: (index: number) => void
 }
 
 
@@ -33,7 +35,7 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
     ObjectWalkingAdater,
     ObjectWalkingMetaParser,
     RenderOptions
->> = ({ nodeDataWrapper, valueWrapper, options }) => {
+>> = ({ nodeDataWrapper, valueWrapper, options, renderIndex }) => {
 
     const nodeData = nodeDataWrapper()
 
@@ -56,17 +58,24 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
         && !(value instanceof GroupedProxy)
 
     const refreshPath = useCallback(
-        () => {
-            // console.log("nodeData.path", nodeData.path)
-            options.refreshPath(nodeData)
-        },
+        () => options.refreshPath(nodeData),
         [options.refreshPath, nodeData]
+    )
+
+    const onMouseEnter = useCallback(
+        () => options.onMouseEnter(renderIndex),
+        [options.refreshPath, renderIndex]
+    )
+
+    const onMouseLeave = useCallback(
+        () => options.onMouseLeave(renderIndex),
+        [options.refreshPath, renderIndex]
     )
 
     const overrideOptions = useMemo(
         () => ({
             ...options,
-            refreshPath: refreshPath,
+            refreshPath,
         }), [options, refreshPath]
     )
 
@@ -78,16 +87,25 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
 
 
     return <>
-        <span
+        <div
             className="node-default"
             data-child={hasChild}
             data-nonenumrable={!nodeData.enumerable}
-            onClick={() => hasChild && toggleChildExpand(nodeData)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
         >
-            <span style={{ whiteSpace: 'preserve', opacity: 0.05 }}>
-                {"| ".repeat(nodeData.depth - 1)}
+            <span
+                className="tree-indents">
+                {nodeData.parents.slice(0, -1)
+                    .map(index => <span style={{ ['--indent-index' as any]: String(index) }}>
+                        {"│ "}
+                    </span>)
+                }
             </span>
-            <span className="expand-symbol" style={{ whiteSpace: 'preserve' }}>
+            <span
+                onClick={() => hasChild && toggleChildExpand(nodeData)}
+                className="expand-symbol"
+                style={{ whiteSpace: 'preserve' }}>
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>  </>}
             </span>
 
@@ -107,6 +125,6 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
                 isPreview,
             }} />
 
-        </span>
+        </div>
     </>;
 }

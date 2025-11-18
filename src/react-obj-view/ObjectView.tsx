@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { RenderNode, RenderOptions } from "./components/RenderNode";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
@@ -7,12 +7,13 @@ import {
     parseWalkingMeta,
     ObjectWalkingAdater,
     DEFAULT_RESOLVER,
-    GROUP_ARRAY_RESOLVER, 
+    GROUP_ARRAY_RESOLVER,
     GROUP_OBJECT_RESOLVER
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
 import "./components/style.css"
+import { useHoverInteractions } from "./hooks/useHoverInteractions";
 
 
 
@@ -72,7 +73,9 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         value,
     })
 
-    const { refreshPath, toggleChildExpand } = objectTree
+    const { refreshPath, toggleChildExpand, getNodeByIndex, childCount } = objectTree
+
+    const { onMouseEnter, onMouseLeave, containerRef } = useHoverInteractions(childCount, getNodeByIndex);
 
     const options: RenderOptions = useMemo(
         () => ({
@@ -83,6 +86,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             highlightUpdate,
             includeSymbols,
             showLineNumbers,
+            onMouseEnter,
+            onMouseLeave,
         }) as RenderOptions,
         [
             enablePreview, refreshPath, toggleChildExpand, resolver,
@@ -101,16 +106,19 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         [style, className]
     )
 
-    return <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
-        {...objectTree}
-        lineHeight={lineHeight}
-        options={options}
-        RowRenderer={RenderNode}
-        stickyPathHeaders={stickyPathHeaders}
-        containerDivProps={containerDivProps}
-        showLineNumbers={showLineNumbers}
-        rowDivProps={rowDivProps}
-    />
+    return <div ref={containerRef} className="big-objview-container">
+        <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
+            {...objectTree}
+            lineHeight={lineHeight}
+            options={options}
+            RowRenderer={RenderNode}
+            stickyPathHeaders={stickyPathHeaders}
+            containerDivProps={containerDivProps}
+            showLineNumbers={showLineNumbers}
+            rowDivProps={rowDivProps}
+        />
+    </div>
 }
+
 
 
