@@ -68,7 +68,7 @@
         
         >span {
             --compare: calc(clamp(0, abs(var(--indent-index) - var(--active-parent)), 1 ));
-            opacity: clamp(0.1, calc(1 - var(--compare)),0.4);
+            opacity: clamp(0.07, calc(1 - var(--compare)),0.4);
             transition: opacity 0.3s;
         }
 
