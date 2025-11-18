@@ -1,4 +1,4 @@
-import { RenderPopover } from "./RenderPopover";
+import { RenderPopover } from "./Popover";
 
 export const RenderString: React.FC<{ value: string; depth: number; }> = ({ value, depth }) => {
 

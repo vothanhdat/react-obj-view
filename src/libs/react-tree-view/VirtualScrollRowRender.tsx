@@ -35,7 +35,7 @@ export const VirtualScrollRowRender: <
 
         const flattenNodeData = useMemo(
             () => (flattenNodeWrapper?.getData())!,
-            [flattenNodeWrapper?.state?.updateStamp]
+            [index, flattenNodeWrapper?.state?.updateStamp]
         );
 
         const nodeDataWrapper = useWrapper(flattenNodeData!);

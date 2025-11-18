@@ -1,5 +1,5 @@
 import React from "react";
-import { RenderPopover } from "./RenderPopover";
+import { RenderPopover } from "./Popover";
 
 
 export const RenderFunction: React.FC<{ value: Function, depth: any }> = ({ value, depth }) => {
