@@ -11,6 +11,7 @@ export type RenderOptions = {
     includeSymbols: boolean;
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
+    actionRenders?: React.FC<ObjectViewRenderRowProps>
 };
 
 export type ObjectViewRenderRowProps = ReactTreeRowRenderProps<

@@ -4,7 +4,7 @@ import { RenderValue } from "./RenderValue";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError } from "../../object-tree";
-import { Actions } from "../value-renders/Actions";
+import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
 
 
@@ -12,7 +12,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const { nodeDataWrapper, valueWrapper, options, renderIndex, actions } = props
 
-    const { enablePreview } = options
+    const { enablePreview, actionRenders } = options
 
     const nodeData = nodeDataWrapper()
 
@@ -22,6 +22,8 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
     const isExpanded = nodeData.expanded
 
     const isCircular = nodeData.isCircular;
+
+    const ActionRenders = actionRenders ?? DefaultActions
 
     const hasChild = objectHasChild(value)
         && !(value instanceof LazyValueError);
@@ -91,8 +93,9 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
                 isPreview,
                 refreshPath: actions.refreshPath,
             }} />
-
-            <Actions {...props} />
+            <span className="actions">
+                <ActionRenders {...props} />
+            </span>
         </div>
     </>;
 }

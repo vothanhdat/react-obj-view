@@ -17,6 +17,9 @@
     --bigobjview-type-object-regexp-color: red;
     --bigobjview-type-object-date-color: #08f;
     --bigobjview-type-object-error-color: red;
+    --bigobjview-action-btn:  light-dark(#ddd,#555);
+    --bigobjview-action-success: light-dark(#080,#0c0);
+    --bigobjview-action-error: red;
 }
 
 .big-objview-root {
@@ -69,7 +72,7 @@
         white-space: preserve;
 
         >span {
-            --compare: calc(clamp(0, abs(var(--indent-index) - var(--active-parent)), 1));
+            --compare: calc(clamp(0, abs(var(--indent-index,-1) - var(--active-parent,-1)), 1));
             opacity: clamp(0.07, calc(1 - var(--compare)), 0.4);
             transition: opacity 0.3s;
         }
@@ -213,6 +216,7 @@
         padding-inline-start: 0.3em;
         padding-block: 0.2em;
         font-family: monospace;
+        overflow: hidden;
 
         button {
             font-size: 0.75em;
@@ -222,7 +226,10 @@
             text-transform: uppercase;
             padding-inline: 0.6em;
             opacity: 0.5;
-            background-color: var(--color-button, #8884);
+            background-color: var(--bigobjview-action-btn);
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
             &:hover {
                 opacity: 1;
@@ -230,16 +237,26 @@
         }
 
         button.icon {
-            background-color:transparent;
+            background-color: transparent;
             padding-inline: 0.3em;
             font-weight: bold;
             font-size: 1em;
             line-height: 0.5;
         }
+
+        button.error {
+            color: var(--bigobjview-action-error, red);
+            background-color: color-mix(in srgb, currentColor 10%, var(--bigobjview-action-btn));
+        }
+        button.success {
+            color: var(--bigobjview-action-success, rgb(0, 139, 0));
+            background-color: color-mix(in srgb, currentColor 10%, var(--bigobjview-action-btn));
+        }
     }
 
     .row:hover .actions {
         display: flex;
+        flex-shrink: 1;
     }
 
     .node-default,
