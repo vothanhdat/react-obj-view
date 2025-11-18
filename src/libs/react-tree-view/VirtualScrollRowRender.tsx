@@ -44,8 +44,8 @@ export const VirtualScrollRowRender: <
 
         const actions = useMemo(
             () => ({
-                refreshPath: toggleChildExpand.bind(undefined, flattenNodeData),
-                toggleChildExpand: refreshPath.bind(undefined, flattenNodeData),
+                refreshPath: () => refreshPath(flattenNodeData),
+                toggleChildExpand: () => toggleChildExpand(flattenNodeData),
             }),
             [
                 flattenNodeData,

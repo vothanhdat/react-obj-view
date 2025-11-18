@@ -3,45 +3,21 @@ import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
-import {
-    type ReactTreeRowRenderProps,
-    type FlattenNodeData
-} from "../../libs/react-tree-view";
-import {
-    type ResolverFn,
-    type ObjectWalkingAdater,
-    type ObjectWalkingMetaParser,
-
-    objectHasChild,
-    GroupedProxy,
-    LazyValueError
-} from "../../object-tree";
+import { objectHasChild, GroupedProxy, LazyValueError } from "../../object-tree";
+import { Actions } from "../value-renders/Actions";
+import { ObjectViewRenderRowProps } from "../types";
 
 
-export type RenderOptions = {
-    enablePreview: boolean;
-    highlightUpdate: boolean;
-    resolver: Map<any, ResolverFn>
-    toggleChildExpand: (node: FlattenNodeData<ObjectWalkingAdater, ObjectWalkingMetaParser>) => void
-    refreshPath: (node?: FlattenNodeData<ObjectWalkingAdater, ObjectWalkingMetaParser>) => void
-    showLineNumbers: boolean
-    includeSymbols: boolean
-    onMouseEnter: (index: number) => void
-    onMouseLeave: (index: number) => void
-}
+export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
+    const { nodeDataWrapper, valueWrapper, options, renderIndex, actions } = props
 
-export const RenderNode: React.FC<ReactTreeRowRenderProps<
-    ObjectWalkingAdater,
-    ObjectWalkingMetaParser,
-    RenderOptions
->> = ({ nodeDataWrapper, valueWrapper, options, renderIndex }) => {
+    const { enablePreview } = options
 
     const nodeData = nodeDataWrapper()
 
     const value = useInternalPromiseResolve(valueWrapper())
 
-    const { enablePreview, toggleChildExpand } = options
 
     const isExpanded = nodeData.expanded
 
@@ -57,27 +33,17 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
         && !(value instanceof Error)
         && !(value instanceof GroupedProxy)
 
-    const refreshPath = useCallback(
-        () => options.refreshPath(nodeData),
-        [options.refreshPath, nodeData]
-    )
 
     const onMouseEnter = useCallback(
         () => options.onMouseEnter(renderIndex),
-        [options.refreshPath, renderIndex]
+        [options.onMouseEnter, renderIndex]
     )
 
     const onMouseLeave = useCallback(
         () => options.onMouseLeave(renderIndex),
-        [options.refreshPath, renderIndex]
+        [options.onMouseLeave, renderIndex]
     )
 
-    const overrideOptions = useMemo(
-        () => ({
-            ...options,
-            refreshPath,
-        }), [options, refreshPath]
-    )
 
     const ref = useChangeFlashClasses({
         value,
@@ -103,7 +69,7 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
                 }
             </span>
             <span
-                onClick={() => hasChild && toggleChildExpand(nodeData)}
+                onClick={actions.toggleChildExpand}
                 className="expand-symbol"
                 style={{ whiteSpace: 'preserve' }}>
                 {hasChild && !isCircular ? (isExpanded ? "▼ " : "▶ ") : <>  </>}
@@ -121,10 +87,12 @@ export const RenderNode: React.FC<ReactTreeRowRenderProps<
             <RenderValue {...{
                 valueWrapper,
                 enumrable: nodeData.enumerable,
-                options: overrideOptions,
+                options,
                 isPreview,
+                refreshPath: actions.refreshPath,
             }} />
 
+            <Actions {...props} />
         </div>
     </>;
 }

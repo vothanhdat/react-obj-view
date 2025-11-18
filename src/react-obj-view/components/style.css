@@ -36,8 +36,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
         width: 100%;
-        &:hover{
-            background-color: color-mix(in srgb, var(--bigobjview-color) 5%, transparent);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--bigobjview-color) 3%, transparent);
         }
     }
 
@@ -61,14 +62,15 @@
         opacity: 0.5;
         line-height: 1;
         vertical-align: top;
+        user-select: none;
     }
 
     .tree-indents {
         white-space: preserve;
-        
+
         >span {
-            --compare: calc(clamp(0, abs(var(--indent-index) - var(--active-parent)), 1 ));
-            opacity: clamp(0.07, calc(1 - var(--compare)),0.4);
+            --compare: calc(clamp(0, abs(var(--indent-index) - var(--active-parent)), 1));
+            opacity: clamp(0.07, calc(1 - var(--compare)), 0.4);
             transition: opacity 0.3s;
         }
 
@@ -76,7 +78,7 @@
 
     [data-child="true"] .expand-symbol {
         cursor: pointer;
-    } 
+    }
 
     .tag-circular {
         font-size: 0.9em;
@@ -102,11 +104,18 @@
 
     .node-default {
         color: color-mix(in srgb, var(--color) var(--opacity), transparent);
+
+        >* {
+            overflow: hidden;
+            flex-shrink: 0;
+            flex-grow: 0;
+            text-overflow: ellipsis;
+        }
     }
 
     .value {
-        flex: 1;
         overflow: hidden;
+        flex-shrink: 1 !important;
         text-overflow: ellipsis;
 
         &.type-boolean {
@@ -192,6 +201,45 @@
             transition: background-color 0.00s;
             background-color: var(--bigobjview-change-color);
         }
+    }
+
+
+    .actions {
+        display: none;
+        align-self: center;
+        vertical-align: middle;
+        align-content: stretch;
+        gap: 0.3em;
+        padding-inline-start: 0.3em;
+        padding-block: 0.2em;
+        font-family: monospace;
+
+        button {
+            font-size: 0.75em;
+            border-radius: 3px;
+            border-width: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding-inline: 0.6em;
+            opacity: 0.5;
+            background-color: var(--color-button, #8884);
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        button.icon {
+            background-color:transparent;
+            padding-inline: 0.3em;
+            font-weight: bold;
+            font-size: 1em;
+            line-height: 0.5;
+        }
+    }
+
+    .row:hover .actions {
+        display: flex;
     }
 
     .node-default,

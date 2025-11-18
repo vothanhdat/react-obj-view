@@ -1,7 +1,7 @@
 import { Fragment, useMemo } from "react";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
-import { RenderOptions } from "./RenderNode";
+import { RenderOptions } from "../types";
 import {
     getEntriesCb,
     CustomEntry,

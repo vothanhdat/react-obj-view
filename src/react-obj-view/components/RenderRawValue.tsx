@@ -1,5 +1,5 @@
 import { CustomEntry } from "../../object-tree";
-import { RenderOptions } from "./RenderNode";
+import { RenderOptions } from "../types";
 import { RenderRawEntry } from "../value-renders/RenderRawEntry";
 import { RenderString } from "../value-renders/RenderString";
 import { RenderFunction } from "../value-renders/RenderFunction";

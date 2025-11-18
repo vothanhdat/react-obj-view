@@ -3,7 +3,7 @@ import { RenderPreview } from "./RenderPreview";
 import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../../libs/react-tree-view/useWrapper";
 import { useLazyValue } from "../hooks/useLazyValue";
-import { RenderOptions } from "./RenderNode";
+import { RenderOptions } from "../types";
 import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 
 
@@ -12,14 +12,15 @@ export const RenderValue: React.FC<{
     isPreview: boolean;
     options: RenderOptions,
     depth?: number;
-}> = (({ valueWrapper, isPreview, options, depth = 0 }) => {
-    const { refreshPath } = options
+    refreshPath?: () => void,
+}> = (({ valueWrapper, isPreview, options, refreshPath, depth = 0 }) => {
 
-    const value = useInternalPromiseResolve(valueWrapper())
+    const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue: value } = useLazyValue({
+        value: useInternalPromiseResolve(valueWrapper()),
+        refreshPath
+    })
 
-    const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue } = useLazyValue({ value, refreshPath })
-
-    const renderValueWrapper = useWrapper(renderValue)
+    const renderValueWrapper = useWrapper(value)
 
     const children = <>
         {isPreview

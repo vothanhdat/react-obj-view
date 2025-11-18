@@ -1,5 +1,5 @@
 import { useWrapper } from "../../libs/react-tree-view";
-import { RenderOptions } from "../components/RenderNode";
+import { RenderOptions } from "../types";
 import { RenderValue } from "../components/RenderValue";
 
 

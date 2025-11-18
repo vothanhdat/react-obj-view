@@ -59,7 +59,7 @@ export const VirtualScrollRender: <
                 height: `${lineHeight}px`,
             }}
         >
-            {showLineNumbers && <span className="line-number">
+            {showLineNumbers && <span className="line-number" style={{flexShrink:0}}>
                 {String(index).padStart(lineNumberChars, " ")}:{" "}
             </span>}
             <VirtualScrollRowRender

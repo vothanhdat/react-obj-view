@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { RenderNode, RenderOptions } from "./components/RenderNode";
+import { RenderNode } from "./components/RenderNode";
+import { RenderOptions } from "./types";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
@@ -73,15 +74,13 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         value,
     })
 
-    const { refreshPath, toggleChildExpand, getNodeByIndex, childCount } = objectTree
+    const { getNodeByIndex, childCount } = objectTree
 
     const { onMouseEnter, onMouseLeave, containerRef } = useHoverInteractions(childCount, getNodeByIndex);
 
     const options: RenderOptions = useMemo(
         () => ({
             enablePreview,
-            refreshPath,
-            toggleChildExpand,
             resolver,
             highlightUpdate,
             includeSymbols,
@@ -90,7 +89,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             onMouseLeave,
         }) as RenderOptions,
         [
-            enablePreview, refreshPath, toggleChildExpand, resolver,
+            enablePreview, resolver,
             highlightUpdate, includeSymbols, showLineNumbers
         ]
     )
