@@ -17,6 +17,10 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 - **Lazy `valueGetter`** – keeps data fresh without forcing heavy re-renders.
 - **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
 - **Change awareness** – optional flashing highlights updated values.
+- **Interactive hover** – automatically highlights rows and dims siblings for easier navigation.
+- **Copy to clipboard** – built-in action buttons to copy primitive values or JSON-serialized objects.
+- **Line numbers** – optional gutter with 0-based indices for debugging.
+- **Generic tree APIs** – build custom tree views for non-object data structures (files, ASTs, etc.).
 - **Styling hooks** – CSS variables + theme presets plus `className`/`style` escape hatches.
 - **TypeScript-native** – published `.d.ts` and React 19 JSX runtime support.
 
@@ -204,6 +208,77 @@ const resolver = new Map([
 
 - Arrays get chunked up immediately because their length is known.
 - Objects must be enumerated to count keys. Use grouping when the trade-off (initial enumeration vs. quicker navigation) makes sense for the payload.
+
+### Interactive features
+
+#### Copy to Clipboard
+
+Each row includes built-in action buttons:
+
+```tsx
+// Primitives get a "Copy" button
+const config = { apiKey: "sk-abc123", timeout: 5000 };
+<ObjectView valueGetter={() => config} />
+// Hover over any row to see Copy / Copy JSON buttons
+
+// Copy actions show success/error feedback
+// Automatically resets after 5 seconds
+```
+
+- **Copy** button for strings, numbers, bigints – copies the raw value
+- **Copy JSON** button for objects, arrays, dates – serializes via `JSON.stringify()`
+
+#### Hover Interactions
+
+The viewer automatically highlights rows on hover and dims siblings, making it easier to trace parent-child relationships:
+
+```tsx
+<ObjectView valueGetter={() => deeplyNested} expandLevel={3} />
+// Hover over any row to see visual feedback
+// CSS custom properties (--active-index, --active-parent) enable theme customization
+```
+
+No configuration needed—the feature is built-in and adapts to your theme.
+
+#### Line Numbers
+
+Enable a gutter with 0-based line numbers for easier debugging:
+
+```tsx
+<ObjectView
+  valueGetter={() => largeData}
+  showLineNumbers={true}
+  lineHeight={18}
+/>
+```
+
+### Building custom tree views
+
+The library now exports generic tree APIs for non-object data:
+
+```tsx
+import { walkingFactory, type WalkingAdapter } from 'react-obj-view';
+
+// Define your domain (e.g., file system, AST, org chart)
+type FileNode = {
+  name: string;
+  type: 'folder' | 'file';
+  children?: FileNode[];
+};
+
+// Implement the adapter
+const fileAdapter: WalkingAdapter<...> = {
+  valueHasChild: (node) => node.type === 'folder' && !!node.children?.length,
+  iterateChilds: (node, ctx, ref, cb) => {
+    node.children?.forEach(child => cb(child, child.name, { ... }));
+  },
+  // ... other methods
+};
+
+const fileTreeFactory = () => walkingFactory(fileAdapter);
+```
+
+See [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) for a complete walkthrough with React integration.
 
 ### Virtual scrolling reminders
 

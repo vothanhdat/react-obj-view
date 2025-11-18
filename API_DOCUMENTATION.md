@@ -227,17 +227,78 @@ const cyberpunkTight = extendTheme(cyberpunk, {
 
 These helpers ensure the generated objects remain compatible with the component’s `style` prop while still benefiting from the smaller bundle produced by the internal tuple representation.
 
+## Interactive Features
+
+### Hover Interactions
+
+The viewer automatically highlights rows on hover to improve navigation through deeply nested structures. The implementation uses [`useHoverInteractions`](src/react-obj-view/hooks/useHoverInteractions.tsx) to:
+
+- Track the currently hovered row via CSS custom properties (`--active-index` and `--active-parent`)
+- Apply visual feedback through CSS styles that dim sibling rows
+- Debounce mouse leave events to prevent flicker during rapid movements
+
+No configuration is needed—hover effects are enabled by default and automatically adapt to your theme.
+
+### Copy Actions
+
+Each row includes action buttons powered by [`DefaultActions`](src/react-obj-view/value-renders/Actions.tsx) and the [`useCopy`](src/react-obj-view/hooks/useCopy.tsx) hook:
+
+- **Copy** button – appears for primitives (strings, numbers, bigints) and copies the raw value to clipboard
+- **Copy JSON** button – appears for plain objects, arrays, and dates; serializes the value via `JSON.stringify()` before copying
+- Buttons show loading, success (✓), and error states with automatic reset after 5 seconds
+
+The copy functionality uses the browser's Clipboard API and defers execution through `requestIdleCallback` to avoid blocking the main thread.
+
 ## Behaviour Notes
 
 - **Expansion state** – `useReactTree` keeps expansion toggles inside the walker state keyed by each node path. Clicking a caret invokes `toggleChildExpand`, which mutates the cached node and triggers a re-render.
 - **Circular references** – [`CircularChecking`](src/object-tree/utils/CircularChecking.ts) records visited objects per traversal; repeated references are marked with the `CIRCULAR` badge and do not recurse.
 - **Lazy properties** – Getters are wrapped by [`LazyValue`](src/object-tree/custom-class/LazyValueWrapper.ts). Clicking the preview evaluates the getter, caches the value (or error via `LazyValueError`), and refreshes the node.
 - **Change detection** – `highlightUpdate` enables [`useChangeFlashClasses`](src/react-obj-view/hooks/useChangeFlashClasses.tsx), which compares previous values and briefly applies the `updated` class.
-- **Grouping** – [`GroupedProxy`](src/utils/groupedProxy.ts) instances expose `getSize`, `getKey`, and `getObject` helpers so large collections render in constant time until expanded.
+- **Grouping** – [`GroupedProxy`](src/object-tree/custom-class/groupedProxy.ts) instances expose `getSize`, `getKey`, and `getObject` helpers so large collections render in constant time until expanded.
+
+## Generic Tree APIs
+
+The library now exports low-level tree APIs that can be used to build custom tree views for non-object data structures:
+
+### `walkingFactory`
+
+```ts
+import { walkingFactory, type WalkingAdapter } from 'react-obj-view';
+```
+
+Creates a tree walker instance from a custom adapter. The adapter defines how to:
+- Determine if a value has children (`valueHasChild`)
+- Iterate over child values (`iterateChilds`)
+- Generate metadata for each node (`defaultMeta`)
+- Transform values before rendering (`transformValue`)
+
+See [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) for a complete example of building a file-system tree view.
+
+### `objectTreeWalking`
+
+```ts
+import { objectTreeWalking, parseWalkingMeta } from 'react-obj-view';
+```
+
+The pre-configured walker factory for JavaScript objects. This is what `ObjectView` uses internally. Export it if you need to:
+- Build a custom object viewer with different UI components
+- Integrate object traversal into an existing tree UI
+- Access raw walker results for logging or analysis
+
+### Type Utilities
+
+```ts
+import { type InferWalkingResult, type InferNodeResult } from 'react-obj-view';
+```
+
+Type helpers for extracting walker output types from adapter definitions:
+- `InferWalkingResult<T>` – the complete walker result including `childCount` and `getNodeByIndex`
+- `InferNodeResult<T>` – the individual node structure with `value`, `key`, `meta`, and expansion state
 
 ## Supporting Utilities
 
-- [`src/utils/groupedProxy.ts`](src/utils/groupedProxy.ts) – Implements proxy objects for grouped ranges and helpers like `groupedProxyIsEqual`.
+- [`src/object-tree/custom-class/groupedProxy.ts`](src/object-tree/custom-class/groupedProxy.ts) – Implements proxy objects for grouped ranges and helpers like `groupedProxyIsEqual`.
 - [`src/object-tree/getEntries.ts`](src/object-tree/getEntries.ts) – Normalises property enumeration respecting `nonEnumerable`, `includeSymbols`, and resolver output.
 - [`src/object-tree/utils/getObjectUniqueId.ts`](src/object-tree/utils/getObjectUniqueId.ts) – Provides stable identifiers for resolver maps used in memoisation.
 - [`src/libs/tree-core/utils/StateFactory.ts`](src/libs/tree-core/utils/StateFactory.ts) – Creates persistent node state objects reused between renders.
