@@ -80,7 +80,7 @@ export const getEntriesCb = (
     // }
 
     const prototype = value
-        ? (value.constructor ?? Object.getPrototypeOf(value).constructor)
+        ? (value.constructor ?? Object.getPrototypeOf(value)?.constructor)
         : undefined
 
     // console.log(value, prototype, prototype && value instanceof prototype, config.resolver?.has(prototype))
