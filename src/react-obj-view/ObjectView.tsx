@@ -34,6 +34,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     style,
     includeSymbols = false,
     stickyPathHeaders = true,
+    actionRenders,
 }) => {
 
     const value = useMemo(() => valueGetter?.(), [valueGetter])
@@ -87,10 +88,12 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             showLineNumbers,
             onMouseEnter,
             onMouseLeave,
+            actionRenders,
         }) as RenderOptions,
         [
             enablePreview, resolver,
-            highlightUpdate, includeSymbols, showLineNumbers
+            highlightUpdate, includeSymbols, showLineNumbers,
+            actionRenders
         ]
     )
 

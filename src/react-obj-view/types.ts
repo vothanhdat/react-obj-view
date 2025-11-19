@@ -39,4 +39,5 @@ export type ObjectViewProps = {
     style?: React.CSSProperties | ThemeColor;
     lineHeight?: number;
     className?: string;
+    actionRenders?: React.FC<ObjectViewRenderRowProps>,
 };
