@@ -1,6 +1,6 @@
 {
   "name": "react-obj-view",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A powerful React component for visualizing JavaScript objects and data structures with an interactive, expandable tree view",
   "type": "module",
   "main": "dist/index.umd.js",
