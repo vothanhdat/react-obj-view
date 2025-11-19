@@ -15,7 +15,8 @@ export {
 
 export {
     ObjectView,
-    type ObjectViewProps
+    type ObjectViewProps,
+    type ObjectViewRenderRowProps,
 } from "./react-obj-view"
 
 
