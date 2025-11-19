@@ -122,6 +122,8 @@ Prefer CSS? Override the variables directly:
 <ObjectView valueGetter={getter} className="object-view" />
 ```
 
+Note: The built-in `themeDefault` adapts automatically to light and dark modes using CSS `light-dark()` and the user's `prefers-color-scheme`. Other presets (e.g., One Dark, Dracula, Monokai) are static and do not change automatically. The demo’s light/dark/auto toggle affects the page chrome only — `ObjectView` does not auto-switch its theme; choose a preset explicitly if you want a specific look.
+
 Want full control? Build your own palette with the exported helpers:
 
 ```ts

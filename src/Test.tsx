@@ -254,6 +254,7 @@ const createLiveSnapshot = (previous: any) => {
 }
 
 export const Test = () => {
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'auto'>('auto')
   const [selectedData, setSelectedData] = useState(testDataOptions[0])
   const [expandLevel, setExpandLevel] = useState<number | boolean>(true)
   const [customData, setCustomData] = useState(
@@ -276,6 +277,17 @@ export const Test = () => {
   const [stickyHeaders, setStickyHeaders] = useState(true)
   const [showLineNumbers, setShowLineNumbers] = useState(true)
   const [enableCustomActions, setEnableCustomActions] = useState(false)
+  const [systemIsDark, setSystemIsDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e: MediaQueryListEvent) => setSystemIsDark(e.matches)
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  const isDarkMode = themeMode === 'dark' || (themeMode === 'auto' && systemIsDark)
+
 
   useEffect(() => {
     if (useLiveStream) {
@@ -408,7 +420,7 @@ export const Test = () => {
   )
 
   return (
-    <div className="demo-page">
+    <div className={`demo-page ${isDarkMode ? 'dark-mode' : ''}`}>
       <header className="demo-header">
         <div className="demo-brand">
           <span className="demo-logo" aria-hidden>
@@ -420,6 +432,29 @@ export const Test = () => {
           </div>
         </div>
         <div className="demo-header-actions">
+          <div className="theme-toggle-group">
+            <button
+              className={`theme-toggle-btn ${themeMode === 'light' ? 'active' : ''}`}
+              onClick={() => setThemeMode('light')}
+              title="Light Mode"
+            >
+              ☀️
+            </button>
+            <button
+              className={`theme-toggle-btn ${themeMode === 'dark' ? 'active' : ''}`}
+              onClick={() => setThemeMode('dark')}
+              title="Dark Mode"
+            >
+              🌙
+            </button>
+            <button
+              className={`theme-toggle-btn ${themeMode === 'auto' ? 'active' : ''}`}
+              onClick={() => setThemeMode('auto')}
+              title="System Auto"
+            >
+              ⚙️
+            </button>
+          </div>
           <span className="version-pill">v{packageVersion}</span>
           <a className="header-link" href="https://github.com/vothanhdat/react-obj-view" target="_blank" rel="noreferrer">
             GitHub
