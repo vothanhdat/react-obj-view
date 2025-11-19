@@ -1,3 +1,4 @@
 export { ObjectView } from "./ObjectView"
-export type { ObjectViewProps } from "./types"
+export type { ObjectViewProps, ObjectViewRenderRowProps } from "./types"
 export type { ResolverFn, WalkingConfig } from "../object-tree"
+

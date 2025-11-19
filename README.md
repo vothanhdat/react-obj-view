@@ -89,6 +89,8 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
+| `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). |
+
 
 👉 Need more detail? Check the [API Documentation](./API_DOCUMENTATION.md).
 

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
-import { ResolverFn } from './object-tree'
+import { ResolverFn, objectHasChild } from './object-tree'
 import {
   themeDefault,
   themeDracula,
@@ -10,9 +10,61 @@ import {
   themeOneDark,
   themeSepia,
 } from './react-obj-view-themes'
-import { ObjectView } from './react-obj-view'
+import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 
 const packageVersion = '1.0.7'
+
+const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
+  const { nodeDataWrapper, valueWrapper, actions } = props
+  const nodeData = nodeDataWrapper()
+  const value = valueWrapper()
+  const hasChild = objectHasChild(value)
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', marginLeft: '8px', alignItems: 'center' }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          console.log('Clicked:', nodeData.key, value)
+          alert(`Clicked: ${String(nodeData.key)}`)
+        }}
+        style={{
+          background: '#4caf50',
+          border: 'none',
+          borderRadius: '4px',
+          color: 'white',
+          cursor: 'pointer',
+          fontSize: '10px',
+          padding: '2px 6px',
+          height: '18px',
+          lineHeight: '14px',
+        }}
+      >
+        Log
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          actions.toggleChildExpand()
+        }}
+        disabled={!hasChild}
+        style={{
+          background: hasChild ? '#2196f3' : '#ccc',
+          border: 'none',
+          borderRadius: '4px',
+          color: 'white',
+          cursor: hasChild ? 'pointer' : 'not-allowed',
+          fontSize: '10px',
+          padding: '2px 6px',
+          height: '18px',
+          lineHeight: '14px',
+        }}
+      >
+        {nodeData.expanded ? 'Collapse' : 'Expand'}
+      </button>
+    </div>
+  )
+}
 
 class User {
   constructor(public name: string, public email: string, public role: string = 'user') { }
@@ -223,6 +275,7 @@ export const Test = () => {
   const [useLiveStream, setUseLiveStream] = useState(false)
   const [stickyHeaders, setStickyHeaders] = useState(true)
   const [showLineNumbers, setShowLineNumbers] = useState(true)
+  const [enableCustomActions, setEnableCustomActions] = useState(false)
 
   useEffect(() => {
     if (useLiveStream) {
@@ -339,7 +392,10 @@ export const Test = () => {
       { label: 'Symbols', active: showSymbols, setter: setShowSymbols },
       { label: 'Live stream', active: useLiveStream, setter: setUseLiveStream },
     ],
-    [enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers, showNonEnumerable, showSymbols, useLiveStream],
+    [
+      stickyHeaders, enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers,
+      showNonEnumerable, showSymbols, useLiveStream, showLineNumbers,
+    ],
   )
 
   const infoChips = useMemo(
@@ -515,6 +571,11 @@ export const Test = () => {
                   label: 'Enable grouping',
                   value: enableGrouping,
                   setter: setEnableGrouping,
+                },
+                {
+                  label: 'Custom Actions',
+                  value: enableCustomActions,
+                  setter: setEnableCustomActions,
                 }].map((item) => (
                   <button
                     key={item.label}
@@ -612,6 +673,7 @@ export const Test = () => {
               includeSymbols={showSymbols}
               style={selectedTheme}
               stickyPathHeaders={stickyHeaders}
+              actionRenders={enableCustomActions ? CustomActions : undefined}
             />
           </div>
         </section>

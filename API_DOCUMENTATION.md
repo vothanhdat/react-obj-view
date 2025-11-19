@@ -51,6 +51,7 @@ export type ObjectViewProps = {
   style?: React.CSSProperties;
   lineHeight?: number;
   className?: string;
+  actionRenders?: React.FC<ObjectViewRenderRowProps>;
 };
 ```
 
@@ -73,6 +74,7 @@ export type ObjectViewProps = {
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 | `lineHeight` | `14` | Height, in pixels, of each rendered row. **Must reflect the real CSS height**—if your theme overrides fonts, padding, or `--bigobjview` variables, update this prop (or the corresponding CSS variable) so virtualization remains accurate. |
 | `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
+| `actionRenders` | `DefaultActions` | Component to render custom actions (like copy, expand/collapse) for each row. Receives `ObjectViewRenderRowProps`. |
 
 ## Resolver System
 
@@ -248,6 +250,31 @@ Each row includes action buttons powered by [`DefaultActions`](src/react-obj-vie
 - Buttons show loading, success (✓), and error states with automatic reset after 5 seconds
 
 The copy functionality uses the browser's Clipboard API and defers execution through `requestIdleCallback` to avoid blocking the main thread.
+
+## Custom Action Renders
+
+You can customize the actions rendered for each row (like the copy button) by providing the `actionRenders` prop. This component receives `ObjectViewRenderRowProps` and can render any custom UI.
+
+```tsx
+import { ObjectView, ObjectViewRenderRowProps } from 'react-obj-view';
+
+const MyCustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
+  const { nodeDataWrapper, valueWrapper } = props;
+  const nodeData = nodeDataWrapper();
+  const value = valueWrapper();
+
+  return (
+    <button onClick={() => console.log('Clicked:', nodeData.key, value)}>
+      Log
+    </button>
+  );
+};
+
+<ObjectView
+  valueGetter={() => myData}
+  actionRenders={MyCustomActions}
+/>
+```
 
 ## Behaviour Notes
 
