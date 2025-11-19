@@ -12,7 +12,7 @@ import {
 } from './react-obj-view-themes'
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 
-const packageVersion = '1.0.7'
+const packageVersion = '1.1.0'
 
 const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   const { nodeDataWrapper, valueWrapper, actions } = props
