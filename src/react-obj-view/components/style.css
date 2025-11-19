@@ -217,6 +217,7 @@
         padding-block: 0.2em;
         font-family: monospace;
         overflow: hidden;
+        flex-grow:1;
 
         button {
             font-size: 0.75em;
@@ -256,7 +257,7 @@
 
     .row:hover .actions {
         display: flex;
-        flex-shrink: 1;
+        /* flex-shrink: 1; */
     }
 
     .node-default,
