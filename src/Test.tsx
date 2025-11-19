@@ -277,16 +277,6 @@ export const Test = () => {
   const [stickyHeaders, setStickyHeaders] = useState(true)
   const [showLineNumbers, setShowLineNumbers] = useState(true)
   const [enableCustomActions, setEnableCustomActions] = useState(false)
-  const [systemIsDark, setSystemIsDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = (e: MediaQueryListEvent) => setSystemIsDark(e.matches)
-    mediaQuery.addEventListener('change', handler)
-    return () => mediaQuery.removeEventListener('change', handler)
-  }, [])
-
-  const isDarkMode = themeMode === 'dark' || (themeMode === 'auto' && systemIsDark)
 
 
   useEffect(() => {
@@ -419,8 +409,9 @@ export const Test = () => {
     [arrayGrouped, currentLabel, enableGrouping, objectGrouped, selectedThemeLabel],
   )
 
+  const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
   return (
-    <div className={`demo-page ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div className={`demo-page ${pageModeClass}`}>
       <header className="demo-header">
         <div className="demo-brand">
           <span className="demo-logo" aria-hidden>

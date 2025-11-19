@@ -1,44 +1,33 @@
 :root {
   color-scheme: light dark;
 
-  /* Light Mode (Default) */
-  --bg-gradient: radial-gradient(circle at top, #f8fbff 0%, #eef2ff 45%, #e2e8f0 100%);
-  --text-main: #0f172a;
-  --text-muted: rgba(51, 65, 85, 0.8);
-  --header-bg: rgba(15, 23, 42, 0.92);
-  --header-text: #f8fafc;
-  --panel-bg: rgba(248, 250, 252, 0.85);
-  --section-bg: #ffffff;
-  --border-color: rgba(148, 163, 184, 0.2);
-  --input-bg: rgba(248, 250, 252, 0.75);
-  --input-border: rgba(148, 163, 184, 0.5);
-  --chip-bg: rgba(148, 163, 184, 0.18);
-  --footer-bg: rgba(226, 232, 240, 0.6);
-  --footer-text: rgba(15, 23, 42, 0.75);
-  --viewer-bg: rgba(248, 250, 252, 0.92);
-  --control-btn-bg: rgba(148, 163, 184, 0.12);
-  --control-btn-text: #0f172a;
+  /* Base color tokens using light-dark() so they react to color-scheme */
+  --text-main: light-dark(#0f172a, #f8fafc);
+  --text-muted: light-dark(rgba(51, 65, 85, 0.8), rgba(203, 213, 225, 0.92));
+  --header-bg: light-dark(rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.95));
+  --header-text: light-dark(#f8fafc, #f8fafc);
+  --panel-bg: light-dark(rgba(248, 250, 252, 0.85), rgba(15, 23, 42, 0.85));
+  --section-bg: light-dark(#ffffff, #162235);
+  --border-color: light-dark(rgba(148, 163, 184, 0.2), rgba(100, 116, 139, 0.6));
+  --input-bg: light-dark(rgba(248, 250, 252, 0.75), rgba(15, 23, 42, 0.6));
+  --input-border: light-dark(rgba(148, 163, 184, 0.5), rgba(71, 85, 105, 0.6));
+  --chip-bg: light-dark(rgba(148, 163, 184, 0.18), rgba(148, 163, 184, 0.32));
+  --footer-bg: light-dark(rgba(226, 232, 240, 0.6), rgba(15, 23, 42, 0.8));
+  --footer-text: light-dark(rgba(15, 23, 42, 0.75), rgba(148, 163, 184, 0.8));
+  --viewer-bg: light-dark(rgba(248, 250, 252, 0.92), rgba(31, 41, 55, 0.9));
+  --control-btn-bg: light-dark(rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.15));
+  --control-btn-text: light-dark(#0f172a, #e2e8f0);
+
+  /* Gradient colors expressed via light-dark() stops */
+  --bg-1: light-dark(#f8fbff, #1e293b);
+  --bg-2: light-dark(#eef2ff, #0f172a);
+  --bg-3: light-dark(#e2e8f0, #020617);
+  --bg-gradient: radial-gradient(circle at top, var(--bg-1) 0%, var(--bg-2) 45%, var(--bg-3) 100%);
 }
 
-.demo-page.dark-mode {
-  /* Dark Mode */
-  --bg-gradient: radial-gradient(circle at top, #1e293b 0%, #0f172a 45%, #020617 100%);
-  --text-main: #f8fafc;
-  --text-muted: rgba(203, 213, 225, 0.92);
-  --header-bg: rgba(2, 6, 23, 0.95);
-  --header-text: #f8fafc;
-  --panel-bg: rgba(15, 23, 42, 0.85);
-  --section-bg: #162235;
-  --border-color: rgba(100, 116, 139, 0.6);
-  --input-bg: rgba(15, 23, 42, 0.6);
-  --input-border: rgba(71, 85, 105, 0.6);
-  --chip-bg: rgba(148, 163, 184, 0.32);
-  --footer-bg: rgba(15, 23, 42, 0.8);
-  --footer-text: rgba(148, 163, 184, 0.8);
-  --viewer-bg: rgba(31, 41, 55, 0.9);
-  --control-btn-bg: rgba(148, 163, 184, 0.15);
-  --control-btn-text: #e2e8f0;
-}
+/* Force modes only change color-scheme; tokens above react automatically */
+.demo-page.light-mode { color-scheme: light; }
+.demo-page.dark-mode { color-scheme: dark; }
 
 .demo-page {
   min-height: 100vh;
