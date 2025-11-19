@@ -389,6 +389,76 @@ const slateCompact = extendTheme(slate, {
 - `createTheme` requires every CSS variable listed in the styling reference, guaranteeing the resulting object stays compatible with `style`.
 - `extendTheme` clones a preset/custom palette and overrides only the keys you pass (plus optional standard CSS properties).
 
+## Advanced Features
+
+### Hover Interactions
+
+The viewer automatically highlights rows and dims siblings when hovering, making it easier to trace parent-child relationships in deeply nested structures. This feature is always enabled and adapts to your theme automatically.
+
+The implementation uses CSS custom properties (`--active-index` and `--active-parent`) that are set via the [`useHoverInteractions`](src/react-obj-view/hooks/useHoverInteractions.tsx) hook.
+
+### Copy to Clipboard
+
+Each row includes built-in action buttons for copying values:
+
+```tsx
+// Primitives get a "Copy" button
+const greeting = "Hello World";
+<ObjectView valueGetter={() => greeting} />
+// Click the Copy button to copy "Hello World"
+
+// Objects get a "Copy JSON" button
+const user = { name: "Ada", roles: ["admin"] };
+<ObjectView valueGetter={() => user} />
+// Click Copy JSON to copy {"name":"Ada","roles":["admin"]}
+```
+
+Copy actions show success/error feedback and automatically reset after 5 seconds. The functionality is powered by the [`useCopy`](src/react-obj-view/hooks/useCopy.tsx) hook and the browser Clipboard API.
+
+### Line Numbers
+
+Enable line numbers for easier debugging and reference:
+
+```tsx
+<ObjectView
+  valueGetter={() => largeData}
+  showLineNumbers={true}
+  lineHeight={18}  // Adjust if needed for your CSS
+/>
+```
+
+Line numbers are 0-based and rendered in a dedicated gutter column.
+
+### Building Custom Tree Views
+
+The library now exports generic tree APIs that work with any hierarchical data:
+
+```tsx
+import { walkingFactory, type WalkingAdapter } from 'react-obj-view';
+
+// Define your domain
+type FileNode = {
+  name: string;
+  type: 'folder' | 'file';
+  children?: FileNode[];
+};
+
+// Create an adapter
+const fileAdapter: WalkingAdapter<FileNode, string, any, any, any> = {
+  valueHasChild: (node) => node.type === 'folder' && !!node.children?.length,
+  iterateChilds: (node, ctx, ref, cb) => {
+    node.children?.forEach((child, i) => {
+      cb(child, child.name, { label: child.name });
+    });
+  },
+  // ... other adapter methods
+};
+
+const fileTreeFactory = () => walkingFactory(fileAdapter);
+```
+
+See [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) for a complete example including React integration.
+
 ## Troubleshooting
 
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.
