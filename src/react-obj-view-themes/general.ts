@@ -18,4 +18,7 @@ export const themeGeneral: ThemeColor = {
     [k.regex]: "#ff6363",
     [k.date]: "#c5e478",
     [k.error]: "#ff5370",
+    [k.acBtn]: "light-dark(#e0e0e0, #3e4451)",
+    [k.acSuccess]: "light-dark(#28a745, #addb67)",
+    [k.acErr]: "light-dark(#dc3545, #ff5370)",
 };

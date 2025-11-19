@@ -18,9 +18,9 @@ export const colorThemeKeys = {
     regex: "--bigobjview-type-object-regexp-color",
     date: "--bigobjview-type-object-date-color",
     error: "--bigobjview-type-object-error-color",
-    actionBtn: "--bigobjview-action-btn",
-    actionSuccess: "--bigobjview-action-success",
-    actionError: "--bigobjview-action-error",
+    acBtn: "--bigobjview-action-btn",
+    acSuccess: "--bigobjview-action-success",
+    acErr: "--bigobjview-action-error",
 } as const
 
 export type ThemeKeys = typeof colorThemeKeys[keyof typeof colorThemeKeys]
