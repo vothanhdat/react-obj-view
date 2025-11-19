@@ -2,7 +2,7 @@
     color-scheme: light dark;
     --bigobjview-color: light-dark(#333b3c, #efefec);
     --bigobjview-bg-color: light-dark(#f9f9f9, #212121);
-    --bigobjview-change-color: rgb(255, 50, 0);
+    --bigobjview-change-color: rgb(181, 36, 0);
     --bigobjview-fontsize: 12px;
     --bigobjview-type-boolean-color: #08f;
     --bigobjview-type-number-color: red;
@@ -18,7 +18,7 @@
     --bigobjview-type-object-date-color: #08f;
     --bigobjview-type-object-error-color: red;
     --bigobjview-action-btn:  light-dark(#ddd,#555);
-    --bigobjview-action-success: light-dark(#080,#0c0);
+    --bigobjview-action-success: light-dark(rgb(0, 184, 0),#0c0);
     --bigobjview-action-error: red;
 }
 
@@ -83,17 +83,8 @@
         cursor: pointer;
     }
 
-    .tag-circular {
-        font-size: 0.9em;
-        padding: 0.2em 0.4em;
-        margin-inline-end: 0.5em;
-        background-color: darkgrey;
-        margin-inline: "1em";
-        font-weight: bold;
-    }
-
     .symbol {
-        opacity: 0.5;
+        opacity: 0.3;
     }
 
     .node-default[data-nonenumrable="true"]>.name {
@@ -113,6 +104,19 @@
             flex-shrink: 0;
             flex-grow: 0;
             text-overflow: ellipsis;
+        }
+
+
+        button, .tag {
+            font-size: 0.8em;
+            border-radius: 3px;
+            border-width: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding-inline: 0.6em;
+            padding-block: 1px 0 ;
+            vertical-align: middle;
+            line-height: 1.2;
         }
     }
 
@@ -206,9 +210,25 @@
         }
     }
 
+    .tags {
+        display: flex;
+        align-self: center;
+        vertical-align: middle;
+        align-content: stretch;
 
+        .tag {
+            background-color: var(--bigobjview-action-btn);
+            font-weight: bold;
+            margin-inline: 0.3em;
+            &.circular {
+                background-color: rgb(193, 45, 0);
+                color: white;
+            }
+        }
+    }
     .actions {
         display: none;
+        /* display: flex; */
         align-self: center;
         vertical-align: middle;
         align-content: stretch;
@@ -220,12 +240,6 @@
         flex-grow:1;
 
         button {
-            font-size: 0.75em;
-            border-radius: 3px;
-            border-width: 0;
-            cursor: pointer;
-            text-transform: uppercase;
-            padding-inline: 0.6em;
             opacity: 0.5;
             background-color: var(--bigobjview-action-btn);
             font-weight: bold;
@@ -246,12 +260,12 @@
         }
 
         button.error {
-            color: var(--bigobjview-action-error, red);
-            background-color: color-mix(in srgb, currentColor 10%, var(--bigobjview-action-btn));
+            background-color: var(--bigobjview-action-error, red);
+            color: #fff;
         }
         button.success {
-            color: var(--bigobjview-action-success, rgb(0, 139, 0));
-            background-color: color-mix(in srgb, currentColor 10%, var(--bigobjview-action-btn));
+            background-color: var(--bigobjview-action-success, rgb(0, 139, 0));
+            color: #fff;
         }
     }
 

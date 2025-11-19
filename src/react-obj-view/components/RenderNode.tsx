@@ -84,7 +84,9 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
             <span className="symbol">: </span>
 
-            {isCircular ? <span className="tag-circular">CIRCULAR</span> : <></>}
+            <span className="tags">
+                {isCircular ? <span className="tag circular">CIRCULAR</span> : <></>}
+            </span>
 
             <RenderValue {...{
                 valueWrapper,
