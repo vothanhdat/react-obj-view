@@ -18,6 +18,9 @@ export const themeMonokai: ThemeColor = {
     [k.regex]: "#f92672",
     [k.date]: "#a6e22e",
     [k.error]: "#ff6188",
+    [k.actionBtn]: "#3e3d32",
+    [k.actionSuccess]: "#a6e22e",
+    [k.actionError]: "#f92672",
 };
 
 export const themeDracula: ThemeColor = {
@@ -38,6 +41,9 @@ export const themeDracula: ThemeColor = {
     [k.regex]: "#ff5555",
     [k.date]: "#50fa7b",
     [k.error]: "#ff5555",
+    [k.actionBtn]: "#44475a",
+    [k.actionSuccess]: "#50fa7b",
+    [k.actionError]: "#ff5555",
 };
 
 export const themeOneDark: ThemeColor = {
@@ -58,6 +64,9 @@ export const themeOneDark: ThemeColor = {
     [k.regex]: "#e06c75",
     [k.date]: "#98c379",
     [k.error]: "#be5046",
+    [k.actionBtn]: "#3e4451",
+    [k.actionSuccess]: "#98c379",
+    [k.actionError]: "#e06c75",
 };
 
 export const themeMaterialDarker: ThemeColor = {
@@ -78,6 +87,9 @@ export const themeMaterialDarker: ThemeColor = {
     [k.regex]: "#ff5370",
     [k.date]: "#c3e88d",
     [k.error]: "#ff5370",
+    [k.actionBtn]: "#3a3f58",
+    [k.actionSuccess]: "#c3e88d",
+    [k.actionError]: "#ff5370",
 };
 
 export const themeGitHubLight: ThemeColor = {
@@ -98,6 +110,9 @@ export const themeGitHubLight: ThemeColor = {
     [k.regex]: "#cf222e",
     [k.date]: "#116329",
     [k.error]: "#cf222e",
+    [k.actionBtn]: "#f6f8fa",
+    [k.actionSuccess]: "#1a7f37",
+    [k.actionError]: "#cf222e",
 };
 
 export const themeSolarizedLight: ThemeColor = {
@@ -118,6 +133,9 @@ export const themeSolarizedLight: ThemeColor = {
     [k.regex]: "#d33682",
     [k.date]: "#859900",
     [k.error]: "#dc322f",
+    [k.actionBtn]: "#eee8d5",
+    [k.actionSuccess]: "#859900",
+    [k.actionError]: "#dc322f",
 };
 
 export const themeQuietLight: ThemeColor = {
@@ -138,6 +156,9 @@ export const themeQuietLight: ThemeColor = {
     [k.regex]: "#d67e2d",
     [k.date]: "#1c6b48",
     [k.error]: "#c72e0f",
+    [k.actionBtn]: "#e0e0e0",
+    [k.actionSuccess]: "#1c6b48",
+    [k.actionError]: "#c72e0f",
 };
 
 export const themeSepia: ThemeColor = {
@@ -158,4 +179,7 @@ export const themeSepia: ThemeColor = {
     [k.regex]: "#a05f2c",
     [k.date]: "#8b6f47",
     [k.error]: "#9c4430",
+    [k.actionBtn]: "#e0d6b8",
+    [k.actionSuccess]: "#4b7942",
+    [k.actionError]: "#d32f2f",
 };

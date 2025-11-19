@@ -216,6 +216,9 @@ const cyberpunk = createTheme({
   "--bigobjview-type-object-regexp-color": "#ff4081",
   "--bigobjview-type-object-date-color": "#7c4dff",
   "--bigobjview-type-object-error-color": "#ff1744",
+  "--bigobjview-action-btn": "#444",
+  "--bigobjview-action-success": "#00e676",
+  "--bigobjview-action-error": "#ff5252",
 });
 
 const cyberpunkTight = extendTheme(cyberpunk, {

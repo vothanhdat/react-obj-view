@@ -150,6 +150,9 @@ const midnight = createTheme({
   "--bigobjview-type-object-regexp-color": "#ef5350",
   "--bigobjview-type-object-date-color": "#8bc34a",
   "--bigobjview-type-object-error-color": "#ff7043",
+  "--bigobjview-action-btn": "#444",
+  "--bigobjview-action-success": "#00e676",
+  "--bigobjview-action-error": "#ff5252",
 });
 
 // …or extend an existing preset

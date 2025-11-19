@@ -18,4 +18,7 @@ export const themeDefault: ThemeColor = {
     [k.regex]: "red",
     [k.date]: "#08f",
     [k.error]: "red",
+    [k.actionBtn]: "light-dark(#ddd,#555)",
+    [k.actionSuccess]: "light-dark(rgb(0, 184, 0),#0c0)",
+    [k.actionError]: "red",
 };
