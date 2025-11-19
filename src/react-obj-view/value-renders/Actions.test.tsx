@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DefaultActions } from './Actions';
 import type { ObjectViewRenderRowProps } from '../types';
 
@@ -98,8 +98,10 @@ describe('DefaultActions', () => {
         const copyButton = screen.getByText('Copy');
         fireEvent.click(copyButton);
 
-        // Wait for async operations
-        await new Promise(resolve => setTimeout(resolve, 10));
+        // Wait for async operations and state updates
+        await waitFor(() => {
+            expect(screen.getByText('✓ SUCCESS')).toBeInTheDocument();
+        });
 
         expect(writeTextMock).toHaveBeenCalledWith('test value');
     });
@@ -112,8 +114,10 @@ describe('DefaultActions', () => {
         const copyButton = screen.getByText('Copy JSON');
         fireEvent.click(copyButton);
 
-        // Wait for async operations
-        await new Promise(resolve => setTimeout(resolve, 10));
+        // Wait for async operations and state updates
+        await waitFor(() => {
+            expect(screen.getByText('✓ SUCCESS')).toBeInTheDocument();
+        });
 
         expect(writeTextMock).toHaveBeenCalledWith(JSON.stringify(obj));
     });
