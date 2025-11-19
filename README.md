@@ -12,17 +12,17 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 ## ✨ Features
 
 - **Virtualized tree view** – only visible rows render, so 100k+ nodes stay smooth.
-- **Sticky path headers** – pin ancestor rows while scrolling so nested contexts stay visible.
 - **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, and custom classes.
-- **Lazy `valueGetter`** – keeps data fresh without forcing heavy re-renders.
+- **Sticky path headers** – pin ancestor rows while scrolling so nested contexts stay visible.
 - **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
-- **Change awareness** – optional flashing highlights updated values.
-- **Interactive hover** – automatically highlights rows and dims siblings for easier navigation.
-- **Copy to clipboard** – built-in action buttons to copy primitive values or JSON-serialized objects.
-- **Line numbers** – optional gutter with 0-based indices for debugging.
-- **Generic tree APIs** – build custom tree views for non-object data structures (files, ASTs, etc.).
-- **Styling hooks** – CSS variables + theme presets plus `className`/`style` escape hatches.
 - **TypeScript-native** – published `.d.ts` and React 19 JSX runtime support.
+- **Zero dependencies** – lightweight and self-contained (besides React).
+- **Styling hooks** – CSS variables + theme presets plus `className`/`style` escape hatches.
+- **Generic tree APIs** – build custom tree views for non-object data structures (files, ASTs, etc.).
+- **Copy to clipboard** – built-in action buttons to copy primitive values or JSON-serialized objects.
+- **Change awareness** – optional flashing highlights updated values.
+- **Interactive hover** – highlights the indentation guide for the current parent context.
+- **Line numbers** – optional gutter with 0-based indices for debugging.
 
 ---
 
@@ -89,7 +89,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
-| `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). |
+| `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). [See example](./API_DOCUMENTATION.md#custom-action-renders). |
 
 
 👉 Need more detail? Check the [API Documentation](./API_DOCUMENTATION.md).
@@ -235,7 +235,7 @@ const config = { apiKey: "sk-abc123", timeout: 5000 };
 
 #### Hover Interactions
 
-The viewer automatically highlights rows on hover and dims siblings, making it easier to trace parent-child relationships:
+The viewer highlights the indentation guide for the current parent context on hover, making it easier to trace parent-child relationships:
 
 ```tsx
 <ObjectView valueGetter={() => deeplyNested} expandLevel={3} />
