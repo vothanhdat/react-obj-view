@@ -37,3 +37,7 @@ export {
     themeSepia,
     themeSolarizedLight
 } from "./react-obj-view-themes"
+
+export * as TreeCore from "./libs/tree-core";
+export * as ReactTreeView from "./libs/react-tree-view";
+export * as VirtualScroller from "./libs/virtual-scroller";
