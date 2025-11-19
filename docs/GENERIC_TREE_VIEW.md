@@ -2,11 +2,17 @@
 
 This document describes the reusable pieces that power every tree-driven experience in `react-obj-view`. The same stack works for the built-in object inspector and for any custom tree you want to build.
 
-```
-value + adapter --> tree-core (walkingFactory) --> react-tree-view hook --> ReactTreeView --> VirtualScroller
+You can import these core modules directly:
+
+```tsx
+import { TreeCore, ReactTreeView, VirtualScroller } from 'react-obj-view';
 ```
 
-## 1. `tree-core`
+```
+value + adapter --> TreeCore (walkingFactory) --> ReactTreeView hook --> ReactTreeView --> VirtualScroller
+```
+
+## 1. `TreeCore`
 
 Located in [`src/libs/tree-core`](../src/libs/tree-core), this package exposes a deterministic, memoised walker:
 
@@ -30,7 +36,7 @@ export type WalkingAdapter<Value, Key, Meta, Config, Context> = {
 
 The walker never assumes anything about objects versus arrays—it only follows whatever your adapter describes.
 
-## 2. `react-tree-view`
+## 2. `ReactTreeView`
 
 The UI glue in [`src/libs/react-tree-view`](../src/libs/react-tree-view) connects walkers to React components.
 
@@ -43,7 +49,7 @@ The UI glue in [`src/libs/react-tree-view`](../src/libs/react-tree-view) connect
 The virtual scroller in [`src/libs/virtual-scroller`](../src/libs/virtual-scroller) accepts any row renderer:
 
 - [`VirtualScroller.tsx`](../src/libs/virtual-scroller/VirtualScroller.tsx) calculates visible indices, measures scroll offsets, and delegates row creation to the provided component.
-- `react-tree-view` ships [`VirtualScrollRender`](../src/libs/react-tree-view/VirtualScrollRender.tsx), which draws rows absolutely positioned inside the container and optionally paints sticky ancestor rows.
+- `ReactTreeView` ships [`VirtualScrollRender`](../src/libs/react-tree-view/VirtualScrollRender.tsx), which draws rows absolutely positioned inside the container and optionally paints sticky ancestor rows.
 
 Pass the correct `lineHeight` so virtualisation math stays accurate.
 
@@ -52,16 +58,7 @@ Pass the correct `lineHeight` so virtualisation math stays accurate.
 The following example shows how to build a file-system-like tree on top of the generic stack.
 
 ```tsx
-import {
-  walkingFactory,
-  type WalkingAdaper,
-  type WalkingContext,
-} from "../src/libs/tree-core";
-import {
-  ReactTreeView,
-  useReactTree,
-  type ReactTreeRowRenderProps,
-} from "../src/libs/react-tree-view";
+import { TreeCore, ReactTreeView } from "react-obj-view";
 
 // 1) Describe your domain
 export type FileNode = {
@@ -74,12 +71,12 @@ export type FileNode = {
 export type FileMeta = { label: string; isFolder: boolean };
 export type FileConfig = { hideEmptyFolders: boolean };
 
-const fileAdapter: WalkingAdaper<
+const fileAdapter: TreeCore.WalkingAdaper<
   FileNode,
   string,
   FileMeta,
   FileConfig,
-  WalkingContext<FileConfig>
+  TreeCore.WalkingContext<FileConfig>
 > = {
   valueHasChild(node) {
     return node.type === "folder" && !!node.children?.length;
@@ -103,10 +100,10 @@ const fileAdapter: WalkingAdaper<
   },
 };
 
-const fileTreeFactory = () => walkingFactory(fileAdapter);
+const fileTreeFactory = () => TreeCore.walkingFactory(fileAdapter);
 const parseFileMeta = (meta: FileMeta) => meta;
 
-const FileRow: React.FC<ReactTreeRowRenderProps<typeof fileAdapter, typeof parseFileMeta>> = ({
+const FileRow: React.FC<ReactTreeView.ReactTreeRowRenderProps<typeof fileAdapter, typeof parseFileMeta>> = ({
   nodeDataWrapper,
   actions,
 }) => {
@@ -124,7 +121,7 @@ const FileRow: React.FC<ReactTreeRowRenderProps<typeof fileAdapter, typeof parse
 };
 
 export function FileTree({ root }: { root: FileNode }) {
-  const tree = useReactTree({
+  const tree = ReactTreeView.useReactTree({
     factory: fileTreeFactory,
     config: { hideEmptyFolders: false },
     expandDepth: 1,
@@ -134,7 +131,7 @@ export function FileTree({ root }: { root: FileNode }) {
   });
 
   return (
-    <ReactTreeView
+    <ReactTreeView.ReactTreeView
       {...tree}
       lineHeight={18}
       RowRenderer={FileRow}

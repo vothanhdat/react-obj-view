@@ -21,6 +21,35 @@ import 'react-obj-view/dist/react-obj-view.css';
 
 > The CSS bundle is shipped separately so you can control how and when styles are loaded.
 
+## Core Libraries
+
+The library exports core modules for building custom tree views:
+
+```tsx
+import { TreeCore, ReactTreeView, VirtualScroller } from 'react-obj-view';
+```
+
+### TreeCore
+
+Contains the core tree walking logic.
+
+- `walkingFactory`: Factory function to create a tree walker.
+- `types`: Type definitions for adapters and contexts.
+
+### ReactTreeView
+
+React hooks and components for tree visualization.
+
+- `ReactTreeView`: Main tree view component.
+- `useReactTree`: Hook to manage tree state.
+- `FlattenNodeWrapper`: Wrapper for flattened tree nodes.
+
+### VirtualScroller
+
+Virtualization logic for efficient rendering.
+
+- `VirtualScroller`: The virtual scroller component.
+
 ## Component Interface
 
 ```ts
@@ -259,7 +288,7 @@ The copy functionality uses the browser's Clipboard API and defers execution thr
 You can customize the actions rendered for each row (like the copy button) by providing the `actionRenders` prop. This component receives `ObjectViewRenderRowProps` and can render any custom UI.
 
 ```tsx
-import { ObjectView, ObjectViewRenderRowProps } from 'react-obj-view';
+import { ObjectView, type ObjectViewRenderRowProps } from 'react-obj-view';
 
 const MyCustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   const { nodeDataWrapper, valueWrapper } = props;
