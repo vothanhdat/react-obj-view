@@ -48,6 +48,7 @@ export const VirtualScrollRender: <
                 position: "sticky",
                 top: `${position * lineHeight - offset}px`,
                 height: `${lineHeight}px`,
+                lineHeight: `${lineHeight}px`,
                 zIndex: Math.floor(100 - position),
                 backgroundColor: "var(--bg-color)",
                 borderBottom: isLastStick
@@ -57,6 +58,7 @@ export const VirtualScrollRender: <
                 position: "absolute",
                 top: `${index * lineHeight}px`,
                 height: `${lineHeight}px`,
+                lineHeight: `${lineHeight}px`,
             }}
         >
             {showLineNumbers && <span className="line-number" style={{flexShrink:0}}>
