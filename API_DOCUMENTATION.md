@@ -118,14 +118,15 @@ Resolvers control how entries are produced for a specific constructor. Each reso
 
 ### Built-in Resolvers
 
-Located in [`src/object-tree/resolver`](src/object-tree/resolver):
+React Object View includes default resolvers for a wide range of JavaScript data types:
 
-- **Promises** (`Promise`, `InternalPromise`) – [`promise.ts`](src/object-tree/resolver/promise.ts) surfaces `[[status]]` and `[[result]]` entries so async state is visible while the underlying promise resolves.
-- **Lazy values** (`LazyValue`) – [`lazyValueResolver.ts`](src/object-tree/resolver/lazyValueResolver.ts) defers getter execution until the node is expanded and caches either the returned value or thrown error.
-- **Collections** (`Map`, `Set`, iterables) – [`collections.ts`](src/object-tree/resolver/collections.ts) exposes `[[Entries]]`, previews the first few members, and renders metadata such as `size`.
-- **Errors, dates, regexes, custom wrappers** – handled via [`index.ts`](src/object-tree/resolver/index.ts), which wires every resolver into a shared `Map` ready for `ObjectView`.
+- **Standard Objects**: Plain objects, Arrays.
+- **Collections**: `Map`, `Set`.
+- **Typed Arrays**: `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array`, `Float64Array`.
+- **Buffers**: `ArrayBuffer`, `DataView`.
+- **Others**: `Date`, `RegExp`, `Promise`, `Error`.
 
-Grouping helpers from [`src/object-tree/resolver/grouped.ts`](src/object-tree/resolver/grouped.ts) are attached when `arrayGroupSize`/`objectGroupSize` are provided. They emit [`GroupedProxy`](src/utils/groupedProxy.ts) instances that lazily expand ranges like `items[0…49]` only when needed.
+Typed arrays and buffers are displayed with a hex viewer-like interface, showing offsets and value previews.
 
 ### Creating Custom Resolvers
 

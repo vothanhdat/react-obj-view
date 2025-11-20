@@ -12,7 +12,7 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 ## ✨ Features
 
 - **Virtualized tree view** – only visible rows render, so 100k+ nodes stay smooth.
-- **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, and custom classes.
+- **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, typed arrays, buffers, and custom classes.
 - **Sticky path headers** – pin ancestor rows while scrolling so nested contexts stay visible.
 - **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
 - **TypeScript-native** – published `.d.ts` and React 19 JSX runtime support.

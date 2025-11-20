@@ -172,6 +172,21 @@ const ConfigInspector = () => {
 
 > **Object grouping trade-off:** Unlike arrays, objects don’t expose their size up front. To decide whether `objectGroupSize` should apply, React Object View must enumerate every key first. Leave this at `0` unless you truly need grouped previews for massive objects and you’re okay with the extra enumeration work.
 
+### 4. Working with Binary Data
+
+React Object View has built-in support for `ArrayBuffer`, `DataView`, and Typed Arrays (`Uint8Array`, `Float32Array`, etc.). These are rendered with a specialized view that shows memory offsets and values, similar to a hex editor.
+
+```tsx
+const binaryData = {
+  fileHeader: new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0]),
+  rawData: new ArrayBuffer(1024),
+  view: new DataView(new ArrayBuffer(16)),
+  coordinates: new Float32Array([1.0, 0.5, -1.0])
+};
+
+<ObjectView valueGetter={() => binaryData} />
+```
+
 ## Feature Highlights
 
 ### Change Detection
