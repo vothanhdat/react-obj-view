@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { getEntriesCb, getEntriesCbOriginal } from './getEntries';
 import { WalkingConfig } from './types';
 import { LazyValue } from './custom-class/LazyValueWrapper';
+import { ENUMERABLE_BIT } from './meta';
 
 describe('getEntriesCbOriginal', () => {
     const defaultConfig: WalkingConfig = {
@@ -17,9 +18,9 @@ describe('getEntriesCbOriginal', () => {
         getEntriesCbOriginal(arr, defaultConfig, cb);
 
         expect(cb).toHaveBeenCalledTimes(3);
-        expect(cb).toHaveBeenCalledWith(0, 1, true);
-        expect(cb).toHaveBeenCalledWith(1, 2, true);
-        expect(cb).toHaveBeenCalledWith(2, 3, true);
+        expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT);
+        expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT);
+        expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT);
     });
 
     it('should iterate over object properties', () => {
@@ -28,8 +29,8 @@ describe('getEntriesCbOriginal', () => {
         getEntriesCbOriginal(obj, defaultConfig, cb);
 
         expect(cb).toHaveBeenCalledTimes(2);
-        expect(cb).toHaveBeenCalledWith('a', 1, true);
-        expect(cb).toHaveBeenCalledWith('b', 2, true);
+        expect(cb).toHaveBeenCalledWith('a', 1, ENUMERABLE_BIT);
+        expect(cb).toHaveBeenCalledWith('b', 2, ENUMERABLE_BIT);
     });
 
     it('should handle non-enumerable properties when enabled', () => {
@@ -43,8 +44,8 @@ describe('getEntriesCbOriginal', () => {
 
         getEntriesCbOriginal(obj, config, cb);
 
-        expect(cb).toHaveBeenCalledWith('hidden', 'secret', false);
-        expect(cb).toHaveBeenCalledWith('[[Prototype]]', Object.prototype, false);
+        expect(cb).toHaveBeenCalledWith('hidden', 'secret', 0);
+        expect(cb).toHaveBeenCalledWith('[[Prototype]]', Object.prototype, 0);
     });
 
     it('should handle getters as LazyValue when non-enumerable enabled', () => {
@@ -56,7 +57,7 @@ describe('getEntriesCbOriginal', () => {
 
         getEntriesCbOriginal(obj, config, cb);
 
-        expect(cb).toHaveBeenCalledWith('computed', expect.any(LazyValue), true);
+        expect(cb).toHaveBeenCalledWith('computed', expect.any(LazyValue), ENUMERABLE_BIT);
     });
 
     it('should handle symbols when enabled', () => {
@@ -67,7 +68,7 @@ describe('getEntriesCbOriginal', () => {
 
         getEntriesCbOriginal(obj, config, cb);
 
-        expect(cb).toHaveBeenCalledWith(sym, 'symbolValue', true);
+        expect(cb).toHaveBeenCalledWith(sym, 'symbolValue', ENUMERABLE_BIT);
     });
 
     it('should stop iteration if callback returns true', () => {
@@ -76,7 +77,7 @@ describe('getEntriesCbOriginal', () => {
         getEntriesCbOriginal(arr, defaultConfig, cb);
 
         expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(0, 1, true);
+        expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT);
     });
 });
 
@@ -108,6 +109,6 @@ describe('getEntriesCb', () => {
         const cb = vi.fn();
         getEntriesCb(obj, defaultConfig, false, {}, cb);
 
-        expect(cb).toHaveBeenCalledWith('a', 1, true);
+        expect(cb).toHaveBeenCalledWith('a', 1, ENUMERABLE_BIT);
     });
 });

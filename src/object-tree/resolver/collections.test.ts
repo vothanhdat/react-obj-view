@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mapResolver, setResolver, iteraterResolver, CustomIterator, CustomEntry } from './collections'
+import { ENUMERABLE_BIT } from '../meta'
 
 describe('collections resolvers', () => {
   describe('CustomIterator', () => {
@@ -88,7 +89,7 @@ describe('collections resolvers', () => {
       const firstCall = cb.mock.calls[0]
       expect(firstCall[0]).toBe(0)
       expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(true)
+      expect(firstCall[2]).toBe(ENUMERABLE_BIT)
     })
 
     it('should resolve map in normal mode', () => {
@@ -100,8 +101,8 @@ describe('collections resolvers', () => {
       mapResolver(map, cb, next, false, {} as any, map)
       
       // Should call cb for [[Entries]] and size
-      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), false)
-      expect(cb).toHaveBeenCalledWith('size', 2, true)
+      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
+      expect(cb).toHaveBeenCalledWith('size', 2, ENUMERABLE_BIT)
       expect(next).toHaveBeenCalledWith(map)
     })
   })
@@ -116,9 +117,9 @@ describe('collections resolvers', () => {
       setResolver(set, cb, next, true, {} as any, set)
       
       expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, true)
-      expect(cb).toHaveBeenCalledWith(1, 2, true)
-      expect(cb).toHaveBeenCalledWith(2, 3, true)
+      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
       expect(next).toHaveBeenCalledWith(set)
     })
 
@@ -131,8 +132,8 @@ describe('collections resolvers', () => {
       setResolver(set, cb, next, false, {} as any, set)
       
       // Should call cb for [[Entries]] and size
-      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), false)
-      expect(cb).toHaveBeenCalledWith('size', 3, true)
+      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
+      expect(cb).toHaveBeenCalledWith('size', 3, ENUMERABLE_BIT)
       expect(next).toHaveBeenCalledWith(set)
     })
   })
@@ -152,7 +153,7 @@ describe('collections resolvers', () => {
       const firstCall = cb.mock.calls[0]
       expect(firstCall[0]).toBe(0)
       expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(true)
+      expect(firstCall[2]).toBe(ENUMERABLE_BIT)
     })
 
     it('should iterate over Set entries', () => {
@@ -165,9 +166,9 @@ describe('collections resolvers', () => {
       iteraterResolver(iterator, cb, next, false, {} as any, iterator)
       
       expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, true)
-      expect(cb).toHaveBeenCalledWith(1, 2, true)
-      expect(cb).toHaveBeenCalledWith(2, 3, true)
+      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
     })
 
     it('should stop iteration when cb returns true', () => {
