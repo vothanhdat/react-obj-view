@@ -1,18 +1,27 @@
 import { walkingFactory } from "../libs/tree-core";
-import { LazyValue } from "./custom-class/LazyValueWrapper";
+import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
 import { getEntriesCb } from "./getEntries";
 import { ObjectWalkingAdater, WalkingMeta } from "./types";
 import { CircularChecking } from "./utils/CircularChecking";
 import { getObjectUniqueId } from "./utils/getObjectUniqueId";
 import { isRef } from "./utils/isRef";
+import {
+    EMPTY_CHILD_BIT,
+    ENUMERABLE_BIT,
+    META_DEFAULT_EXPAND,
+    META_HASCHILD_COND,
+    META_HASCHILD_MASK,
+    NON_CIRCULAR_BIT
+} from "./meta" with { type: 'macro' };
+
 
 export const parseWalkingMeta = (e: WalkingMeta) => {
     return {
-        enumerable: !!(e & 0b01),
-        isCircular: !(e & 0b10),
+        enumerable: !!(e & ENUMERABLE_BIT),
+        isCircular: !(e & NON_CIRCULAR_BIT),
+        emptyChild: !!(e & EMPTY_CHILD_BIT),
     };
 };
-
 
 export const objectWalkingAdaper: ObjectWalkingAdater = {
     transformValue(value, ref) {
@@ -20,19 +29,18 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
             ? value.value ?? value.error
             : value;
     },
-    defaultMeta() { return 0b11; },
+    defaultMeta() { return META_DEFAULT_EXPAND },
     defaultContext(ctx) {
         return {
             ...ctx,
             circularChecking: new CircularChecking()
         };
     },
-    valueHasChild(value, key, meta) {
+    valueHasChild(value: unknown, key: PropertyKey, meta: WalkingMeta) {
         return isRef(value)
-            && (meta & 0b10) === 0b10
+            && (meta & META_HASCHILD_MASK) === META_HASCHILD_COND
             && !(value instanceof Date)
             && !(value instanceof RegExp)
-            && !(value instanceof LazyValue);
     },
     iterateChilds(value, { config, circularChecking }, ref, cb) {
         circularChecking.enterNode(value);
@@ -41,21 +49,22 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
             config as any,
             false,
             ref,
-            (key, value, enumerable) => cb(
+            (key, value, meta) => cb(
                 value, key,
-                (enumerable ? 1 : 0)
-                | (circularChecking.checkCircular(value) ? 0 : 2)
+                meta |
+                (circularChecking.checkCircular(value) ? 0 : NON_CIRCULAR_BIT)
             )
         );
         circularChecking.exitNode(value);
     },
     valueDefaultExpaned(meta, context) {
-        return meta == 0b11;
+        return meta === META_DEFAULT_EXPAND;
     },
     getConfigTokenId(config) {
         return getObjectUniqueId(config);
     },
 };
+
 export const objectTreeWalkingFactory = () => walkingFactory(objectWalkingAdaper);
 
-
+export const valueHasChild = objectWalkingAdaper.valueHasChild

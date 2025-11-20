@@ -1,13 +1,14 @@
 import { LazyValue } from "./custom-class/LazyValueWrapper";
 import { WalkingConfig } from "./types";
 import { propertyIsEnumerable } from "./utils/object";
+import { ENUMERABLE_BIT } from "./meta" with {type: "macro"};
 
 export const hidePrototype = Symbol()
 
 export const getEntriesCbOriginal = (
     value: any,
     config: WalkingConfig,
-    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+    cb: (key: PropertyKey, value: unknown, meta: number) => boolean | void
 ) => {
 
     const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
@@ -17,7 +18,7 @@ export const getEntriesCbOriginal = (
     if (value instanceof Array) {
 
         for (let index = 0; index < value.length; index++) {
-            if (cb(index, value[index], true))
+            if (cb(index, value[index], ENUMERABLE_BIT))
                 return;
         }
 
@@ -29,7 +30,7 @@ export const getEntriesCbOriginal = (
                 if (cb(
                     key,
                     descriptor?.get ? LazyValue.getInstance(value, key) : descriptor?.value,
-                    descriptor?.enumerable!
+                    descriptor?.enumerable ? ENUMERABLE_BIT : 0
                 )) return;
             }
         } else {
@@ -37,7 +38,7 @@ export const getEntriesCbOriginal = (
                 if (cb(
                     key,
                     (value as any)[key],
-                    true,
+                    ENUMERABLE_BIT,
                 )) return;
             }
         }
@@ -50,7 +51,7 @@ export const getEntriesCbOriginal = (
             if (cb(
                 symbol,
                 value[symbol],
-                propertyIsEnumerable.call(value, symbol),
+                propertyIsEnumerable.call(value, symbol) ? ENUMERABLE_BIT : 0,
             )) return;
         }
     }
@@ -59,7 +60,7 @@ export const getEntriesCbOriginal = (
         if (cb(
             '[[Prototype]]',
             Object.getPrototypeOf(value),
-            false,
+            0,
         )) return;
     }
 
@@ -70,7 +71,7 @@ export const getEntriesCb = (
     config: WalkingConfig,
     isPreview: boolean,
     stableRef: unknown,
-    cb: (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+    cb: (key: PropertyKey, value: unknown, meta: number) => boolean | void
 ) => {
 
 

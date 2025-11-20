@@ -1,6 +1,8 @@
 import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
+import { ENUMERABLE_BIT } from "../meta" with {type: "macro"};
+
 
 const MapIterater = Object.getPrototypeOf(new Map().entries());
 
@@ -69,14 +71,14 @@ export const iteraterResolver: ResolverFn<CustomIterator> = (
             if (cb(
                 index++,
                 CustomEntry.getEntry(e, key, value),
-                true
+                ENUMERABLE_BIT
             )) return;
         }
     } else {
         let index = 0;
 
         for (let entry of iterator) {
-            if (cb(index++, entry, true))
+            if (cb(index++, entry, ENUMERABLE_BIT))
                 return;
         }
     }
@@ -95,17 +97,17 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
             cb(
                 index++,
                 CustomEntry.getEntry(map, key, value),
-                true
+                ENUMERABLE_BIT
             );
         }
     } else {
         cb(
             "[[Entries]]",
             CustomIterator.getIterator(map),
-            false
+            0,
         );
 
-        cb("size", map.size, true);
+        cb("size", map.size, ENUMERABLE_BIT);
     }
 
     next(map);
@@ -121,16 +123,16 @@ export const setResolver: ResolverFn<Set<any>> = (
     if (isPreview) {
         let index = 0;
         for (let value of set.values())
-            cb(index++, value, true);
+            cb(index++, value, ENUMERABLE_BIT);
 
     } else {
         cb(
             "[[Entries]]",
             CustomIterator.getIterator(set),
-            false
+            0
         );
 
-        cb("size", set.size, true);
+        cb("size", set.size, ENUMERABLE_BIT);
     }
     next(set);
 };

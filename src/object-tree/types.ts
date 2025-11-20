@@ -2,7 +2,7 @@ import { parseWalkingMeta } from "./objectWalkingAdaper";
 import type { WalkingContext, WalkingAdaper, InferWalkingResult, InferNodeResult, InferWalkingInstance } from "../libs/tree-core";
 import { CircularChecking } from "./utils/CircularChecking";
 
-type ResolverFnCb = (key: PropertyKey, value: unknown, enumerable: boolean) => boolean | void
+type ResolverFnCb = (key: PropertyKey, value: unknown, meta: number) => boolean | void
 
 export type ResolverFn<T = any> = (
     value: T,
@@ -13,11 +13,6 @@ export type ResolverFn<T = any> = (
     stableRef: any,
 ) => void
 
-// export type Entry = {
-//     key: PropertyKey
-//     value: unknown,
-//     enumerable: boolean
-// };
 
 export type WalkingConfig = {
     expandDepth: number;
