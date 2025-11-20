@@ -16,7 +16,9 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
         if (!groupProxyFactory) {
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
-        next(groupProxyFactory(arr, size));
+        const proxyValue = groupProxyFactory(arr, size)
+        next(proxyValue);
+        proxyValue instanceof GroupedProxy && next([]);
     } else {
         next(arr);
     }
@@ -30,12 +32,14 @@ export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: n
     config,
     stableRef,
 ) => {
-    if (!isPreview) {
+    if (!isPreview && !(value instanceof GroupedProxy)) {
         let groupProxyFactory = weakMapCache.get(stableRef)
         if (!groupProxyFactory) {
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
-        next(groupProxyFactory(value, size));
+        const proxyValue = groupProxyFactory(value, size); 
+        next(proxyValue);
+        proxyValue instanceof GroupedProxy && next({});
     } else {
         next(value);
     }
