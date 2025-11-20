@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { ItemViewBase } from "../../object-tree/resolver/typedArray";
 import { RenderOptions } from "../types";
+import type { ItemViewBase } from "../../object-tree/resolver";
 
 
 export const RenderBufferItem = ({ depth, valueWrapper, options }: {
@@ -9,11 +9,21 @@ export const RenderBufferItem = ({ depth, valueWrapper, options }: {
     depth: any;
 }) => {
     const value = valueWrapper();
-    const rendered = useMemo(
-        () => value.render(),
+    const [rendered, chars] = useMemo(
+        () => [value.render(), value.chars()] as [string[], string[] | undefined],
         [value]
     )
-    return <span style={{whiteSpace:'pre'}}>
-        {rendered}
-    </span>;
+
+    return <>
+        <span className="buffer-view">
+            {rendered.map((item, index) => <span
+                key={index}
+            >{item}</span>)}
+        </span>
+        {chars ? <span className="buffer-view-chars">
+            {chars.map((item, index) => <span
+                key={index}
+            >{item}</span>)}
+        </span> : <></>}
+    </>
 };

@@ -10,7 +10,7 @@ export {
 
 export {
     parseWalkingMeta,
-    objectTreeWalkingFactory as objectTreeWalking
+    objectTreeWalkingFactory as objectTreeWalking,
 } from "./object-tree"
 
 export {

@@ -7,6 +7,7 @@ import {
     CustomEntry,
     CustomIterator
 } from "../../object-tree";
+import { ENUMERABLE_BIT } from "../../object-tree/meta";
 
 export type Entry = {
     key: PropertyKey
@@ -35,8 +36,8 @@ export const RenderPreview: React.FC<{
                 },
                 true,
                 {},
-                (key, value, enumerable) => {
-                    list.push({ key, value, enumerable });
+                (key, value, meta) => {
+                    list.push({ key, value, enumerable: !!(meta & ENUMERABLE_BIT) });
                     return list.length > 5;
                 }
             );

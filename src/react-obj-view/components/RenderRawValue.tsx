@@ -3,7 +3,7 @@ import { RenderOptions } from "../types";
 import { RenderRawEntry } from "../value-renders/RenderRawEntry";
 import { RenderString } from "../value-renders/RenderString";
 import { RenderFunction } from "../value-renders/RenderFunction";
-import { BufferItemView, ItemViewBase } from "../../object-tree/resolver/typedArray";
+import { ItemViewBase } from "../../object-tree/resolver";
 import { RenderBufferItem } from "../value-renders/BufferItemView";
 
 

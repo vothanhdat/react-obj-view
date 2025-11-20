@@ -283,4 +283,20 @@
         color: color-mix(in srgb, var(--color) var(--opacity), transparent);
     }
 
+    .buffer-view>span {
+        padding-inline: 0.5ch;
+    }
+
+    .buffer-view-chars {
+        padding-inline-start: 2ch;
+
+        >span {
+            display: inline-block;
+            width: 1.5ch;
+            text-align: center; 
+        }
+    }
+
+
+
 }

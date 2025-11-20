@@ -11,6 +11,7 @@ import {
   themeSepia,
 } from './react-obj-view-themes'
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
+import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 
 const packageVersion = '1.1.1'
 
@@ -82,29 +83,29 @@ class APIEndpoint {
 
 const userResolver: ResolverFn<User> = (user, cb, next, isPreview) => {
   if (isPreview) {
-    cb('summary', `${user.name} • ${user.email}`, true)
+    cb('summary', `${user.name} • ${user.email}`, ENUMERABLE_BIT)
 
     if (user.role !== 'user') {
-      cb('role', user.role, true)
+      cb('role', user.role, ENUMERABLE_BIT)
     }
   } else {
-    cb('badge', `⭐ ${user.role.toUpperCase()}`, true)
+    cb('badge', `⭐ ${user.role.toUpperCase()}`, ENUMERABLE_BIT)
     next(user)
   }
 }
 
 const apiEndpointResolver: ResolverFn<APIEndpoint> = (endpoint, cb, next, isPreview) => {
   if (isPreview) {
-    cb('request', `${endpoint.method} ${endpoint.url}`, true)
-    cb('status', endpoint.status, true)
+    cb('request', `${endpoint.method} ${endpoint.url}`, ENUMERABLE_BIT)
+    cb('status', endpoint.status, ENUMERABLE_BIT)
   } else {
     ; (['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]).forEach((key) => {
       const value = endpoint[key]
       if (key === 'responseTime' && value) {
-        cb('responseTimeLabel', `${endpoint.responseTime}ms`, true)
+        cb('responseTimeLabel', `${endpoint.responseTime}ms`, ENUMERABLE_BIT)
       }
       if (value) {
-        cb(key, value, true)
+        cb(key, value, ENUMERABLE_BIT)
       }
     })
   }
@@ -420,6 +421,8 @@ export const Test = () => {
     ],
     [arrayGrouped, currentLabel, enableGrouping, objectGrouped, selectedThemeLabel],
   )
+
+  console.log(currentDataGetter())
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
   return (

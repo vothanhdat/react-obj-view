@@ -9,7 +9,8 @@ import {
     ObjectWalkingAdater,
     DEFAULT_RESOLVER,
     GROUP_ARRAY_RESOLVER,
-    GROUP_OBJECT_RESOLVER
+    GROUP_OBJECT_RESOLVER,
+    TYPED_ARRAY_RESOLVERS,
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
@@ -42,6 +43,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     const resolver = useMemo(
         () => new Map([
             ...DEFAULT_RESOLVER,
+            ...TYPED_ARRAY_RESOLVERS,
             ...customResolver ?? [],
             ...Number(arrayGroupSize) > 1
                 ? GROUP_ARRAY_RESOLVER(Number(arrayGroupSize))
