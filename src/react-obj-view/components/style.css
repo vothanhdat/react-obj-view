@@ -285,6 +285,7 @@
 
     .buffer-view>span {
         padding-inline: 0.5ch;
+        white-space: pre;
     }
 
     .buffer-view-chars {
