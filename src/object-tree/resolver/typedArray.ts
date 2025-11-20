@@ -116,7 +116,7 @@ class TypedArrayItemView extends ItemViewBase {
 
         Int8Array: (e) => String(e),
         Uint8Array: (e) => e.toString().padStart(3, " "),
-        Uint8ClampedArray: (e) => String(e),
+        Uint8ClampedArray: (e) => e.toString().padStart(3, " "),
 
         Int16Array: (e) => e.toString().padStart(5, " "),
         Uint16Array: (e) => e.toString().padStart(5, " "),
@@ -124,8 +124,8 @@ class TypedArrayItemView extends ItemViewBase {
         Int32Array: (e) => e.toString().padStart(10, " "),
         Uint32Array: (e) => e.toString().padStart(10, " "),
 
-        BigInt64Array: (e) => String(e),
-        BigUint64Array: (e) => String(e),
+        // BigInt64Array: (e) => String(e),
+        // BigUint64Array: (e) => String(e),
 
         Float32Array: (e) => (e >= 0 ? " " : "") + e.toExponential(4),
         Float64Array: (e) => (e >= 0 ? " " : "") + e.toExponential(4),
@@ -325,6 +325,8 @@ export const TYPED_ARRAY_RESOLVERS = new Map([
     [DataView, dataViewLikeResolver],
 
     [Uint8Array, typeArrayResolver],
+    [Uint8ClampedArray, typeArrayResolver],
+
     [Uint16Array, typeArrayResolver],
     [Uint32Array, typeArrayResolver],
     [Int8Array, typeArrayResolver],
