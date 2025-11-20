@@ -3,6 +3,8 @@ import { RenderOptions } from "../types";
 import { RenderRawEntry } from "../value-renders/RenderRawEntry";
 import { RenderString } from "../value-renders/RenderString";
 import { RenderFunction } from "../value-renders/RenderFunction";
+import { BufferItemView, ItemViewBase } from "../../object-tree/resolver/typedArray";
+import { RenderBufferItem } from "../value-renders/BufferItemView";
 
 
 export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: RenderOptions }> = ({ valueWrapper, depth, options }) => {
@@ -34,6 +36,7 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
             if (value instanceof Set) return `Set(${value.size})`;
             if (value instanceof Error) return `${String(value)}`;
             if (value instanceof CustomEntry) return <RenderRawEntry {...{ depth, valueWrapper, options }} />;
+            if (value instanceof ItemViewBase) return <RenderBufferItem {...{ depth, valueWrapper, options }} />;
 
             const renderType = value
                 && value.constructor != Object

@@ -38,7 +38,7 @@ export const VirtualScrollRender: <
         stickyHeader: stickyPathHeaders,
     });
 
-    const lineNumberChars = String(renderIndexes.at(-1)?.index ?? 0).length
+    const lineNumberChars = Math.max(2,String(renderIndexes.at(-1)?.index ?? 0).length)
 
     return <>
         {renderIndexes.map(({ isStick, index, isLastStick, position }) => <div
