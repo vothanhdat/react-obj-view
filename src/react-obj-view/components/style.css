@@ -48,7 +48,7 @@
     .line-number {
         opacity: 0.3;
         white-space: preserve;
-
+        user-select: none;
     }
 
 
@@ -70,6 +70,7 @@
 
     .tree-indents {
         white-space: preserve;
+        user-select: none;
 
         >span {
             --compare: calc(clamp(0, abs(var(--indent-index,-1) - var(--active-parent,-1)), 1));
@@ -228,6 +229,7 @@
     }
     .actions {
         display: none;
+        user-select: none;
         /* display: flex; */
         align-self: center;
         vertical-align: middle;
