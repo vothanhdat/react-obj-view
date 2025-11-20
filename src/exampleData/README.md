@@ -13,7 +13,14 @@ Contains basic JavaScript primitive types and their variations:
 ### `arrays.ts`
 Various array structures and array-like objects:
 - **`arrayExamples`**: Different array types (empty, numbers, strings, mixed, nested, sparse, large, objects, functions, dates)
-- **`arrayLikeObjects`**: Objects that behave like arrays (NodeList simulation, arguments object, TypedArrays, ArrayBuffer)
+- **`arrayLikeObjects`**: Objects that behave like arrays (NodeList simulation, arguments object, typed array samples, large ArrayBuffer/DataView payloads)
+
+The array-like export now contains a dedicated **typed array series** with increasing complexity:
+- Small illustrative typed arrays: Uint8 sequences, patterned Uint16 slices, Float32 waveforms
+- Stress datasets: 512 KB/1 MB Uint8 buffers, 1 MB Int32 sequences, 1 MB Float64 noise arrays
+- Raw binary views: half-meg and full-meg `ArrayBuffer` instances plus `DataView` wrappers for low-level inspection
+
+Use these samples to benchmark rendering performance or demonstrate how `ObjectView` handles binary data without needing to craft your own buffers.
 
 ### `objects.ts`
 Object structures from simple to complex:
