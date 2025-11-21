@@ -1,6 +1,7 @@
 import { hidePrototype } from "../getEntries";
 import { EMPTY_CHILD_BIT, ENUMERABLE_BIT } from "../meta";
 import { ResolverFn } from "../types";
+import { weakMapCache } from "./_shared";
 
 type DataViewLike = {
     getUint8(e: number): number,
@@ -67,7 +68,19 @@ const CONTROL_CHARS: Record<number, string> = {
 
 class BufferItemView extends ItemViewBase {
 
-    constructor(
+    private static getEntryMap = weakMapCache(ref => new Map<any, BufferItemView>())
+
+    static getItem(value: DataViewLike, from: number, to: number) {
+        let key = from + ":" + to
+        let map = this.getEntryMap(value)
+        let entry = map.get(key)
+        if ((!map?.has(key))) {
+            map.set(key, entry = new BufferItemView(value, from, to))
+        }
+        return entry
+    }
+
+    private constructor(
         public value: DataViewLike,
         public from: number,
         public to: number,
@@ -112,6 +125,20 @@ class BufferItemView extends ItemViewBase {
 
 class TypedArrayItemView extends ItemViewBase {
 
+    private static getEntryMap = weakMapCache(ref => new Map<any, ItemViewBase>())
+
+    static getItem(value: TypedArrayLike, from: number, to: number, format: (e: number) => string) {
+        let key = from + ":" + to
+        let map = this.getEntryMap(value)
+        let entry = map.get(key)
+        if ((!map?.has(key))) {
+            map.set(key, entry = new TypedArrayItemView(value, from, to, format))
+        }
+        return entry
+    }
+
+
+
     static formatFn: Record<string, (e: number) => string> = {
 
         Int8Array: (e) => String(e),
@@ -133,11 +160,11 @@ class TypedArrayItemView extends ItemViewBase {
         default: (e) => String(e),
     }
 
-    constructor(
+    private constructor(
         public value: TypedArrayLike,
-        public format: (e: number) => string,
         public from: number,
         public to: number,
+        public format: (e: number) => string,
     ) {
         super()
     }
@@ -236,7 +263,7 @@ const dataViewLikeResolver: ResolverFn<DataViewLike> = (
                 let next = Math.min(current + 8, value.byteLength)
                 if (cb(
                     '0x' + current.toString(16).padStart(addrPaddStart, '0'),
-                    new BufferItemView(value, current, next),
+                    BufferItemView.getItem(value, current, next),
                     EMPTY_CHILD_BIT,
                 )) return;
                 current = next;
@@ -307,7 +334,7 @@ const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = (
             let next = Math.min(current + CHUNK, arr.length)
             if (cb(
                 '0x' + current.toString(16).padStart(addrPadStart, '0'),
-                new TypedArrayItemView(arr, formatFn, current, next,),
+                TypedArrayItemView.getItem(arr, current, next, formatFn),
                 EMPTY_CHILD_BIT,
             )) return;
             current = next;

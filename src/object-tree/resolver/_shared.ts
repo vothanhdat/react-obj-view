@@ -5,7 +5,9 @@ export const weakMapCache = <T extends (e: any) => any>(fn: T) => {
 
     return ((e: any) => {
         if (!cache.has(e)) {
-            cache.set(e, fn(e));
+            let tmp = fn(e);
+            cache.set(e, tmp);
+            return tmp
         }
 
         return cache.get(e);

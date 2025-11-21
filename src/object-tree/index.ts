@@ -7,11 +7,9 @@ export * from "./resolver"
 export {
     parseWalkingMeta,
     objectTreeWalkingFactory,
+    valueHasChild as objectHasChild
 } from "./objectWalkingAdaper";
 
-export {
-    objectHasChild
-} from "./objectHasChild"
 
 export {
     getEntriesCb,
