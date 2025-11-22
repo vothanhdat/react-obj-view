@@ -3,7 +3,7 @@ import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { RenderOptions } from "../types";
 import {
-    getEntriesCb,
+    getEntries,
     CustomEntry,
     CustomIterator
 } from "../../object-tree";
@@ -26,7 +26,7 @@ export const RenderPreview: React.FC<{
     let iterator = useMemo(
         () => {
             let list: Entry[] = [];
-            getEntriesCb(
+            for (const [key, val, meta] of getEntries(
                 value,
                 {
                     expandDepth: 0,
@@ -36,11 +36,10 @@ export const RenderPreview: React.FC<{
                 },
                 true,
                 {},
-                (key, value, meta) => {
-                    list.push({ key, value, enumerable: !!(meta & ENUMERABLE_BIT) });
-                    return list.length > 5;
-                }
-            );
+            )) {
+                list.push({ key, value: val, enumerable: !!(meta & ENUMERABLE_BIT) });
+                if (list.length > 5) break;
+            }
 
             return list;
         },

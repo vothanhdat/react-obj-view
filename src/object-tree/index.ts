@@ -12,8 +12,8 @@ export {
 
 
 export {
-    getEntriesCb,
-    getEntriesCbOriginal,
+    getEntries,
+    getEntriesOriginal,
     hidePrototype,
 } from "./getEntries"
 
