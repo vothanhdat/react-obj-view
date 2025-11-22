@@ -14,10 +14,10 @@ describe('groupArrayResolver', () => {
         const arr = new Array(100).fill(0);
         const size = 10;
         const resolver = groupArrayResolver(size);
-        const next = vi.fn();
+        const next = vi.fn(function* () {});
         const stableRef = {};
 
-        resolver(arr, vi.fn(), next, false, defaultConfig, stableRef);
+        Array.from(resolver(arr, next, false, defaultConfig, stableRef));
 
         expect(next).toHaveBeenCalled();
         const grouped = next.mock.calls[0][0];
@@ -30,10 +30,10 @@ describe('groupArrayResolver', () => {
         const arr = new Array(5).fill(0);
         const size = 10;
         const resolver = groupArrayResolver(size);
-        const next = vi.fn();
+        const next = vi.fn(function* () {});
         const stableRef = {};
 
-        resolver(arr, vi.fn(), next, false, defaultConfig, stableRef);
+        Array.from(resolver(arr, next, false, defaultConfig, stableRef));
 
         expect(next).toHaveBeenCalledWith(arr);
     });
@@ -42,10 +42,10 @@ describe('groupArrayResolver', () => {
         const arr = new Array(100).fill(0);
         const size = 10;
         const resolver = groupArrayResolver(size);
-        const next = vi.fn();
+        const next = vi.fn(function* () {});
         const stableRef = {};
 
-        resolver(arr, vi.fn(), next, true, defaultConfig, stableRef);
+        Array.from(resolver(arr, next, true, defaultConfig, stableRef));
 
         expect(next).toHaveBeenCalledWith(arr);
     });
@@ -66,10 +66,10 @@ describe('groupObjectResolver', () => {
         }
         const size = 10;
         const resolver = groupObjectResolver(size);
-        const next = vi.fn();
+        const next = vi.fn(function* () {});
         const stableRef = {};
 
-        resolver(obj, vi.fn(), next, false, defaultConfig, stableRef);
+        Array.from(resolver(obj, next, false, defaultConfig, stableRef));
 
         expect(next).toHaveBeenCalled();
         const grouped = next.mock.calls[0][0];
@@ -80,10 +80,10 @@ describe('groupObjectResolver', () => {
         const obj = {} as any;
         const size = 10;
         const resolver = groupObjectResolver(size);
-        const next = vi.fn();
+        const next = vi.fn(function* () {});
         const stableRef = {};
 
-        resolver(obj, vi.fn(), next, true, defaultConfig, stableRef);
+        Array.from(resolver(obj, next, true, defaultConfig, stableRef));
 
         expect(next).toHaveBeenCalledWith(obj);
     });

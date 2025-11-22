@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getEntriesCb, getEntriesCbOriginal } from './getEntries';
+import { getEntries, getEntriesOriginal } from './getEntries';
 import { WalkingConfig } from './types';
 import { LazyValue } from './custom-class/LazyValueWrapper';
 import { ENUMERABLE_BIT } from './meta';
 
-describe('getEntriesCbOriginal', () => {
+describe('getEntriesOriginal', () => {
     const defaultConfig: WalkingConfig = {
         nonEnumerable: false,
         symbol: false,
@@ -14,23 +14,21 @@ describe('getEntriesCbOriginal', () => {
 
     it('should iterate over array indices', () => {
         const arr = [1, 2, 3];
-        const cb = vi.fn();
-        getEntriesCbOriginal(arr, defaultConfig, cb);
+        const entries = Array.from(getEntriesOriginal(arr, defaultConfig));
 
-        expect(cb).toHaveBeenCalledTimes(3);
-        expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT);
-        expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT);
-        expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT);
+        expect(entries).toHaveLength(3);
+        expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT]);
+        expect(entries[1]).toEqual([1, 2, ENUMERABLE_BIT]);
+        expect(entries[2]).toEqual([2, 3, ENUMERABLE_BIT]);
     });
 
     it('should iterate over object properties', () => {
         const obj = { a: 1, b: 2 };
-        const cb = vi.fn();
-        getEntriesCbOriginal(obj, defaultConfig, cb);
+        const entries = Array.from(getEntriesOriginal(obj, defaultConfig));
 
-        expect(cb).toHaveBeenCalledTimes(2);
-        expect(cb).toHaveBeenCalledWith('a', 1, ENUMERABLE_BIT);
-        expect(cb).toHaveBeenCalledWith('b', 2, ENUMERABLE_BIT);
+        expect(entries).toHaveLength(2);
+        expect(entries[0]).toEqual(['a', 1, ENUMERABLE_BIT]);
+        expect(entries[1]).toEqual(['b', 2, ENUMERABLE_BIT]);
     });
 
     it('should handle non-enumerable properties when enabled', () => {
@@ -40,12 +38,11 @@ describe('getEntriesCbOriginal', () => {
             enumerable: false,
         });
         const config = { ...defaultConfig, nonEnumerable: true };
-        const cb = vi.fn();
+        
+        const entries = Array.from(getEntriesOriginal(obj, config));
 
-        getEntriesCbOriginal(obj, config, cb);
-
-        expect(cb).toHaveBeenCalledWith('hidden', 'secret', 0);
-        expect(cb).toHaveBeenCalledWith('[[Prototype]]', Object.prototype, 0);
+        expect(entries).toContainEqual(['hidden', 'secret', 0]);
+        expect(entries).toContainEqual(['[[Prototype]]', Object.prototype, 0]);
     });
 
     it('should handle getters as LazyValue when non-enumerable enabled', () => {
@@ -53,35 +50,27 @@ describe('getEntriesCbOriginal', () => {
             get computed() { return 'value'; }
         };
         const config = { ...defaultConfig, nonEnumerable: true };
-        const cb = vi.fn();
+        
+        const entries = Array.from(getEntriesOriginal(obj, config));
 
-        getEntriesCbOriginal(obj, config, cb);
-
-        expect(cb).toHaveBeenCalledWith('computed', expect.any(LazyValue), ENUMERABLE_BIT);
+        const computedEntry = entries.find(e => e[0] === 'computed');
+        expect(computedEntry).toBeDefined();
+        expect(computedEntry![1]).toBeInstanceOf(LazyValue);
+        expect(computedEntry![2]).toBe(ENUMERABLE_BIT);
     });
 
     it('should handle symbols when enabled', () => {
         const sym = Symbol('test');
         const obj = { [sym]: 'symbolValue' };
         const config = { ...defaultConfig, symbol: true };
-        const cb = vi.fn();
+        
+        const entries = Array.from(getEntriesOriginal(obj, config));
 
-        getEntriesCbOriginal(obj, config, cb);
-
-        expect(cb).toHaveBeenCalledWith(sym, 'symbolValue', ENUMERABLE_BIT);
-    });
-
-    it('should stop iteration if callback returns true', () => {
-        const arr = [1, 2, 3];
-        const cb = vi.fn().mockReturnValueOnce(true);
-        getEntriesCbOriginal(arr, defaultConfig, cb);
-
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT);
+        expect(entries).toContainEqual([sym, 'symbolValue', ENUMERABLE_BIT]);
     });
 });
 
-describe('getEntriesCb', () => {
+describe('getEntries', () => {
     const defaultConfig: WalkingConfig = {
         nonEnumerable: false,
         symbol: false,
@@ -92,23 +81,24 @@ describe('getEntriesCb', () => {
     it('should use resolver if available', () => {
         class Custom {}
         const instance = new Custom();
-        const resolverFn = vi.fn();
+        const resolverFn = vi.fn(function* () {});
         const config = {
             ...defaultConfig,
             resolver: new Map([[Custom, resolverFn]]),
         };
-        const cb = vi.fn();
-
-        getEntriesCb(instance, config, false, {}, cb);
+        
+        Array.from(getEntries(instance, config, false, null));
 
         expect(resolverFn).toHaveBeenCalled();
     });
 
     it('should fallback to original if no resolver matches', () => {
         const obj = { a: 1 };
-        const cb = vi.fn();
-        getEntriesCb(obj, defaultConfig, false, {}, cb);
+        const config = { ...defaultConfig };
+        
+        const entries = Array.from(getEntries(obj, config, false, null));
 
-        expect(cb).toHaveBeenCalledWith('a', 1, ENUMERABLE_BIT);
+        expect(entries).toHaveLength(1);
+        expect(entries[0]).toEqual(['a', 1, ENUMERABLE_BIT]);
     });
 });

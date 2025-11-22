@@ -1,6 +1,6 @@
 import { walkingFactory } from "../libs/tree-core";
 import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
-import { getEntriesCb } from "./getEntries";
+import { getEntries } from "./getEntries";
 import { ObjectWalkingAdater, WalkingMeta } from "./types";
 import { CircularChecking } from "./utils/CircularChecking";
 import { getObjectUniqueId } from "./utils/getObjectUniqueId";
@@ -44,17 +44,18 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
     },
     iterateChilds(value, { config, circularChecking }, ref, cb) {
         circularChecking.enterNode(value);
-        getEntriesCb(
+        for (const [key, val, meta] of getEntries(
             value,
             config as any,
             false,
             ref,
-            (key, value, meta) => cb(
-                value, key,
+        )) {
+            cb(
+                val, key,
                 meta |
-                (circularChecking.checkCircular(value) ? 0 : NON_CIRCULAR_BIT)
+                (circularChecking.checkCircular(val) ? 0 : NON_CIRCULAR_BIT)
             )
-        );
+        }
         circularChecking.exitNode(value);
     },
     valueDefaultExpaned(meta, context) {

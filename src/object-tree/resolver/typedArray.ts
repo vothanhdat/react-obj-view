@@ -242,18 +242,17 @@ class WrappedTypedArray {
 }
 
 
-const dataViewLikeResolver: ResolverFn<DataViewLike> = (
+const dataViewLikeResolver: ResolverFn<DataViewLike> = function* (
     value,
-    cb,
     next,
     isPreview,
     config,
     stableRef
-) => {
+) {
     if (isPreview) {
         if (value instanceof DataView) {
-            cb("byteOffset", value.byteOffset, ENUMERABLE_BIT)
-            cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+            yield ["byteOffset", value.byteOffset, ENUMERABLE_BIT]
+            yield ["byteLength", value.byteLength, ENUMERABLE_BIT]
         }
     } else {
         if (value instanceof DataView || value instanceof WrappedBufferView) {
@@ -261,66 +260,63 @@ const dataViewLikeResolver: ResolverFn<DataViewLike> = (
             let current = 0;
             while (current < value.byteLength) {
                 let next = Math.min(current + 8, value.byteLength)
-                if (cb(
+                yield [
                     '0x' + current.toString(16).padStart(addrPaddStart, '0'),
                     BufferItemView.getItem(value, current, next),
                     EMPTY_CHILD_BIT,
-                )) return;
+                ];
                 current = next;
             }
         } else {
-            next(value)
+            yield* next(value)
         }
     }
 
 }
 
-const bufferResolver: ResolverFn<ArrayBuffer> = (
+const bufferResolver: ResolverFn<ArrayBuffer> = function* (
     value,
-    cb,
     next,
     isPreview,
     config,
     stableRef
-) => {
+) {
     if (isPreview) {
-        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+        yield ["byteLength", value.byteLength, ENUMERABLE_BIT]
     } else {
-        cb("byteLength", value.byteLength, 0)
-        cb("[[buffer]]", WrappedBufferView.getInstance(value), 0)
-        next(value)
+        yield ["byteLength", value.byteLength, 0]
+        yield ["[[buffer]]", WrappedBufferView.getInstance(value), 0]
+        yield* next(value)
     }
 }
 
-const typeArrayResolver: ResolverFn<TypedArrayLike> = (
+const typeArrayResolver: ResolverFn<TypedArrayLike> = function* (
     value: TypedArrayLike,
-    cb,
     next,
     isPreview,
     config,
     stableRef
-) => {
+) {
     if (isPreview) {
-        cb("length", value.length, ENUMERABLE_BIT)
-        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+        yield ["length", value.length, ENUMERABLE_BIT]
+        yield ["byteLength", value.byteLength, ENUMERABLE_BIT]
     } else {
-        cb("length", value.length, 0)
-        cb("byteLength", value.byteLength, 0)
-        cb("[[data]]", WrappedTypedArray.getInstance(value), 0)
-        cb("[[buffer]]", WrappedBufferView.getInstance(value.buffer), 0)
+        yield ["length", value.length, 0]
+        yield ["byteLength", value.byteLength, 0]
+        yield ["[[data]]", WrappedTypedArray.getInstance(value), 0]
+        yield ["[[buffer]]", WrappedBufferView.getInstance(value.buffer), 0]
     }
 }
 
 
 
-const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = (
+const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = function* (
     value: WrappedTypedArray,
-    cb,
     next,
     isPreview,
     config,
     stableRef
-) => {
+) {
     if (isPreview) {
 
     } else {
@@ -332,11 +328,11 @@ const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = (
         let CHUNK = arr.BYTES_PER_ELEMENT >= 4 ? 4 : 8
         while (current < arr.length) {
             let next = Math.min(current + CHUNK, arr.length)
-            if (cb(
+            yield [
                 '0x' + current.toString(16).padStart(addrPadStart, '0'),
                 TypedArrayItemView.getItem(arr, current, next, formatFn),
                 EMPTY_CHILD_BIT,
-            )) return;
+            ];
             current = next;
         }
     }

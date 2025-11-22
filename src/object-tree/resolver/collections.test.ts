@@ -77,32 +77,29 @@ describe('collections resolvers', () => {
         ['c', 3]
       ])
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      mapResolver(map, cb, next, true, {} as any, map)
+      const entries = Array.from(mapResolver(map, next, true, {} as any, map))
       
-      expect(cb).toHaveBeenCalledTimes(3)
+      expect(entries).toHaveLength(3)
       expect(next).toHaveBeenCalledWith(map)
       
       // Check that CustomEntry instances were created
-      const firstCall = cb.mock.calls[0]
-      expect(firstCall[0]).toBe(0)
-      expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(ENUMERABLE_BIT)
+      expect(entries[0][0]).toBe(0)
+      expect(entries[0][1]).toBeInstanceOf(CustomEntry)
+      expect(entries[0][2]).toBe(ENUMERABLE_BIT)
     })
 
     it('should resolve map in normal mode', () => {
       const map = new Map([['a', 1], ['b', 2]])
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      mapResolver(map, cb, next, false, {} as any, map)
+      const entries = Array.from(mapResolver(map, next, false, {} as any, map))
       
-      // Should call cb for [[Entries]] and size
-      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
-      expect(cb).toHaveBeenCalledWith('size', 2, ENUMERABLE_BIT)
+      expect(entries).toContainEqual(['[[Entries]]', expect.any(CustomIterator), 0])
+      expect(entries).toContainEqual(['size', 2, ENUMERABLE_BIT])
+      
       expect(next).toHaveBeenCalledWith(map)
     })
   })
@@ -111,29 +108,27 @@ describe('collections resolvers', () => {
     it('should resolve set in preview mode', () => {
       const set = new Set([1, 2, 3])
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      setResolver(set, cb, next, true, {} as any, set)
+      const entries = Array.from(setResolver(set, next, true, {} as any, set))
       
-      expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
+      expect(entries).toHaveLength(3)
+      expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT])
+      expect(entries[1]).toEqual([1, 2, ENUMERABLE_BIT])
+      expect(entries[2]).toEqual([2, 3, ENUMERABLE_BIT])
       expect(next).toHaveBeenCalledWith(set)
     })
 
     it('should resolve set in normal mode', () => {
       const set = new Set([1, 2, 3])
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      setResolver(set, cb, next, false, {} as any, set)
+      const entries = Array.from(setResolver(set, next, false, {} as any, set))
       
       // Should call cb for [[Entries]] and size
-      expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
-      expect(cb).toHaveBeenCalledWith('size', 3, ENUMERABLE_BIT)
+      expect(entries).toContainEqual(['[[Entries]]', expect.any(CustomIterator), 0])
+      expect(entries).toContainEqual(['size', 3, ENUMERABLE_BIT])
       expect(next).toHaveBeenCalledWith(set)
     })
   })
@@ -143,47 +138,29 @@ describe('collections resolvers', () => {
       const map = new Map([['a', 1], ['b', 2]])
       const iterator = CustomIterator.getIterator(map)
       
-      const cb = vi.fn().mockReturnValue(false)
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      iteraterResolver(iterator, cb, next, false, {} as any, iterator)
+      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator))
       
-      expect(cb).toHaveBeenCalledTimes(2)
+      expect(entries).toHaveLength(2)
       
-      const firstCall = cb.mock.calls[0]
-      expect(firstCall[0]).toBe(0)
-      expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(ENUMERABLE_BIT)
+      expect(entries[0][0]).toBe(0)
+      expect(entries[0][1]).toBeInstanceOf(CustomEntry)
+      expect(entries[0][2]).toBe(ENUMERABLE_BIT)
     })
 
     it('should iterate over Set entries', () => {
       const set = new Set([1, 2, 3])
       const iterator = CustomIterator.getIterator(set)
       
-      const cb = vi.fn().mockReturnValue(false)
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      iteraterResolver(iterator, cb, next, false, {} as any, iterator)
+      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator))
       
-      expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
-    })
-
-    it('should stop iteration when cb returns true', () => {
-      const set = new Set([1, 2, 3])
-      const iterator = CustomIterator.getIterator(set)
-      
-      const cb = vi.fn()
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true)
-      const next = vi.fn()
-      
-      iteraterResolver(iterator, cb, next, false, {} as any, iterator)
-      
-      // Should stop after second call
-      expect(cb).toHaveBeenCalledTimes(2)
+      expect(entries).toHaveLength(3)
+      expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT])
+      expect(entries[1]).toEqual([1, 2, ENUMERABLE_BIT])
+      expect(entries[2]).toEqual([2, 3, ENUMERABLE_BIT])
     })
   })
 })

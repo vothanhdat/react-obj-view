@@ -3,45 +3,43 @@ import { ResolverFn } from "../types";
 
 const weakMapCache = new WeakMap()
 
-export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: number) => (
+export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: number) => function* (
     arr: any[],
-    cb,
     next,
     isPreview,
     config,
     stableRef,
-) => {
+) {
     if (!isPreview && arr instanceof Array && arr.length > size) {
         let groupProxyFactory = weakMapCache.get(stableRef)
         if (!groupProxyFactory) {
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
         const proxyValue = groupProxyFactory(arr, size)
-        next(proxyValue);
-        proxyValue instanceof GroupedProxy && next([]);
+        yield* next(proxyValue);
+        proxyValue instanceof GroupedProxy && (yield* next([]));
     } else {
-        next(arr);
+        yield* next(arr);
     }
 };
 
-export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: number) => (
+export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: number) => function* (
     value: Object,
-    cb,
     next,
     isPreview,
     config,
     stableRef,
-) => {
+) {
     if (!isPreview && !(value instanceof GroupedProxy)) {
         let groupProxyFactory = weakMapCache.get(stableRef)
         if (!groupProxyFactory) {
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
         const proxyValue = groupProxyFactory(value, size); 
-        next(proxyValue);
-        proxyValue instanceof GroupedProxy && next({});
+        yield* next(proxyValue);
+        proxyValue instanceof GroupedProxy && (yield* next({}));
     } else {
-        next(value);
+        yield* next(value);
     }
 };
 

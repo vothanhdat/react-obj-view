@@ -52,34 +52,32 @@ export class InternalPromise {
 }
 
 
-export const promiseResolver: ResolverFn<Promise<any>> = (
+export const promiseResolver: ResolverFn<Promise<any>> = function* (
     promise: Promise<any>,
-    cb,
     next,
     isPreview
-) => {
+) {
     let { result, status } = getPromiseStatus(promise);
-    cb(
+    yield [
         "[[status]]",
         InternalPromise.getInstance(status),
         isPreview ? ENUMERABLE_BIT : 0
-    );
-    cb(
+    ];
+    yield [
         "[[result]]",
         InternalPromise.getInstance(result),
         isPreview ? ENUMERABLE_BIT : 0
-    );
-    next(promise);
+    ];
+    yield* next(promise);
 };
 
 
-export const internalPromiseResolver: ResolverFn<InternalPromise> = (
+export const internalPromiseResolver: ResolverFn<InternalPromise> = function* (
     promise: InternalPromise,
-    cb,
     next,
     isPreview
-) => {
+) {
     if (promise.resolved) {
-        next(promise.value)
+        yield* next(promise.value)
     }
 }

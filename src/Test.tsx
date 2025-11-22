@@ -81,23 +81,23 @@ class APIEndpoint {
   ) { }
 }
 
-const userResolver: ResolverFn<User> = (user, cb, next, isPreview) => {
+const userResolver: ResolverFn<User> = function* (user, next, isPreview) {
   if (isPreview) {
-    cb('summary', `${user.name} • ${user.email}`, ENUMERABLE_BIT)
+    yield ['summary', `${user.name} • ${user.email}`, ENUMERABLE_BIT]
 
     if (user.role !== 'user') {
-      cb('role', user.role, ENUMERABLE_BIT)
+      yield ['role', user.role, ENUMERABLE_BIT]
     }
   } else {
-    cb('badge', `⭐ ${user.role.toUpperCase()}`, ENUMERABLE_BIT)
-    next(user)
+    yield ['badge', `⭐ ${user.role.toUpperCase()}`, ENUMERABLE_BIT]
+    yield* next(user)
   }
 }
 
-const apiEndpointResolver: ResolverFn<APIEndpoint> = (endpoint, cb, next, isPreview) => {
+const apiEndpointResolver: ResolverFn<APIEndpoint> = function* (endpoint, next, isPreview) {
   if (isPreview) {
-    cb('request', `${endpoint.method} ${endpoint.url}`, ENUMERABLE_BIT)
-    cb('status', endpoint.status, ENUMERABLE_BIT)
+    yield ['request', `${endpoint.method} ${endpoint.url}`, ENUMERABLE_BIT]
+    yield ['status', endpoint.status, ENUMERABLE_BIT]
   } else {
     ; (['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]).forEach((key) => {
       const value = endpoint[key]

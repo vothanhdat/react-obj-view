@@ -1,15 +1,14 @@
 import { LazyValue } from "./custom-class/LazyValueWrapper";
-import { WalkingConfig } from "./types";
+import { ResolverEntry, WalkingConfig } from "./types";
 import { propertyIsEnumerable } from "./utils/object";
 import { ENUMERABLE_BIT } from "./meta" with {type: "macro"};
 
 export const hidePrototype = Symbol()
 
-export const getEntriesCbOriginal = (
+export function* getEntriesOriginal(
     value: any,
     config: WalkingConfig,
-    cb: (key: PropertyKey, value: unknown, meta: number) => boolean | void
-) => {
+): IterableIterator<ResolverEntry> {
 
     const shouldIterate = (typeof value === 'object' && value !== null) || typeof value === 'function';
 
@@ -18,8 +17,7 @@ export const getEntriesCbOriginal = (
     if (value instanceof Array) {
 
         for (let index = 0; index < value.length; index++) {
-            if (cb(index, value[index], ENUMERABLE_BIT))
-                return;
+            yield [index, value[index], ENUMERABLE_BIT];
         }
 
     } else {
@@ -27,19 +25,19 @@ export const getEntriesCbOriginal = (
         if (config.nonEnumerable) {
             for (let key of Object.getOwnPropertyNames(value)) {
                 const descriptor = Object.getOwnPropertyDescriptor(value, key)
-                if (cb(
+                yield [
                     key,
                     descriptor?.get ? LazyValue.getInstance(value, key) : descriptor?.value,
                     descriptor?.enumerable ? ENUMERABLE_BIT : 0
-                )) return;
+                ];
             }
         } else {
             for (let key in value) {
-                if (cb(
+                yield [
                     key,
                     (value as any)[key],
                     ENUMERABLE_BIT,
-                )) return;
+                ];
             }
         }
 
@@ -47,56 +45,45 @@ export const getEntriesCbOriginal = (
 
     if (config.symbol) {
         for (var symbol of Object.getOwnPropertySymbols(value)) {
-
-            if (cb(
+            yield [
                 symbol,
                 value[symbol],
                 propertyIsEnumerable.call(value, symbol) ? ENUMERABLE_BIT : 0,
-            )) return;
+            ];
         }
     }
 
     if (config.nonEnumerable && value !== Object.prototype && !value[hidePrototype]) {
-        if (cb(
+        yield [
             '[[Prototype]]',
             Object.getPrototypeOf(value),
             0,
-        )) return;
+        ];
     }
 
 };
 
-export const getEntriesCb = (
+export function* getEntries(
     value: unknown,
     config: WalkingConfig,
     isPreview: boolean,
     stableRef: unknown,
-    cb: (key: PropertyKey, value: unknown, meta: number) => boolean | void
-) => {
-
-
-    // if (value instanceof InternalPromise && value.resolved) {
-    //     value = value.value
-    //     // console.log("value.value", value.value)
-    // }
+): IterableIterator<ResolverEntry> {
 
     const prototype = value
         ? (value.constructor ?? Object.getPrototypeOf(value)?.constructor)
         : undefined
 
-    // console.log(value, prototype, prototype && value instanceof prototype, config.resolver?.has(prototype))
-
     if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
-        config.resolver?.get(prototype)?.(
+        yield* config.resolver?.get(prototype)!(
             value,
-            cb,
-            (value, callback = cb) => getEntriesCbOriginal(value, config, callback),
+            (value) => getEntriesOriginal(value, config),
             isPreview,
             config,
             stableRef,
         )
     } else {
-        getEntriesCbOriginal(value, config, cb)
+        yield* getEntriesOriginal(value, config)
     }
 
 };

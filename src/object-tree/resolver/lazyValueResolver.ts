@@ -1,19 +1,18 @@
 import { LazyValue } from "../custom-class/LazyValueWrapper";
 import { ResolverFn } from "../types";
 
-export const lazyValueResolver: ResolverFn<LazyValue> = (
+export const lazyValueResolver: ResolverFn<LazyValue> = function* (
     lazyValue: LazyValue,
-    cb,
     next,
     isPreview
-) => {
+) {
     if (lazyValue.inited) {
         if (lazyValue?.error) {
-            next(lazyValue?.error);
+            yield* next(lazyValue?.error);
         } else {
-            next(lazyValue?.value);
+            yield* next(lazyValue?.value);
         }
     } else {
-        next(lazyValue);
+        yield* next(lazyValue);
     }
 };

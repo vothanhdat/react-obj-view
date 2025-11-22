@@ -56,84 +56,80 @@ export class CustomEntry {
 
 }
 
-export const iteraterResolver: ResolverFn<CustomIterator> = (
+export const iteraterResolver: ResolverFn<CustomIterator> = function* (
     e,
-    cb,
     next,
     _isPreview
-) => {
+) {
     const iterator = e.iterator();
 
     if (Object.getPrototypeOf(iterator) == MapIterater) {
         let index = 0;
 
         for (let [key, value] of iterator) {
-            if (cb(
+            yield [
                 index++,
                 CustomEntry.getEntry(e, key, value),
                 ENUMERABLE_BIT
-            )) return;
+            ];
         }
     } else {
         let index = 0;
 
         for (let entry of iterator) {
-            if (cb(index++, entry, ENUMERABLE_BIT))
-                return;
+            yield [index++, entry, ENUMERABLE_BIT];
         }
     }
 
 };
 
-export const mapResolver: ResolverFn<Map<any, any>> = (
+export const mapResolver: ResolverFn<Map<any, any>> = function* (
     map,
-    cb,
     next,
     isPreview
-) => {
+) {
     if (isPreview) {
         let index = 0;
         for (let [key, value] of map.entries()) {
-            cb(
+            yield [
                 index++,
                 CustomEntry.getEntry(map, key, value),
                 ENUMERABLE_BIT
-            );
+            ];
         }
     } else {
-        cb(
+        yield [
             "[[Entries]]",
             CustomIterator.getIterator(map),
             0,
-        );
+        ];
 
-        cb("size", map.size, ENUMERABLE_BIT);
+        yield ["size", map.size, ENUMERABLE_BIT];
     }
 
-    next(map);
+    yield* next(map);
 
 };
 
-export const setResolver: ResolverFn<Set<any>> = (
+export const setResolver: ResolverFn<Set<any>> = function* (
     set: Set<any>,
-    cb,
     next,
     isPreview
-) => {
+) {
     if (isPreview) {
         let index = 0;
         for (let value of set.values())
-            cb(index++, value, ENUMERABLE_BIT);
+            yield [index++, value, ENUMERABLE_BIT];
 
     } else {
-        cb(
+        yield [
             "[[Entries]]",
             CustomIterator.getIterator(set),
             0
-        );
+        ];
 
-        cb("size", set.size, ENUMERABLE_BIT);
+        yield ["size", set.size, ENUMERABLE_BIT];
     }
-    next(set);
+    yield* next(set);
 };
 

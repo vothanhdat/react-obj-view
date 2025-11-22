@@ -51,44 +51,38 @@ describe('promise resolvers', () => {
   describe('promiseResolver', () => {
     it('should add [[status]] and [[result]] in preview mode', async () => {
       const promise = Promise.resolve(42)
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      promiseResolver(promise, cb, next, true, {} as any, promise)
+      const entries = Array.from(promiseResolver(promise, next, true, {} as any, promise))
       
-      expect(cb).toHaveBeenCalledTimes(2)
+      expect(entries).toHaveLength(2)
       
       // Check [[status]] call
-      const statusCall = cb.mock.calls[0]
-      expect(statusCall[0]).toBe('[[status]]')
-      expect(statusCall[1]).toBeInstanceOf(InternalPromise)
-      expect(statusCall[2]).toBe(ENUMERABLE_BIT)
+      expect(entries[0][0]).toBe('[[status]]')
+      expect(entries[0][1]).toBeInstanceOf(InternalPromise)
+      expect(entries[0][2]).toBe(ENUMERABLE_BIT)
       
       // Check [[result]] call
-      const resultCall = cb.mock.calls[1]
-      expect(resultCall[0]).toBe('[[result]]')
-      expect(resultCall[1]).toBeInstanceOf(InternalPromise)
-      expect(resultCall[2]).toBe(ENUMERABLE_BIT)
+      expect(entries[1][0]).toBe('[[result]]')
+      expect(entries[1][1]).toBeInstanceOf(InternalPromise)
+      expect(entries[1][2]).toBe(ENUMERABLE_BIT)
       
       expect(next).toHaveBeenCalledWith(promise)
     })
 
     it('should add [[status]] and [[result]] in normal mode', () => {
       const promise = Promise.resolve(42)
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      promiseResolver(promise, cb, next, false, {} as any, promise)
+      const entries = Array.from(promiseResolver(promise, next, false, {} as any, promise))
       
-      expect(cb).toHaveBeenCalledTimes(2)
+      expect(entries).toHaveLength(2)
       
-      const statusCall = cb.mock.calls[0]
-      expect(statusCall[0]).toBe('[[status]]')
-      expect(statusCall[2]).toBe(0)
+      expect(entries[0][0]).toBe('[[status]]')
+      expect(entries[0][2]).toBe(0)
       
-      const resultCall = cb.mock.calls[1]
-      expect(resultCall[0]).toBe('[[result]]')
-      expect(resultCall[2]).toBe(0)
+      expect(entries[1][0]).toBe('[[result]]')
+      expect(entries[1][2]).toBe(0)
       
       expect(next).toHaveBeenCalledWith(promise)
     })
@@ -98,12 +92,11 @@ describe('promise resolvers', () => {
     it('should not call next for unresolved promise', () => {
       const promise = new Promise(() => {}) // Never resolves
       const internal = InternalPromise.getInstance(promise)
+      const next = vi.fn(function* () {})
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const entries = Array.from(internalPromiseResolver(internal, next, false, {} as any, internal))
       
-      internalPromiseResolver(internal, cb, next, false, {} as any, internal)
-      
+      expect(entries).toHaveLength(0)
       expect(next).not.toHaveBeenCalled()
     })
 
@@ -111,14 +104,13 @@ describe('promise resolvers', () => {
       const promise = Promise.resolve(42)
       const internal = InternalPromise.getInstance(promise)
       
-      // Wait for promise to resolve
+      // Wait for resolution
       await promise
       await new Promise(resolve => setTimeout(resolve, 0))
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      internalPromiseResolver(internal, cb, next, false, {} as any, internal)
+      Array.from(internalPromiseResolver(internal, next, false, {} as any, internal))
       
       expect(next).toHaveBeenCalledWith(42)
     })
@@ -130,10 +122,9 @@ describe('promise resolvers', () => {
       await promise
       await new Promise(resolve => setTimeout(resolve, 0))
       
-      const cb = vi.fn()
-      const next = vi.fn()
+      const next = vi.fn(function* () {})
       
-      internalPromiseResolver(internal, cb, next, true, {} as any, internal)
+      Array.from(internalPromiseResolver(internal, next, true, {} as any, internal))
       
       expect(next).toHaveBeenCalledWith('test')
     })
