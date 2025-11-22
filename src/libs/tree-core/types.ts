@@ -14,6 +14,8 @@ export type WalkingResult<Value, Key, Meta> = {
     expanded: boolean;
     updateToken: number;
     updateStamp: number;
+    iterateFinish: boolean
+    selfStamp: number;
 
     userExpand?: boolean;
 
@@ -32,6 +34,7 @@ export type WalkingContext<Config> = {
     updateToken: number;
     expandDepth: number;
     updateStamp: number;
+    iterateCounter: number;
 };
 
 

@@ -1,5 +1,4 @@
 
-type StateDiff = { touchedValue: any, isDiff: boolean }
 
 type StateMap<T> = {
     state: T;

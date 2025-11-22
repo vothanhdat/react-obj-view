@@ -1,6 +1,7 @@
 import { objectTreeWalkingFactory } from "./objectWalkingAdaper";
 import { ObjectWalkingConfig } from "./types";
 import { allExamples } from "../exampleData";
+import { count } from "console";
 
 
 
@@ -8,10 +9,15 @@ import { allExamples } from "../exampleData";
 
 const a = {
     ff: 1,
-    b: [1, 2, 3, { d: "33" }]
+    b: [
+        { d: "33" },
+        1,
+        2,
+        3,
+    ]
 };
 
-const test = allExamples.objects.circular
+// const test = allExamples.complex.mixedTypes
 
 const walkingConfig: ObjectWalkingConfig = {
     nonEnumerable: true,
@@ -20,17 +26,39 @@ const walkingConfig: ObjectWalkingConfig = {
 };
 
 
-console.group("Current:")
 
 
-const { walking, refreshPath, toggleExpand, getNode } = objectTreeWalkingFactory()
+const { walking, walkingAsync, refreshPath, toggleExpand, getNode } = objectTreeWalkingFactory()
 
-const result = walking(test, 'root', walkingConfig, 10)
+const walkingIterate = walkingAsync(a, 'root', walkingConfig, 10, 1)
 
+console.clear()
+console.group("State:")
 
-for (let i = 0; i < result.childCount; i++) {
-    let nodeData = getNode(i)
-    console.log(nodeData.paths, (nodeData.state.meta)?.toString(2))
+let iterateCount = 0
+for (let state of walkingIterate) {
+
+    console.group("Iterate Counter: %s", iterateCount)
+
+    let t : Record<string,any>= {}
+
+    for (let i = 0; i < state!.childCount; i++) {
+        let nodeData = getNode(i)
+        t[nodeData.paths.join("/")] = {
+            finish: nodeData.state.iterateFinish,
+            selfStamp: nodeData.state.selfStamp,
+            // updateStamp: nodeData.state.updateStamp,
+        }
+        // t.push({[nodeData.paths.join("/")]:} ])
+    }
+
+    console.table(t)
+
+    console.groupEnd()
+
+    if (iterateCount++ >= 100)
+        break;
 }
+
 
 console.groupEnd()

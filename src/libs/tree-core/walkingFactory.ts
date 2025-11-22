@@ -39,7 +39,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
 
             childKeys.push(key);
 
-            return false
+            return ctx.iterateCounter < 0;
         }
     )
 
@@ -90,6 +90,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
         const shoudUpdate = (
             isChange
+            || !state.iterateFinish
             || state.expanded !== isExpand
             || state.updateToken !== ctx.updateToken
             || (isExpand
@@ -154,6 +155,9 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             state.expandedDepth = ctx.expandDepth
             state.updateToken = ctx.updateToken;
             state.updateStamp = ctx.updateStamp;
+            state.iterateFinish = ctx.iterateCounter >= 0;
+            state.selfStamp++;
+            ctx.iterateCounter--;
 
         }
 
@@ -174,6 +178,9 @@ const stateFactoryFn: () => WalkingResult<any, any, any> = () => ({
     childCount: 0,
     childCanExpand: false,
     childDepth: 0,
+
+    iterateFinish: false,
+    selfStamp: 0,
 
     expandedDepth: 0,
     expanded: false,
@@ -209,6 +216,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         expandDepth,
         updateToken: getConfigTokenId(config),
         updateStamp: updateStamp++,
+        iterateCounter: 1000000000,
     })
 
     const walking = (value: Value, key: Key, config: Config, expandDepth: number) => walkingInternal(
@@ -219,6 +227,31 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         1,
         stateRoot,
     )
+
+
+
+    const walkingAsync = function* (value: Value, key: Key, config: Config, expandDepth: number, iterateSize = 100000) {
+
+        let context = getContextDefault(config, expandDepth);
+
+        while (true) {
+            context.iterateCounter = iterateSize;
+            
+            let state = walkingInternal(
+                value,
+                key,
+                defaultMeta(value, key),
+                context,
+                1,
+                stateRoot,
+            )
+
+            yield state
+
+            if (state.iterateFinish)
+                return;
+        }
+    }
 
     const refreshPath = (paths: Key[]) => {
         let currentState = stateRead
@@ -302,6 +335,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
     return {
         walking,
+        walkingAsync,
         refreshPath,
         toggleExpand,
         getNode,
