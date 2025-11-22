@@ -38,9 +38,8 @@ export type WalkingContext<Config> = {
 export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingContext<Config>> = {
     valueHasChild: (value: Value, key: Key, meta: Meta) => boolean;
     iterateChilds: (
-        value: Value, ctx: Context, stableRef: unknown,
-        cb: (value: Value, key: Key, meta: Meta) => boolean
-    ) => void;
+        value: Value, ctx: Context, stableRef: unknown
+    ) => IterableIterator<[Key, Value, Meta]>;
 
     defaultMeta: (value: Value, key: Key) => Meta;
     defaultContext: (ctx: WalkingContext<Config>) => Context;

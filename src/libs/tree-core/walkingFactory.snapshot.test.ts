@@ -21,12 +21,13 @@ const createTestAdapter = () => {
 
     const adapter: TestAdapter = {
         valueHasChild: (value) => Boolean(value.children?.length),
-        iterateChilds: (value, _ctx, _stable, cb) => {
+        iterateChilds: function* (value, _ctx, _stable) {
             onVisit(value.id);
-            value.children?.forEach((child) => {
-                cb(child, child.id, { id: child.id })
-                return false
-            })
+            if (value.children) {
+                for (const child of value.children) {
+                    yield [child.id, child, { id: child.id }];
+                }
+            }
         },
         defaultMeta: (_value, key) => ({ id: key }),
         defaultContext: (ctx) => ({ ...ctx }),

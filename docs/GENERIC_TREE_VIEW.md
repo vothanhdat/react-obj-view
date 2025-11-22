@@ -24,7 +24,7 @@ An adapter describes how to iterate your domain-specific nodes:
 ```ts
 export type WalkingAdapter<Value, Key, Meta, Config, Context> = {
   valueHasChild: (value, key, meta) => boolean;
-  iterateChilds: (value, ctx, stableRef, cb) => void;
+  iterateChilds: (value, ctx, stableRef) => IterableIterator<[Key, Value, Meta]>;
   defaultMeta: (value, key) => Meta;
   defaultContext: (ctx: WalkingContext<Config>) => Context;
   getConfigTokenId: (config: Config) => number;
@@ -81,13 +81,16 @@ const fileAdapter: TreeCore.WalkingAdaper<
   valueHasChild(node) {
     return node.type === "folder" && !!node.children?.length;
   },
-  iterateChilds(node, ctx, _stableRef, cb) {
-    node.children?.forEach((child, index) => {
-      if (ctx.config.hideEmptyFolders && child.type === "folder" && !child.children?.length) {
-        return;
+  *iterateChilds(node, ctx, _stableRef) {
+    if (node.children) {
+      for (let index = 0; index < node.children.length; index++) {
+        const child = node.children[index];
+        if (ctx.config.hideEmptyFolders && child.type === "folder" && !child.children?.length) {
+          continue;
+        }
+        yield [child.id ?? String(index), child, { label: child.name, isFolder: child.type === "folder" }];
       }
-      cb(child, child.id ?? String(index), { label: child.name, isFolder: child.type === "folder" });
-    });
+    }
   },
   defaultMeta(value) {
     return { label: value.name, isFolder: value.type === "folder" };

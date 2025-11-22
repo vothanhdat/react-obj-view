@@ -18,30 +18,24 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     let childOffsets = [childCount]
     let childKeys = [] as Key[]
 
-    iterateChilds(
-        value, ctx, state,
-        (value, key, meta) => {
+    for (const [key, childValue, meta] of iterateChilds(value, ctx, state)) {
+        let r = walkingInternal(
+            childValue,
+            key,
+            meta,
+            ctx,
+            currentDepth + 1,
+            getChild(key as any),
+        )
 
-            let r = walkingInternal(
-                value,
-                key,
-                meta,
-                ctx,
-                currentDepth + 1,
-                getChild(key as any),
-            )
+        childCount += r.childCount
+        childDepth = Math.max(childDepth, r.childDepth)
+        childCanExpand ||= r.childCanExpand
 
-            childCount += r.childCount
-            childDepth = Math.max(childDepth, r.childDepth)
-            childCanExpand ||= r.childCanExpand
+        childOffsets.push(childCount)
 
-            childOffsets.push(childCount)
-
-            childKeys.push(key);
-
-            return false
-        }
-    )
+        childKeys.push(key);
+    }
 
     return {
         childCount,

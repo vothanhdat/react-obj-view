@@ -276,8 +276,12 @@ type FileNode = {
 // Implement the adapter
 const fileAdapter: WalkingAdapter<...> = {
   valueHasChild: (node) => node.type === 'folder' && !!node.children?.length,
-  iterateChilds: (node, ctx, ref, cb) => {
-    node.children?.forEach(child => cb(child, child.name, { ... }));
+  iterateChilds: function* (node, ctx, ref) {
+    if (node.children) {
+      for (const child of node.children) {
+        yield [child.name, child, { ... }];
+      }
+    }
   },
   // ... other methods
 };

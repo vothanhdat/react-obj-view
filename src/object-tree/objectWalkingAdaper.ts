@@ -42,7 +42,7 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
             && !(value instanceof Date)
             && !(value instanceof RegExp)
     },
-    iterateChilds(value, { config, circularChecking }, ref, cb) {
+    *iterateChilds(value, { config, circularChecking }, ref) {
         circularChecking.enterNode(value);
         for (const entry of getEntries(
             value,
@@ -50,11 +50,9 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
             false,
             ref,
         )) {
-            cb(
-                entry[1], entry[0],
-                entry[2] |
+            entry[2] = entry[2] |
                 (circularChecking.checkCircular(entry[1]) ? 0 : NON_CIRCULAR_BIT)
-            )
+            yield entry;
         }
         circularChecking.exitNode(value);
     },

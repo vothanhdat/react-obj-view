@@ -42,12 +42,13 @@ const createAdapter = () => {
 
     const adapter: TreeAdapter = {
         valueHasChild: (value) => Boolean(value.children?.length),
-        iterateChilds: (value, _ctx, _stable, cb) => {
+        iterateChilds: function* (value, _ctx, _stable) {
             iterations[value.id] = (iterations[value.id] ?? 0) + 1
-            value.children?.forEach((child) => {
-                cb(child, child.id, { id: child.id })
-                return false
-            })
+            if (value.children) {
+                for (const child of value.children) {
+                    yield [child.id, child, { id: child.id }];
+                }
+            }
         },
         defaultMeta: (_value, key) => ({ id: key }),
         defaultContext: (ctx) => ({ ...ctx }),
@@ -84,13 +85,12 @@ const createComplexAdapter = () => {
 
     const adapter: ComplexAdapter = {
         valueHasChild: (value) => Boolean(Object.keys(value.entries ?? {}).length),
-        iterateChilds: (value, ctx, _stable, cb) => {
-            Object.entries(value.entries ?? {}).forEach(([key, child]) => {
+        iterateChilds: function* (value, ctx, _stable) {
+            for (const [key, child] of Object.entries(value.entries ?? {})) {
                 const meta: ComplexMeta = { key, hidden: Boolean(child.hidden) }
                 iterations.push(`${ctx.updateStamp}:${key}`)
-                cb(child, key, meta)
-                return false
-            })
+                yield [key, child, meta];
+            }
         },
         defaultMeta: (_value, key) => ({ key, hidden: false }),
         defaultContext: (ctx) => ({ ...ctx, log: ctx.config.log ?? [] }),
