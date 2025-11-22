@@ -99,15 +99,15 @@ const apiEndpointResolver: ResolverFn<APIEndpoint> = function* (endpoint, next, 
     yield ['request', `${endpoint.method} ${endpoint.url}`, ENUMERABLE_BIT]
     yield ['status', endpoint.status, ENUMERABLE_BIT]
   } else {
-    ; (['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]).forEach((key) => {
+    for (const key of ['method', 'url', 'status', 'responseTime', 'data'] as (keyof APIEndpoint)[]) {
       const value = endpoint[key]
       if (key === 'responseTime' && value) {
-        cb('responseTimeLabel', `${endpoint.responseTime}ms`, ENUMERABLE_BIT)
+        yield ['responseTimeLabel', `${endpoint.responseTime}ms`, ENUMERABLE_BIT]
       }
       if (value) {
-        cb(key, value, ENUMERABLE_BIT)
+        yield [key, value, ENUMERABLE_BIT]
       }
-    })
+    }
   }
 }
 

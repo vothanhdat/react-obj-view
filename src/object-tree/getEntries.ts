@@ -14,10 +14,15 @@ export function* getEntriesOriginal(
 
     if (!shouldIterate) return;
 
+    const entry: ResolverEntry = [undefined as any, undefined, 0];
+
     if (value instanceof Array) {
 
         for (let index = 0; index < value.length; index++) {
-            yield [index, value[index], ENUMERABLE_BIT];
+            entry[0] = index;
+            entry[1] = value[index];
+            entry[2] = ENUMERABLE_BIT;
+            yield entry;
         }
 
     } else {
@@ -25,19 +30,17 @@ export function* getEntriesOriginal(
         if (config.nonEnumerable) {
             for (let key of Object.getOwnPropertyNames(value)) {
                 const descriptor = Object.getOwnPropertyDescriptor(value, key)
-                yield [
-                    key,
-                    descriptor?.get ? LazyValue.getInstance(value, key) : descriptor?.value,
-                    descriptor?.enumerable ? ENUMERABLE_BIT : 0
-                ];
+                entry[0] = key;
+                entry[1] = descriptor?.get ? LazyValue.getInstance(value, key) : descriptor?.value;
+                entry[2] = descriptor?.enumerable ? ENUMERABLE_BIT : 0;
+                yield entry;
             }
         } else {
             for (let key in value) {
-                yield [
-                    key,
-                    (value as any)[key],
-                    ENUMERABLE_BIT,
-                ];
+                entry[0] = key;
+                entry[1] = (value as any)[key];
+                entry[2] = ENUMERABLE_BIT;
+                yield entry;
             }
         }
 
@@ -45,25 +48,23 @@ export function* getEntriesOriginal(
 
     if (config.symbol) {
         for (var symbol of Object.getOwnPropertySymbols(value)) {
-            yield [
-                symbol,
-                value[symbol],
-                propertyIsEnumerable.call(value, symbol) ? ENUMERABLE_BIT : 0,
-            ];
+            entry[0] = symbol;
+            entry[1] = value[symbol];
+            entry[2] = propertyIsEnumerable.call(value, symbol) ? ENUMERABLE_BIT : 0;
+            yield entry;
         }
     }
 
     if (config.nonEnumerable && value !== Object.prototype && !value[hidePrototype]) {
-        yield [
-            '[[Prototype]]',
-            Object.getPrototypeOf(value),
-            0,
-        ];
+        entry[0] = '[[Prototype]]';
+        entry[1] = Object.getPrototypeOf(value);
+        entry[2] = 0;
+        yield entry;
     }
 
 };
 
-export function* getEntries(
+export function getEntries(
     value: unknown,
     config: WalkingConfig,
     isPreview: boolean,
@@ -75,7 +76,7 @@ export function* getEntries(
         : undefined
 
     if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
-        yield* config.resolver?.get(prototype)!(
+        return config.resolver?.get(prototype)!(
             value,
             (value) => getEntriesOriginal(value, config),
             isPreview,
@@ -83,7 +84,7 @@ export function* getEntries(
             stableRef,
         )
     } else {
-        yield* getEntriesOriginal(value, config)
+        return getEntriesOriginal(value, config)
     }
 
 };

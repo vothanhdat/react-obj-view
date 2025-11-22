@@ -44,16 +44,16 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
     },
     iterateChilds(value, { config, circularChecking }, ref, cb) {
         circularChecking.enterNode(value);
-        for (const [key, val, meta] of getEntries(
+        for (const entry of getEntries(
             value,
             config as any,
             false,
             ref,
         )) {
             cb(
-                val, key,
-                meta |
-                (circularChecking.checkCircular(val) ? 0 : NON_CIRCULAR_BIT)
+                entry[1], entry[0],
+                entry[2] |
+                (circularChecking.checkCircular(entry[1]) ? 0 : NON_CIRCULAR_BIT)
             )
         }
         circularChecking.exitNode(value);

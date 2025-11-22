@@ -1,5 +1,5 @@
 import { hidePrototype } from "../getEntries";
-import { ResolverFn } from "../types";
+import { ResolverEntry, ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
 import { ENUMERABLE_BIT } from "../meta" with {type: "macro"};
 
@@ -62,22 +62,25 @@ export const iteraterResolver: ResolverFn<CustomIterator> = function* (
     _isPreview
 ) {
     const iterator = e.iterator();
+    const entry: ResolverEntry = [undefined as any, undefined, 0];
 
     if (Object.getPrototypeOf(iterator) == MapIterater) {
         let index = 0;
 
         for (let [key, value] of iterator) {
-            yield [
-                index++,
-                CustomEntry.getEntry(e, key, value),
-                ENUMERABLE_BIT
-            ];
+            entry[0] = index++;
+            entry[1] = CustomEntry.getEntry(e, key, value);
+            entry[2] = ENUMERABLE_BIT;
+            yield entry;
         }
     } else {
         let index = 0;
 
-        for (let entry of iterator) {
-            yield [index++, entry, ENUMERABLE_BIT];
+        for (let val of iterator) {
+            entry[0] = index++;
+            entry[1] = val;
+            entry[2] = ENUMERABLE_BIT;
+            yield entry;
         }
     }
 
@@ -90,12 +93,12 @@ export const mapResolver: ResolverFn<Map<any, any>> = function* (
 ) {
     if (isPreview) {
         let index = 0;
+        const entry: ResolverEntry = [undefined as any, undefined, 0];
         for (let [key, value] of map.entries()) {
-            yield [
-                index++,
-                CustomEntry.getEntry(map, key, value),
-                ENUMERABLE_BIT
-            ];
+            entry[0] = index++;
+            entry[1] = CustomEntry.getEntry(map, key, value);
+            entry[2] = ENUMERABLE_BIT;
+            yield entry;
         }
     } else {
         yield [
@@ -118,8 +121,13 @@ export const setResolver: ResolverFn<Set<any>> = function* (
 ) {
     if (isPreview) {
         let index = 0;
-        for (let value of set.values())
-            yield [index++, value, ENUMERABLE_BIT];
+        const entry: ResolverEntry = [undefined as any, undefined, 0];
+        for (let value of set.values()) {
+            entry[0] = index++;
+            entry[1] = value;
+            entry[2] = ENUMERABLE_BIT;
+            yield entry;
+        }
 
     } else {
         yield [

@@ -79,7 +79,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(mapResolver(map, next, true, {} as any, map))
+      const entries = Array.from(mapResolver(map, next, true, {} as any, map), e => [...e])
       
       expect(entries).toHaveLength(3)
       expect(next).toHaveBeenCalledWith(map)
@@ -95,7 +95,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(mapResolver(map, next, false, {} as any, map))
+      const entries = Array.from(mapResolver(map, next, false, {} as any, map), e => [...e])
       
       expect(entries).toContainEqual(['[[Entries]]', expect.any(CustomIterator), 0])
       expect(entries).toContainEqual(['size', 2, ENUMERABLE_BIT])
@@ -110,7 +110,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(setResolver(set, next, true, {} as any, set))
+      const entries = Array.from(setResolver(set, next, true, {} as any, set), e => [...e])
       
       expect(entries).toHaveLength(3)
       expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT])
@@ -124,7 +124,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(setResolver(set, next, false, {} as any, set))
+      const entries = Array.from(setResolver(set, next, false, {} as any, set), e => [...e])
       
       // Should call cb for [[Entries]] and size
       expect(entries).toContainEqual(['[[Entries]]', expect.any(CustomIterator), 0])
@@ -140,7 +140,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator))
+      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator), e => [...e])
       
       expect(entries).toHaveLength(2)
       
@@ -155,7 +155,7 @@ describe('collections resolvers', () => {
       
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator))
+      const entries = Array.from(iteraterResolver(iterator, next, false, {} as any, iterator), e => [...e])
       
       expect(entries).toHaveLength(3)
       expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT])

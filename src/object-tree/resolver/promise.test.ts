@@ -53,7 +53,7 @@ describe('promise resolvers', () => {
       const promise = Promise.resolve(42)
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(promiseResolver(promise, next, true, {} as any, promise))
+      const entries = Array.from(promiseResolver(promise, next, true, {} as any, promise), e => [...e])
       
       expect(entries).toHaveLength(2)
       
@@ -74,7 +74,7 @@ describe('promise resolvers', () => {
       const promise = Promise.resolve(42)
       const next = vi.fn(function* () {})
       
-      const entries = Array.from(promiseResolver(promise, next, false, {} as any, promise))
+      const entries = Array.from(promiseResolver(promise, next, false, {} as any, promise), e => [...e])
       
       expect(entries).toHaveLength(2)
       

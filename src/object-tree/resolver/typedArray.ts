@@ -258,13 +258,12 @@ const dataViewLikeResolver: ResolverFn<DataViewLike> = function* (
         if (value instanceof DataView || value instanceof WrappedBufferView) {
             let addrPaddStart = value.byteLength.toString(16).length
             let current = 0;
+            const entry: ResolverEntry = [undefined as any, undefined, EMPTY_CHILD_BIT];
             while (current < value.byteLength) {
                 let next = Math.min(current + 8, value.byteLength)
-                yield [
-                    '0x' + current.toString(16).padStart(addrPaddStart, '0'),
-                    BufferItemView.getItem(value, current, next),
-                    EMPTY_CHILD_BIT,
-                ];
+                entry[0] = '0x' + current.toString(16).padStart(addrPaddStart, '0');
+                entry[1] = BufferItemView.getItem(value, current, next);
+                yield entry;
                 current = next;
             }
         } else {
@@ -326,13 +325,12 @@ const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = function* (
         let addrPadStart = arr.length.toString(16).length
         let current = 0;
         let CHUNK = arr.BYTES_PER_ELEMENT >= 4 ? 4 : 8
+        const entry: ResolverEntry = [undefined as any, undefined, EMPTY_CHILD_BIT];
         while (current < arr.length) {
             let next = Math.min(current + CHUNK, arr.length)
-            yield [
-                '0x' + current.toString(16).padStart(addrPadStart, '0'),
-                TypedArrayItemView.getItem(arr, current, next, formatFn),
-                EMPTY_CHILD_BIT,
-            ];
+            entry[0] = '0x' + current.toString(16).padStart(addrPadStart, '0');
+            entry[1] = TypedArrayItemView.getItem(arr, current, next, formatFn);
+            yield entry;
             current = next;
         }
     }

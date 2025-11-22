@@ -1,5 +1,5 @@
 import { hidePrototype } from "../getEntries";
-import { ResolverFn } from "../types";
+import { ResolverEntry, ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
 import { ENUMERABLE_BIT } from "../meta" with {type: "macro"};
 
@@ -58,16 +58,16 @@ export const promiseResolver: ResolverFn<Promise<any>> = function* (
     isPreview
 ) {
     let { result, status } = getPromiseStatus(promise);
-    yield [
-        "[[status]]",
-        InternalPromise.getInstance(status),
-        isPreview ? ENUMERABLE_BIT : 0
-    ];
-    yield [
-        "[[result]]",
-        InternalPromise.getInstance(result),
-        isPreview ? ENUMERABLE_BIT : 0
-    ];
+    const entry: ResolverEntry = [undefined as any, undefined, isPreview ? ENUMERABLE_BIT : 0];
+
+    entry[0] = "[[status]]";
+    entry[1] = InternalPromise.getInstance(status);
+    yield entry;
+
+    entry[0] = "[[result]]";
+    entry[1] = InternalPromise.getInstance(result);
+    yield entry;
+
     yield* next(promise);
 };
 

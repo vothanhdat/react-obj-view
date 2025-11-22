@@ -14,7 +14,7 @@ describe('getEntriesOriginal', () => {
 
     it('should iterate over array indices', () => {
         const arr = [1, 2, 3];
-        const entries = Array.from(getEntriesOriginal(arr, defaultConfig));
+        const entries = Array.from(getEntriesOriginal(arr, defaultConfig), e => [...e]);
 
         expect(entries).toHaveLength(3);
         expect(entries[0]).toEqual([0, 1, ENUMERABLE_BIT]);
@@ -24,7 +24,7 @@ describe('getEntriesOriginal', () => {
 
     it('should iterate over object properties', () => {
         const obj = { a: 1, b: 2 };
-        const entries = Array.from(getEntriesOriginal(obj, defaultConfig));
+        const entries = Array.from(getEntriesOriginal(obj, defaultConfig), e => [...e]);
 
         expect(entries).toHaveLength(2);
         expect(entries[0]).toEqual(['a', 1, ENUMERABLE_BIT]);
@@ -39,7 +39,7 @@ describe('getEntriesOriginal', () => {
         });
         const config = { ...defaultConfig, nonEnumerable: true };
         
-        const entries = Array.from(getEntriesOriginal(obj, config));
+        const entries = Array.from(getEntriesOriginal(obj, config), e => [...e]);
 
         expect(entries).toContainEqual(['hidden', 'secret', 0]);
         expect(entries).toContainEqual(['[[Prototype]]', Object.prototype, 0]);
@@ -51,7 +51,7 @@ describe('getEntriesOriginal', () => {
         };
         const config = { ...defaultConfig, nonEnumerable: true };
         
-        const entries = Array.from(getEntriesOriginal(obj, config));
+        const entries = Array.from(getEntriesOriginal(obj, config), e => [...e]);
 
         const computedEntry = entries.find(e => e[0] === 'computed');
         expect(computedEntry).toBeDefined();
@@ -64,7 +64,7 @@ describe('getEntriesOriginal', () => {
         const obj = { [sym]: 'symbolValue' };
         const config = { ...defaultConfig, symbol: true };
         
-        const entries = Array.from(getEntriesOriginal(obj, config));
+        const entries = Array.from(getEntriesOriginal(obj, config), e => [...e]);
 
         expect(entries).toContainEqual([sym, 'symbolValue', ENUMERABLE_BIT]);
     });
@@ -96,7 +96,7 @@ describe('getEntries', () => {
         const obj = { a: 1 };
         const config = { ...defaultConfig };
         
-        const entries = Array.from(getEntries(obj, config, false, null));
+        const entries = Array.from(getEntries(obj, config, false, null), e => [...e]);
 
         expect(entries).toHaveLength(1);
         expect(entries[0]).toEqual(['a', 1, ENUMERABLE_BIT]);
