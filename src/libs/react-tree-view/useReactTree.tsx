@@ -86,29 +86,38 @@ export const useReactTree = <
             let m = new Map<any, FlattenNodeWrapper<T, MetaParser>>();
 
             return (index: number) => {
-                let data = m.get(index);
+                try {
 
-                if (!data) {
-                    let state = ref.current.instance.getNode(index);
-                    data = new FlattenNodeWrapper(
-                        metaParser,
-                        state.state as InferWalkingResult<T>,
-                        state.depth,
-                        state.paths,
-                        state.parentIndex
-                    );
+                    let data = m.get(index);
 
-                    m.set(index, data);
+                    if (!data) {
+                        let state = ref.current.instance.getNode(index);
+                        data = new FlattenNodeWrapper(
+                            metaParser,
+                            state.state as InferWalkingResult<T>,
+                            state.depth,
+                            state.paths,
+                            state.parentIndex
+                        );
+
+                        m.set(index, data);
+                    }
+
+
+                    return data;
+                } catch (error) {
+                    console.error(error)
+                    return undefined;
                 }
-
-                return data;
             };
         },
         [ref.current.instance, walkingResult, reload]
     );
 
     const computeItemKey = useCallback(
-        (index: number) => walkingResult && index < walkingResult.childCount ? getNodeByIndex(index).path : "",
+        (index: number) => walkingResult && index < walkingResult.childCount
+            ? getNodeByIndex(index)?.path ?? `index:${index}`
+            : `index:${index}`,
         [getNodeByIndex, walkingResult?.childCount]
     );
 
