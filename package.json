@@ -45,7 +45,7 @@
     "object-inspector",
     "frontend"
   ],
-  "author": "Your Name",
+  "author": "Vo Thanh Dat",
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0",

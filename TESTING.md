@@ -15,7 +15,7 @@ This document provides comprehensive information about the testing infrastructur
 
 ## Overview
 
-The react-obj-view library uses a comprehensive test suite with 182 tests covering:
+The react-obj-view library uses a comprehensive test suite with 221 tests covering:
 - Utility functions
 - Core tree engine (walkingFactory, StateFactory)
 - Tree-core and react-tree-view modules
@@ -196,8 +196,8 @@ src/
 
 ### Current Test Statistics
 
-- **Total Tests**: 182
-- **Test Files**: 18
+- **Total Tests**: 221
+- **Test Files**: 26
 - **Pass Rate**: 100%
 
 ### Coverage by Category
