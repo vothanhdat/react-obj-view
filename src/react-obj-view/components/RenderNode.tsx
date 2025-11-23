@@ -24,6 +24,8 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const ActionRenders = actionRenders ?? DefaultActions
 
+    // Using 'as any' because objectHasChild expects ObjectWalkingContext with circularChecking,
+    // but we only need it for the hasChild check which doesn't require that property
     const hasChild = objectHasChild(
         value, nodeData.meta!,
         { config: { nonEnumerable, resolver: includeSymbols } } as any

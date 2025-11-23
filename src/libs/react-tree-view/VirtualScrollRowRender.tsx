@@ -13,7 +13,7 @@ export const VirtualScrollRowRender: <
 >(props: {
     index: number;
     size: number;
-    getNodeByIndex: (index: number) => FlattenNodeWrapper<T, MetaParser>;
+    getNodeByIndex: (index: number) => FlattenNodeWrapper<T, MetaParser> | undefined;
     toggleChildExpand: ({ paths }: FlattenNodeData<T, MetaParser>) => void;
     refreshPath: ({ paths }: FlattenNodeData<T, MetaParser>) => void;
     options: RenderOptions;
