@@ -9,7 +9,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     ctx: Context,
     currentDepth: number,
     state: WalkingResult<Value, Key, Meta>,
-    getChild: (key: PropertyKey) => any,
+    getChild: GetStateFn<WalkingResult<Value, Key, Meta>>,
 ) => {
 
     let childCount = 1
@@ -17,7 +17,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     let childCanExpand = false;
     let childOffsets = [childCount]
     let childKeys = [] as Key[]
-
+    // console.group("iterateChildWrap")
     iterateChilds(
         value, ctx, state,
         (value, key, meta) => {
@@ -42,6 +42,87 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
             return ctx.iterateCounter < 0;
         }
     )
+
+    // console.log(childKeys)
+    // console.log(childOffsets)
+    // console.log({ childCount })
+
+    // console.groupEnd()
+
+
+    return {
+        childCount,
+        childDepth,
+        childCanExpand,
+        childOffsets,
+        childKeys,
+    }
+}
+
+const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
+    iterateChilds: WalkingAdaper<Value, Key, Meta, Config, Context>['iterateChilds'],
+    walkingInternal: any,
+    value: Value,
+    ctx: Context,
+    currentDepth: number,
+    state: WalkingResult<Value, Key, Meta>,
+    getChild: GetStateFn<WalkingResult<Value, Key, Meta>>,
+) => {
+
+    let childCount = 1
+    let childDepth = currentDepth
+    let childCanExpand = false;
+    let childOffsets = [childCount]
+    let childKeys = [] as Key[]
+    let iterateIndex = 0
+    let isInCache = true
+
+    // console.group("iterateChildWrapContinues")
+
+    // console.log({ childKeys })
+    // console.log({ childOffsets })
+    // console.log({ childCount })
+    // console.log(">>>>>")
+
+    iterateChilds(
+        value, ctx, state,
+        (value, key, meta) => {
+
+            let stateWrap = getChild(key as any);
+            let r = stateWrap.state!;
+            if (stateWrap.state.iterateFinish) {
+            } else {
+                r = walkingInternal(
+                    value,
+                    key,
+                    meta,
+                    ctx,
+                    currentDepth + 1,
+                    stateWrap,
+                )
+                iterateIndex++;
+            }
+
+            childCount += r.childCount
+            childDepth = Math.max(childDepth, r.childDepth)
+            childCanExpand ||= r.childCanExpand
+
+            childOffsets.push(childCount)
+
+            childKeys.push(key);
+
+            return ctx.iterateCounter < 0;
+
+
+        }
+    )
+    // console.log("<<<<<<<")
+
+    // console.log({ childKeys })
+    // console.log({ childOffsets })
+    // console.log({ childCount })
+
+    // console.groupEnd()
 
     return {
         childCount,
@@ -115,14 +196,22 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
                 // onEnterNode?.(value, key, meta, ctx);
 
-                let iterateResult = iterateChildWrap(
+                let iterateResult = state.earlyReturn ? iterateChildWrapContinues(
                     iterateChilds,
                     walkingInternal,
                     value,
                     ctx,
                     currentDepth,
                     state,
-                    getChild,
+                    getChild as any,
+                ) : iterateChildWrap(
+                    iterateChilds,
+                    walkingInternal,
+                    value,
+                    ctx,
+                    currentDepth,
+                    state,
+                    getChild as any,
                 )
 
                 // onExitNode?.(value, key, meta, ctx);
@@ -156,6 +245,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             state.updateToken = ctx.updateToken;
             state.updateStamp = ctx.updateStamp;
             state.iterateFinish = ctx.iterateCounter >= 0;
+            state.earlyReturn = !state.iterateFinish;
             state.selfStamp++;
             ctx.iterateCounter--;
 
@@ -180,6 +270,7 @@ const stateFactoryFn: () => WalkingResult<any, any, any> = () => ({
     childDepth: 0,
 
     iterateFinish: false,
+    earlyReturn: false,
     selfStamp: 0,
 
     expandedDepth: 0,
@@ -236,7 +327,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
         while (true) {
             context.iterateCounter = iterateSize;
-            
+
             let state = walkingInternal(
                 value,
                 key,
@@ -292,6 +383,11 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
             return { state, depth, paths, parentIndex }
         } else {
             if (!state.childOffsets || !state.childKeys) {
+                console.log("Wrong state", {
+                    index,
+                    paths,
+                    parentIndex,
+                })
                 throw new Error("Wrong state")
             }
 

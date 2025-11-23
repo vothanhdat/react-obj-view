@@ -15,6 +15,7 @@ export type WalkingResult<Value, Key, Meta> = {
     updateToken: number;
     updateStamp: number;
     iterateFinish: boolean
+    earlyReturn: boolean
     selfStamp: number;
 
     userExpand?: boolean;

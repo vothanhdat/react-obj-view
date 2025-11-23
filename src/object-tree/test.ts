@@ -38,9 +38,13 @@ console.group("State:")
 let iterateCount = 0
 for (let state of walkingIterate) {
 
-    console.group("Iterate Counter: %s", iterateCount)
+    // console.group("Iterate Counter: %s", iterateCount)
 
-    let t : Record<string,any>= {}
+    // console.log("childKeys", state.childKeys)
+    // console.log("childOffsets", state.childOffsets)
+    // console.log("childCount", state.childCount)
+
+    let t: Record<string, any> = {}
 
     for (let i = 0; i < state!.childCount; i++) {
         let nodeData = getNode(i)
