@@ -117,7 +117,7 @@ export const useReactTree = <
     const computeItemKey = useCallback(
         (index: number) => walkingResult && index < walkingResult.childCount
             ? getNodeByIndex(index)?.path ?? `index:${index}`
-            : `index:${index}`,
+            : "",
         [getNodeByIndex, walkingResult?.childCount]
     );
 
