@@ -27,8 +27,8 @@ export type ObjectViewProps = {
     name?: string;
 
     expandLevel?: number | boolean;
-    objectGroupSize?: number; // >= 2 or no grouping
-    arrayGroupSize?: number; // >= 2 or no grouping
+    objectGroupSize?: number; // >= 2 or no grouping. Groups are collapsed by default.
+    arrayGroupSize?: number; // >= 2 or no grouping. Groups are collapsed by default.
     resolver?: Map<any, ResolverFn>;
     highlightUpdate?: boolean;
     stickyPathHeaders?: boolean;

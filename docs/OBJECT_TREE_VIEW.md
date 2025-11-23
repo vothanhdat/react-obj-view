@@ -26,7 +26,7 @@ The resolver map is assembled in [`src/react-obj-view/ObjectView.tsx`](../src/re
 
 1. Start with [`DEFAULT_RESOLVER`](../src/object-tree/resolver/index.ts) for Promises, Maps/Sets, errors, dates, lazy values, grouped proxies, etc.
 2. Merge any user-provided resolver entries.
-3. Append [`GROUP_ARRAY_RESOLVER`](../src/object-tree/resolver/grouped.ts) / [`GROUP_OBJECT_RESOLVER`](../src/object-tree/resolver/grouped.ts) when `arrayGroupSize` or `objectGroupSize` is greater than `1`.
+3. Append [`GROUP_ARRAY_RESOLVER`](../src/object-tree/resolver/grouped.ts) / [`GROUP_OBJECT_RESOLVER`](../src/object-tree/resolver/grouped.ts) when `arrayGroupSize` or `objectGroupSize` is greater than `1`. These resolvers create collapsed groups by default to maintain performance.
 
 Resolvers receive the current [`WalkingConfig`](../src/object-tree/types.ts) so they can honour `nonEnumerable` and `symbol` flags while pushing entries through the callback.
 

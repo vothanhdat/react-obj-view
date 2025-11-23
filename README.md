@@ -15,7 +15,7 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 - **Async Rendering** – non-blocking tree traversal keeps the UI responsive even when processing massive datasets.
 - **Resolver system** – promises, maps, sets, errors, dates, regexes, iterables, grouped proxies, typed arrays, buffers, and custom classes.
 - **Sticky path headers** – pin ancestor rows while scrolling so nested contexts stay visible.
-- **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below).
+- **Grouping for huge payloads** – `arrayGroupSize` & `objectGroupSize` bucket massive collections (objects must be enumerated first—see note below). Groups are collapsed by default to ensure minimal impact on render performance.
 - **TypeScript-native** – published `.d.ts` and React 19 JSX runtime support.
 - **Zero dependencies** – lightweight and self-contained (besides React).
 - **Styling hooks** – CSS variables + theme presets plus `className`/`style` escape hatches.
@@ -78,8 +78,8 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `valueGetter` | `() => unknown` | **required** | Lazily supplies the data that should be rendered. |
 | `name` | `string` | `undefined` | Optional root label shown before the first colon. |
 | `expandLevel` | `number \| boolean` | `false` | Depth of initial expansion; `true` expands everything (up to depth 20). |
-| `objectGroupSize` | `number` | `0` | Enable grouping for objects when they exceed this many keys. **Objects must be fully enumerated to detect size, so only enable this when you need grouped previews and can afford the enumeration cost.** |
-| `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. |
+| `objectGroupSize` | `number` | `0` | Enable grouping for objects when they exceed this many keys. Groups are collapsed by default for performance. **Objects must be fully enumerated to detect size, so only enable this when you need grouped previews and can afford the enumeration cost.** |
+| `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. Groups are collapsed by default for performance. |
 | `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. |
 | `highlightUpdate` | `boolean` | `false` | Flash updated values via `useChangeFlashClasses`. |
 | `stickyPathHeaders` | `boolean` | `true` | Pins the current node's ancestor label while you scroll through its children; disable to revert to free-scrolling rows. |
