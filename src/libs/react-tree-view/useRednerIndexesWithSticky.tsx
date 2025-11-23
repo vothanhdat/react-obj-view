@@ -21,7 +21,7 @@ export const useRednerIndexesWithSticky = ({
     childCount: number;
     lineHeight: number;
     stickyHeader: boolean;
-    getNodeByIndex: (index: number) => FlattenNodeWrapper<any, any>;
+    getNodeByIndex: (index: number) => FlattenNodeWrapper<any, any> | undefined;
 }) => {
 
     let startIndexRaw = start / lineHeight;

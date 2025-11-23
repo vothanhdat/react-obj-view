@@ -5,7 +5,7 @@ import { ObjectWalkingMetaParser } from "../../object-tree/types";
 
 export function useHoverInteractions(
     childCount: number,
-    getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser>
+    getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser> | undefined
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
     // const timeoutRef = useRef({ timeout: undefined as any });
@@ -20,6 +20,7 @@ export function useHoverInteractions(
             let containerStyles = containerRef?.current?.style;
             if (index < childCount && containerStyles) {
                 let node = getNodeByIndex(index)
+                if (!node) return;
                 let parentIndex = node.childCount > 1
                     ? node.parentIndex.at(-1)
                     : node.parentIndex.at(-2)

@@ -19,7 +19,7 @@ const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   const { nodeDataWrapper, valueWrapper, actions } = props
   const nodeData = nodeDataWrapper()
   const value = valueWrapper()
-  const hasChild = objectHasChild(value, nodeData.key!, nodeData.meta!)
+  const hasChild = objectHasChild(value, nodeData.meta!, { config: { nonEnumerable: false, resolver: false } } as any)
 
   return (
     <div style={{ display: 'flex', gap: '4px', marginLeft: '8px', alignItems: 'center' }}>
