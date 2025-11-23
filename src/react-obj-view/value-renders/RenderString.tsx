@@ -1,20 +1,25 @@
 import { RenderPopover } from "./Popover";
+import { useStringDisplay } from "./useStringDisplay";
 
 export const RenderString: React.FC<{ value: string; depth: number; }> = ({ value, depth }) => {
 
-    const max = depth == 0 ? 100 : 20;
-    const renderStr = JSON.stringify(value);
-    const addChar = renderStr.length > max ? '…' : '';
-    const enableAnchor = ((value.length > 40) || value?.includes("\n"))
-    const shortValue = depth > 0
-        ? "'" + renderStr.slice(1, -1).slice(0, max) + addChar + "'"
-        : renderStr.slice(0, max) + addChar
+    const { fullValue, shortValue, enablePopover } = useStringDisplay(
+        JSON.stringify(value).slice(1, -1),
+        depth
+    )
+
+    let renderStr = depth == 0
+        ? `"${shortValue}"`
+        : `'${shortValue}'`
+
 
     return <>
-
-        {enableAnchor
-            ? <RenderPopover {...{ value, shortValue }} />
-            : shortValue
+        {enablePopover
+            ? <RenderPopover {...{
+                value: fullValue,
+                shortValue: renderStr
+            }} />
+            : renderStr
         }
     </>
 };

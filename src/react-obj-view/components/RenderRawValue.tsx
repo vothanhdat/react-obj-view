@@ -5,6 +5,7 @@ import { RenderString } from "../value-renders/RenderString";
 import { RenderFunction } from "../value-renders/RenderFunction";
 import { ItemViewBase } from "../../object-tree/resolver";
 import { RenderBufferItem } from "../value-renders/BufferItemView";
+import { RenderRegex } from "../value-renders/RenderRegex";
 
 
 export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: RenderOptions }> = ({ valueWrapper, depth, options }) => {
@@ -29,7 +30,7 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
             if (!value)
                 return String(value);
 
-            if (value instanceof RegExp) return String(value);
+            if (value instanceof RegExp) return <RenderRegex {...{ value: value, depth }} />
             if (value instanceof Date) return String(value);
             if (value instanceof Array) return `Array(${value.length})`;
             if (value instanceof Map) return `Map(${value.size})`;
