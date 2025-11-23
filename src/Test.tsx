@@ -282,8 +282,8 @@ export const Test = () => {
   const [showNonEnumerable, setShowNonEnumerable] = useState(true)
   const [showSymbols, setShowSymbols] = useState(false)
   const [enableGrouping, setEnableGrouping] = useState(false)
-  const [objectGrouped, setObjectGrouped] = useState(25)
-  const [arrayGrouped, setArrayGrouped] = useState(10)
+  const [objectGrouped, setObjectGrouped] = useState(100)
+  const [arrayGrouped, setArrayGrouped] = useState(100)
   const [selectedThemeId, setSelectedThemeId] = useState(themeOptions[0].id)
   const [liveData, setLiveData] = useState(() => createLiveSnapshot(120))
   const [useLiveStream, setUseLiveStream] = useState(false)
@@ -637,9 +637,9 @@ export const Test = () => {
                   <input
                     id="object-group-range"
                     type="range"
-                    min={5}
-                    max={100}
-                    step={5}
+                    min={10}
+                    max={200}
+                    step={10}
                     value={objectGrouped}
                     onChange={(event) => setObjectGrouped(Number(event.target.value))}
                     disabled={!enableGrouping}
@@ -653,9 +653,9 @@ export const Test = () => {
                   <input
                     id="array-group-range"
                     type="range"
-                    min={5}
-                    max={100}
-                    step={5}
+                    min={10}
+                    max={200}
+                    step={10}
                     value={arrayGrouped}
                     onChange={(event) => setArrayGrouped(Number(event.target.value))}
                     disabled={!enableGrouping}
