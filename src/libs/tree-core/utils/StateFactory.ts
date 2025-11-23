@@ -1,30 +1,33 @@
 
 
-type StateMap<T> = {
+type StateMap<T, Key> = {
     state: T;
     touched: number,
-    childs: Map<PropertyKey, StateMap<T>>
+    childs: Map<Key, StateMap<T, Key>>
 }
 
-let touchTokenCounter = 1
-
-export type GetStateFn<T> = (currentMap: StateMap<T>) => {
+export type StateWrap<T, Key> = {
     state: T;
-    getChild: (key: PropertyKey) => any;
+    getChild: (key: Key) => StateWrap<T, Key>;
     cleanChild: () => void;
 }
 
-export type GetStateOnlyFn<T> = (map: StateMap<T>) => ({
-    state: T
-    getChildOnly: (key: PropertyKey) => any
-})
+export type StateReadonyWrap<T, Key> = {
+    state: T;
+    getChildOnly: (key: Key) => StateReadonyWrap<T, Key>;
+}
 
 
-const getChildFn = <T>(
-    getState: GetStateFn<T>,
-    currentMap: StateMap<T>,
+export type GetStateFn<T, Key> = (currentMap: StateMap<T, Key>) => StateWrap<T, Key>
+
+export type GetStateOnlyFn<T, Key> = (map: StateMap<T, Key>) => StateReadonyWrap<T, Key>
+
+
+const getChildFn = <T, Key>(
+    getState: GetStateFn<T, Key>,
+    currentMap: StateMap<T, Key>,
     touchToken: any
-) => (key: PropertyKey) => {
+) => (key: Key) => {
 
     if (!currentMap.childs) {
         currentMap.childs = new Map()
@@ -33,21 +36,21 @@ const getChildFn = <T>(
     let childMap = currentMap.childs.get(key)!;
 
     if (!childMap) {
-        childMap = { state: undefined, touched: touchToken, childs: undefined } as any as StateMap<T>;
+        childMap = { state: undefined, touched: touchToken, childs: undefined } as any as StateMap<T, Key>;
         currentMap.childs.set(key, childMap);
-    }else {
+    } else {
         childMap.touched = touchToken;
     }
 
     return getState(childMap);
 };
 
-const cleanChildFn = <T>(
-    currentMap: StateMap<T>,
+const cleanChildFn = <T, Key>(
+    currentMap: StateMap<T, Key>,
     touchToken: any,
 ) => () => {
     let map = currentMap.childs
-    if(!map) return;
+    if (!map) return;
     for (const [key, value] of map) {
         if (value.touched !== touchToken) {
             map.delete(key);
@@ -55,20 +58,22 @@ const cleanChildFn = <T>(
     }
 };
 
-const voidFn = () => {}
+const voidFn = () => { }
 
-const getChildOnly = <T>(
-    getState: GetStateOnlyFn<T>,
-    currentMap: StateMap<T>,
-) => (key: PropertyKey) => {
+const getChildOnly = <T, Key>(
+    getState: GetStateOnlyFn<T, Key>,
+    currentMap: StateMap<T, Key>,
+) => (key: Key) => {
     return getState(currentMap.childs.get(key)!)
 }
 
 
 
-export const StateFactory = <T>(onNew: () => T) => {
+export const StateFactory = <T, Key>(onNew: () => T) => {
 
-    const stateFactory: GetStateFn<T> = (currentMap: StateMap<T>) => {
+    let touchTokenCounter = 1
+
+    const stateFactory: GetStateFn<T, Key> = (currentMap: StateMap<T, Key>) => {
         if (!currentMap) {
             throw new Error("currentMap not found")
         }
@@ -81,7 +86,7 @@ export const StateFactory = <T>(onNew: () => T) => {
         };
     };
 
-    const getStateOnly: GetStateOnlyFn<T> = (currentMap: StateMap<T>) => {
+    const getStateOnly: GetStateOnlyFn<T, Key> = (currentMap: StateMap<T, Key>) => {
         if (!currentMap) {
             throw new Error("currentMap not found")
         }
@@ -92,8 +97,8 @@ export const StateFactory = <T>(onNew: () => T) => {
     }
 
     return {
-        stateFactory: stateFactory as GetStateFn<T>,
-        getStateOnly: getStateOnly as GetStateOnlyFn<T>,
+        stateFactory: stateFactory as GetStateFn<T, Key>,
+        getStateOnly: getStateOnly as GetStateOnlyFn<T, Key>,
     }
 
 };
