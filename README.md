@@ -91,6 +91,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). [See example](./API_DOCUMENTATION.md#custom-action-renders). |
+| `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
 
 
 👉 Need more detail? Check the [API Documentation](./API_DOCUMENTATION.md).

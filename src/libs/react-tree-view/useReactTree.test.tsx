@@ -79,7 +79,7 @@ describe("useReactTree", () => {
         expect(factory).toHaveBeenCalledTimes(1);
         
         await waitFor(() => {
-             expect(instance.walkingAsync).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1);
+             expect(instance.walkingAsync).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1, undefined);
              expect(result.current.childCount).toBe(3);
         });
 

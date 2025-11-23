@@ -36,6 +36,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     includeSymbols = false,
     stickyPathHeaders = true,
     actionRenders,
+    iterateSize,
 }) => {
 
     const value = useMemo(() => valueGetter?.(), [valueGetter])
@@ -75,6 +76,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         metaParser: parseWalkingMeta,
         name: name ?? "ROOT",
         value,
+        iterateSize,
     })
 
     const { getNodeByIndex, childCount } = objectTree

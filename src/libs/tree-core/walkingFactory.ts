@@ -337,22 +337,28 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
         let context = getContextDefault(config, expandDepth);
 
-        while (true) {
-            context.iterateCounter = iterateSize;
+        try {
+            while (true) {
+                context.iterateCounter = iterateSize;
 
-            let state = walkingInternal(
-                value,
-                key,
-                defaultMeta(value, key),
-                context,
-                1,
-                stateRoot,
-            )
+                let state = walkingInternal(
+                    value,
+                    key,
+                    defaultMeta(value, key),
+                    context,
+                    1,
+                    stateRoot,
+                )
 
-            yield state
+                yield state
 
-            if (state.iterateFinish)
-                return;
+                if (state.iterateFinish)
+                    return;
+            }
+        } catch (e) {
+            console.error("Error in walkingAsync", e);
+            // Optionally yield an error state or rethrow
+            throw e;
         }
     }
 

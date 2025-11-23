@@ -81,6 +81,7 @@ export type ObjectViewProps = {
   lineHeight?: number;
   className?: string;
   actionRenders?: React.FC<ObjectViewRenderRowProps>;
+  iterateSize?: number;
 };
 ```
 
@@ -98,6 +99,7 @@ export type ObjectViewProps = {
 | `stickyPathHeaders` | `true` | Keeps the current ancestor row pinned to the top of the viewport while its children scroll; set to `false` for legacy, non-sticky behaviour. |
 | `preview` | `true` | Shows inline previews (e.g. `Array(10)` or string snippets) for collapsed nodes. |
 | `nonEnumerable` | `false` | Includes non-enumerable properties when traversing objects. |
+| `iterateSize` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
 | `includeSymbols` | `false` | Includes symbol-keyed properties during traversal and in previews. |
 | `showLineNumbers` | `false` | Renders a gutter with 0-based line numbers next to each row. |
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |

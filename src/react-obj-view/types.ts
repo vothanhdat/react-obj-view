@@ -40,4 +40,5 @@ export type ObjectViewProps = {
     lineHeight?: number;
     className?: string;
     actionRenders?: React.FC<ObjectViewRenderRowProps>,
+    iterateSize?: number;
 };

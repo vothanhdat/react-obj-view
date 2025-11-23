@@ -16,6 +16,7 @@ export type ReactTreeHookParams<
     value: InferWalkingType<T>['Value'];
     name: InferWalkingType<T>['Key'];
     metaParser: MetaParser;
+    iterateSize?: number;
 };
 
 export type ReactTreeRowRenderProps<

@@ -11,7 +11,7 @@ export const useReactTree = <
     T extends WalkingAdaperBase,
     MetaParser extends MetaParserBase<T>
 >({
-    factory, config, expandDepth, metaParser, value, name,
+    factory, config, expandDepth, metaParser, value, name, iterateSize
 }: ReactTreeHookParams<T, MetaParser>) => {
 
     const [reload, setReload] = useState(0);
@@ -31,7 +31,7 @@ export const useReactTree = <
     useEffect(
         () => {
 
-            let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth)
+            let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth, iterateSize)
             let isRunning = true
 
 
@@ -89,11 +89,9 @@ export const useReactTree = <
                 let data = m.get(index);
 
                 if (!data) {
-                    //TODO remove any
-                    let state: InferNodeResult<T> = ref.current.instance.getNode(index) as any;
+                    let state = ref.current.instance.getNode(index);
                     data = new FlattenNodeWrapper(
                         metaParser,
-                        //TODO remove as InferWalkingResult<T>
                         state.state as InferWalkingResult<T>,
                         state.depth,
                         state.paths,
