@@ -23,7 +23,7 @@ An adapter describes how to iterate your domain-specific nodes:
 
 ```ts
 export type WalkingAdapter<Value, Key, Meta, Config, Context> = {
-  valueHasChild: (value, key, meta) => boolean;
+  valueHasChild: (value, meta, ctx) => boolean;
   iterateChilds: (value, ctx, stableRef, cb) => void;
   defaultMeta: (value, key) => Meta;
   defaultContext: (ctx: WalkingContext<Config>) => Context;
@@ -78,7 +78,7 @@ const fileAdapter: TreeCore.WalkingAdaper<
   FileConfig,
   TreeCore.WalkingContext<FileConfig>
 > = {
-  valueHasChild(node) {
+  valueHasChild(node, meta, ctx) {
     return node.type === "folder" && !!node.children?.length;
   },
   iterateChilds(node, ctx, _stableRef, cb) {
