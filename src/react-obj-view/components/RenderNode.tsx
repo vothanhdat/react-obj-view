@@ -6,19 +6,17 @@ import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError } from "../../object-tree";
 import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
-import { valueHasChild } from "../../object-tree/objectWalkingAdaper";
 
 
 export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const { nodeDataWrapper, valueWrapper, options, renderIndex, actions, } = props
 
-    const { enablePreview, actionRenders } = options
+    const { enablePreview, actionRenders, } = options
 
     const nodeData = nodeDataWrapper()
 
     const value = useInternalPromiseResolve(valueWrapper())
-
 
     const isExpanded = nodeData.expanded
 
@@ -26,7 +24,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const ActionRenders = actionRenders ?? DefaultActions
 
-    const hasChild = valueHasChild(value, nodeData.key!, nodeData.meta!)
+    const hasChild = nodeData.hasChild
 
     const isPreview = enablePreview
         && (hasChild || value instanceof LazyValueError)

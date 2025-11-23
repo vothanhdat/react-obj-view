@@ -71,14 +71,14 @@ export const iteraterResolver: ResolverFn<CustomIterator> = (
             if (cb(
                 index++,
                 CustomEntry.getEntry(e, key, value),
-                ENUMERABLE_BIT
+                0
             )) return;
         }
     } else {
         let index = 0;
 
         for (let entry of iterator) {
-            if (cb(index++, entry, ENUMERABLE_BIT))
+            if (cb(index++, entry, 0))
                 return;
         }
     }

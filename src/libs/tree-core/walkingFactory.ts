@@ -1,5 +1,6 @@
 import { StateFactory, StateReadonyWrap, StateWrap } from "./utils/StateFactory"
 import { WalkingContext, WalkingAdaper, WalkingResult, NodeResult } from "./types"
+import { config } from "process"
 
 
 const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
@@ -168,7 +169,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             ? transformValue(value, state)
             : value;
 
-        const hasChild = valueHasChild(value, key, meta)
+        const hasChild = valueHasChild(value, meta, ctx)
 
         const limitByDepth = currentDepth <= ctx.expandDepth
 

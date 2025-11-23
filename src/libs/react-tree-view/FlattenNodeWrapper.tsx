@@ -14,6 +14,7 @@ export type FlattenNodeData<
         path: string;
         paths: PropertyKey[];
         parents: number[];
+        hasChild: boolean
     };
 
 export class FlattenNodeWrapper<
@@ -44,15 +45,20 @@ export class FlattenNodeWrapper<
         return this.state.childCount
     }
 
+    public get hasChild() {
+        return this.state.childCanExpand || this.childCount > 1
+    }
+
     getData(): FlattenNodeData<T, MetaParser> {
         const state = this.state;
         return ({
             ...state,
             ...this.metaParser(state.meta!),
             depth: this.depth,
+            hasChild: this.hasChild,
             path: this.path,
             paths: this.paths,
-            parents: this.parentIndex
+            parents: this.parentIndex,
         });
     }
 

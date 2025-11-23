@@ -1,7 +1,7 @@
 import { walkingFactory } from "../libs/tree-core";
 import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
 import { getEntriesCb } from "./getEntries";
-import { ObjectWalkingAdater, WalkingMeta } from "./types";
+import { ObjectWalkingAdater, WalkingMeta, ObjectWalkingContext } from "./types";
 import { CircularChecking } from "./utils/CircularChecking";
 import { getObjectUniqueId } from "./utils/getObjectUniqueId";
 import { isRef } from "./utils/isRef";
@@ -36,13 +36,13 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
             circularChecking: new CircularChecking()
         };
     },
-    valueHasChild(value: unknown, key: PropertyKey, meta: WalkingMeta) {
-        return isRef(value)
+    valueHasChild(value: unknown, meta: WalkingMeta, ctx: ObjectWalkingContext) {
+        return (ctx.config.nonEnumerable ? isRef(value) : (value !== null && typeof value  === 'object'))
             && (meta & META_HASCHILD_MASK) === META_HASCHILD_COND
             && !(value instanceof Date)
             && !(value instanceof RegExp)
     },
-    iterateChilds(value, { config, circularChecking }, ref, cb) {
+    iterateChilds(value, { config, circularChecking }: ObjectWalkingContext, ref, cb) {
         circularChecking.enterNode(value);
         getEntriesCb(
             value,
