@@ -195,7 +195,7 @@ class WrappedBufferView implements DataViewLike {
 
     static #cache = new WeakMap();
 
-    static getInstance(e: ArrayBuffer) {
+    static getInstance(e: ArrayBuffer | SharedArrayBuffer) {
         if (!this.#cache.has(e)) {
             this.#cache.set(e, new WrappedBufferView(e));
         }
@@ -203,7 +203,7 @@ class WrappedBufferView implements DataViewLike {
     }
 
     private constructor(
-        public buff: ArrayBuffer,
+        public buff: ArrayBuffer | SharedArrayBuffer,
         public data = new DataView(buff),
     ) { }
 
@@ -241,8 +241,68 @@ class WrappedTypedArray {
 
 }
 
+const dataViewResolver: ResolverFn<DataView> = (
+    value,
+    cb,
+    next,
+    isPreview,
+    config,
+    stableRef
+) => {
+    if (isPreview) {
+        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+        cb("byteOffset", value.byteOffset, ENUMERABLE_BIT)
+    } else {
+        cb("byteLength", value.byteLength, 0)
+        cb("byteOffset", value.byteOffset, 0)
+        cb("[[buffer]]", WrappedBufferView.getInstance(value.buffer), 0)
+        next(value)
+    }
+}
 
-const dataViewLikeResolver: ResolverFn<DataViewLike> = (
+const bufferResolver: ResolverFn<ArrayBuffer> = (
+    value,
+    cb,
+    next,
+    isPreview,
+    config,
+    stableRef
+) => {
+    if (isPreview) {
+        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+    } else {
+        cb("byteLength", value.byteLength, 0)
+        cb("[[buffer]]", WrappedBufferView.getInstance(value), 0)
+        next(value)
+    }
+}
+
+const typeArrayResolver: ResolverFn<TypedArrayLike> = (
+    value: TypedArrayLike,
+    cb,
+    next,
+    isPreview,
+    config,
+    stableRef
+) => {
+    if (isPreview) {
+        cb("length", value.length, ENUMERABLE_BIT)
+        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
+        cb("byteOffset", value.byteOffset, ENUMERABLE_BIT)
+    } else {
+        cb("length", value.length, 0)
+        cb("byteLength", value.byteLength, 0)
+        cb("byteOffset", value.byteOffset, 0)
+        // cb("BYTES_PER_ELEMENT", value.BYTES_PER_ELEMENT, 0)
+        cb("[[data]]", WrappedTypedArray.getInstance(value), 0)
+        cb("[[buffer]]", WrappedBufferView.getInstance(value.buffer), 0)
+        if (config.nonEnumerable) {
+            cb("[[Prototype]]", Object.getPrototypeOf(value), 0)
+        }
+    }
+}
+
+const wrappedBufferResolver: ResolverFn<DataViewLike> = (
     value,
     cb,
     next,
@@ -275,44 +335,6 @@ const dataViewLikeResolver: ResolverFn<DataViewLike> = (
 
 }
 
-const bufferResolver: ResolverFn<ArrayBuffer> = (
-    value,
-    cb,
-    next,
-    isPreview,
-    config,
-    stableRef
-) => {
-    if (isPreview) {
-        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
-    } else {
-        cb("byteLength", value.byteLength, 0)
-        cb("[[buffer]]", WrappedBufferView.getInstance(value), 0)
-        next(value)
-    }
-}
-
-const typeArrayResolver: ResolverFn<TypedArrayLike> = (
-    value: TypedArrayLike,
-    cb,
-    next,
-    isPreview,
-    config,
-    stableRef
-) => {
-    if (isPreview) {
-        cb("length", value.length, ENUMERABLE_BIT)
-        cb("byteLength", value.byteLength, ENUMERABLE_BIT)
-    } else {
-        cb("length", value.length, 0)
-        cb("byteLength", value.byteLength, 0)
-        cb("[[data]]", WrappedTypedArray.getInstance(value), 0)
-        cb("[[buffer]]", WrappedBufferView.getInstance(value.buffer), 0)
-    }
-}
-
-
-
 const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = (
     value: WrappedTypedArray,
     cb,
@@ -344,12 +366,12 @@ const wrappedTypedArrayResolver: ResolverFn<WrappedTypedArray> = (
 }
 
 export const TYPED_ARRAY_RESOLVERS = new Map([
-    [WrappedBufferView, dataViewLikeResolver],
+    [WrappedBufferView, wrappedBufferResolver],
     [WrappedTypedArray, wrappedTypedArrayResolver],
 
 
     [ArrayBuffer, bufferResolver],
-    [DataView, dataViewLikeResolver],
+    [DataView, dataViewResolver],
 
     [Uint8Array, typeArrayResolver],
     [Uint8ClampedArray, typeArrayResolver],
