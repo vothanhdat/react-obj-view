@@ -9,6 +9,7 @@ export type RenderOptions = {
     resolver: Map<any, ResolverFn>;
     showLineNumbers: boolean;
     includeSymbols: boolean;
+    nonEnumerable: boolean;
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
     actionRenders?: React.FC<ObjectViewRenderRowProps>

@@ -4,7 +4,7 @@ import { RenderRawValue } from "./RenderRawValue";
 import { useWrapper } from "../../libs/react-tree-view/useWrapper";
 import { useLazyValue } from "../hooks/useLazyValue";
 import { RenderOptions } from "../types";
-import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
+import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
 
 
 export const RenderValue: React.FC<{
@@ -16,7 +16,7 @@ export const RenderValue: React.FC<{
 }> = (({ valueWrapper, isPreview, options, refreshPath, depth = 0 }) => {
 
     const { isLazyValue, lazyValueEmit, lazyValueInited, renderValue: value } = useLazyValue({
-        value: useInternalPromiseResolve(valueWrapper()),
+        value: useInternalPromise(valueWrapper()),
         refreshPath
     })
 

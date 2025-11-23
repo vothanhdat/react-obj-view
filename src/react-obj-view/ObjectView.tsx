@@ -93,11 +93,12 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             onMouseEnter,
             onMouseLeave,
             actionRenders,
+            nonEnumerable,
         }) as RenderOptions,
         [
             enablePreview, resolver,
             highlightUpdate, includeSymbols, showLineNumbers,
-            actionRenders
+            actionRenders, nonEnumerable
         ]
     )
 

@@ -2,8 +2,8 @@ import { useCallback, useMemo } from "react";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
-import { useInternalPromiseResolve } from "../hooks/useInternalPromiseResolve";
-import { objectHasChild, GroupedProxy, LazyValueError } from "../../object-tree";
+import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
+import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../../object-tree";
 import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
 
@@ -12,11 +12,11 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const { nodeDataWrapper, valueWrapper, options, renderIndex, actions, } = props
 
-    const { enablePreview, actionRenders, } = options
+    const { enablePreview, actionRenders, nonEnumerable, includeSymbols } = options
 
     const nodeData = nodeDataWrapper()
 
-    const value = useInternalPromiseResolve(valueWrapper())
+    const value = useInternalPromise(valueWrapper())
 
     const isExpanded = nodeData.expanded
 
@@ -24,7 +24,10 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const ActionRenders = actionRenders ?? DefaultActions
 
-    const hasChild = nodeData.hasChild
+    const hasChild = objectHasChild(
+        value, nodeData.meta!,
+        { config: { nonEnumerable, resolver: includeSymbols } } as any
+    ) && !(value instanceof LazyValue) && !(value instanceof LazyValueError)
 
     const isPreview = enablePreview
         && (hasChild || value instanceof LazyValueError)

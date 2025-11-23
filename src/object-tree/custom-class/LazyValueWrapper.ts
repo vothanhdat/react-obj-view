@@ -47,12 +47,11 @@ export class LazyValue {
 }
 
 
-export class LazyValueError extends Array {
+export class LazyValueError extends Error {
     constructor(private error: any) {
-        super()
-        this.push(error)
+        super(error)
     }
-    static name = ""
-    toString() { return "" }
+    // static name = ""
+    // toString() { return  }
 }
 

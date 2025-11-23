@@ -1,7 +1,7 @@
 import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
-import { ENUMERABLE_BIT } from "../meta" with {type: "macro"};
+import { ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from "../meta" with {type: "macro"};
 
 const PendingSymbol = Symbol("Pending");
 
@@ -67,7 +67,7 @@ export const promiseResolver: ResolverFn<Promise<any>> = (
     cb(
         "[[result]]",
         InternalPromise.getInstance(result),
-        isPreview ? ENUMERABLE_BIT : 0
+        isPreview ? ENUMERABLE_BUT_COLLAPSE : 0
     );
     next(promise);
 };
