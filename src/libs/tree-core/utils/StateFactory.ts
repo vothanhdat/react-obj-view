@@ -9,6 +9,7 @@ type StateMap<T, Key> = {
 export type StateWrap<T, Key> = {
     state: T;
     getChild: (key: Key) => StateWrap<T, Key>;
+    touchChild: (key: Key) => void;
     cleanChild: () => void;
 }
 
@@ -42,6 +43,15 @@ const getChildFn = <T, Key>(
 
     return getState(childMap);
 };
+
+const touchChildOnlyFn = <T, Key>(
+    currentMap: StateMap<T, Key>,
+    touchToken: any
+) => (key: Key) => {
+    let childMap = currentMap.childs.get(key)!;
+    childMap.touched = touchToken;
+};
+
 
 const cleanChildFn = <T, Key>(
     currentMap: StateMap<T, Key>,
@@ -80,6 +90,7 @@ export const StateFactory = <T, Key>(onNew: () => T) => {
         return {
             state: currentMap.state ||= onNew(),
             getChild: getChildFn(stateFactory, currentMap, touchToken),
+            touchChild: touchChildOnlyFn(currentMap,touchToken),
             cleanChild: isNew ? voidFn : cleanChildFn(currentMap, touchToken),
         };
     };

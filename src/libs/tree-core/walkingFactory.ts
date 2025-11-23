@@ -1,4 +1,4 @@
-import { GetStateFn, StateFactory } from "./utils/StateFactory"
+import { StateFactory, StateReadonyWrap, StateWrap } from "./utils/StateFactory"
 import { WalkingContext, WalkingAdaper, WalkingResult, NodeResult } from "./types"
 
 
@@ -9,7 +9,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     ctx: Context,
     currentDepth: number,
     state: WalkingResult<Value, Key, Meta>,
-    getChild: GetStateFn<WalkingResult<Value, Key, Meta>>,
+    getChild: StateWrap<WalkingResult<Value, Key, Meta>, Key>['getChild'],
 ) => {
 
     let childCount = 1
@@ -17,7 +17,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     let childCanExpand = false;
     let childOffsets = [childCount]
     let childKeys = [] as Key[]
-    // console.group("iterateChildWrap")
+
     iterateChilds(
         value, ctx, state,
         (value, key, meta) => {
@@ -43,13 +43,6 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
         }
     )
 
-    // console.log(childKeys)
-    // console.log(childOffsets)
-    // console.log({ childCount })
-
-    // console.groupEnd()
-
-
     return {
         childCount,
         childDepth,
@@ -66,7 +59,8 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
     ctx: Context,
     currentDepth: number,
     state: WalkingResult<Value, Key, Meta>,
-    getChild: GetStateFn<WalkingResult<Value, Key, Meta>>,
+    getChild: StateWrap<WalkingResult<Value, Key, Meta>, Key>['getChild'],
+    touchChild: StateWrap<WalkingResult<Value, Key, Meta>, Key>['touchChild'],
 ) => {
 
     let childCount = state.childCount
@@ -77,19 +71,13 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
     let iterateIndex = 0
     let isInCache = true
 
-    // console.group("iterateChildWrapContinues")
-
-    // console.log({ childKeys })
-    // console.log({ childOffsets })
-    // console.log({ childCount })
-    // console.log(">>>>>")
 
     iterateChilds(
         value, ctx, state,
         (value, key, meta) => {
 
             if (isInCache && iterateIndex < childKeys.length - 1) {
-                let stateWrap = getChild(key as any);
+                touchChild(key as any);
                 iterateIndex++;
                 return false;
             } else if (isInCache) {
@@ -149,13 +137,6 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
 
         }
     )
-    // console.log("<<<<<<<")
-
-    // console.log({ childKeys })
-    // console.log({ childOffsets })
-    // console.log({ childCount })
-
-    // console.groupEnd()
 
     return {
         childCount,
@@ -181,7 +162,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
         meta: Meta,
         ctx: Context,
         currentDepth: number,
-        { state, cleanChild, getChild }: ReturnType<GetStateFn<WalkingResult<Value, Key, Meta>>>,
+        { state, cleanChild, getChild, touchChild }: StateWrap<WalkingResult<Value, Key, Meta>, Key>,
     ) {
         value = transformValue
             ? transformValue(value, state)
@@ -234,7 +215,8 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
                     ctx,
                     currentDepth,
                     state,
-                    getChild as any,
+                    getChild,
+                    touchChild,
                 ) : iterateChildWrap(
                     iterateChilds,
                     walkingInternal,
@@ -242,7 +224,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
                     ctx,
                     currentDepth,
                     state,
-                    getChild as any,
+                    getChild,
                 )
 
                 // onExitNode?.(value, key, meta, ctx);
@@ -322,7 +304,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     type WalkingResultAlias = WalkingResult<Value, Key, Meta>
 
 
-    const { stateFactory, getStateOnly } = StateFactory<WalkingResultAlias>(stateFactoryFn)
+    const { stateFactory, getStateOnly } = StateFactory<WalkingResultAlias, Key>(stateFactoryFn)
 
     let updateStamp = 0
 
@@ -404,7 +386,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
     const getNodeInternal = (
         index: number,
-        { state, getChildOnly } = stateRead,
+        { state, getChildOnly }: StateReadonyWrap<WalkingResult<Value, Key, Meta>, Key>,
         depth = 1,
         paths: Key[] = [],
         parentIndex: number[] = [0]

@@ -74,19 +74,12 @@ export const getEntriesCb = (
     cb: (key: PropertyKey, value: unknown, meta: number) => boolean | void
 ) => {
 
-
-    // if (value instanceof InternalPromise && value.resolved) {
-    //     value = value.value
-    //     // console.log("value.value", value.value)
-    // }
-
     const prototype = value
         ? (value.constructor ?? Object.getPrototypeOf(value)?.constructor)
         : undefined
 
-    // console.log(value, prototype, prototype && value instanceof prototype, config.resolver?.has(prototype))
 
-    if (prototype && value instanceof prototype && config.resolver?.has(prototype)) {
+    if (prototype && config.resolver?.has(prototype) && value instanceof prototype) {
         config.resolver?.get(prototype)?.(
             value,
             cb,
