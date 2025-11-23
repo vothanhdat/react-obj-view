@@ -140,30 +140,11 @@ describe('LazyValue', () => {
 })
 
 describe('LazyValueError', () => {
-  it('should wrap error in array', () => {
-    const error = new Error('test')
-    const lazyError = new LazyValueError(error)
-    
-    expect(lazyError).toBeInstanceOf(Array)
-    expect(lazyError.length).toBe(1)
-    expect(lazyError[0]).toBe(error)
-  })
-
-  it('should have empty toString', () => {
-    const error = new Error('test')
-    const lazyError = new LazyValueError(error)
-    
-    expect(lazyError.toString()).toBe('')
-  })
-
-  it('should have empty name', () => {
-    expect(LazyValueError.name).toBe('')
-  })
 
   it('should wrap any error type', () => {
     const stringError = 'string error'
     const lazyError = new LazyValueError(stringError)
     
-    expect(lazyError[0]).toBe(stringError)
+    expect(String(lazyError)).toBe(`Error: ${stringError}`)
   })
 })

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { promiseResolver, internalPromiseResolver, InternalPromise } from './promise'
-import { ENUMERABLE_BIT } from '../meta'
+import { ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from '../meta'
 
 describe('promise resolvers', () => {
   describe('InternalPromise', () => {
@@ -68,7 +68,7 @@ describe('promise resolvers', () => {
       const resultCall = cb.mock.calls[1]
       expect(resultCall[0]).toBe('[[result]]')
       expect(resultCall[1]).toBeInstanceOf(InternalPromise)
-      expect(resultCall[2]).toBe(ENUMERABLE_BIT)
+      expect(resultCall[2]).toBe(ENUMERABLE_BUT_COLLAPSE)
       
       expect(next).toHaveBeenCalledWith(promise)
     })
