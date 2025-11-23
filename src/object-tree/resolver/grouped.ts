@@ -18,8 +18,12 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
         const proxyValue = groupProxyFactory(arr, size)
-        next(proxyValue, (k, v, meta) => cb(k, v, ENUMERABLE_BUT_COLLAPSE));
-        proxyValue instanceof GroupedProxy && next([]);
+        if (proxyValue instanceof GroupedProxy) {
+            next(proxyValue, (k, v, meta) => cb(k, v, meta | ENUMERABLE_BUT_COLLAPSE));
+            next([]);
+        } else {
+            next(proxyValue)
+        }
     } else {
         next(arr);
     }
@@ -39,8 +43,13 @@ export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: n
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
         const proxyValue = groupProxyFactory(value, size);
-        next(proxyValue, (k, v, meta) => cb(k, v, ENUMERABLE_BUT_COLLAPSE));
-        proxyValue instanceof GroupedProxy && next({});
+        if (proxyValue instanceof GroupedProxy) {
+            next(proxyValue, (k, v, meta) => cb(k, v, meta | ENUMERABLE_BUT_COLLAPSE));
+            next({});
+        } else {
+            next(proxyValue)
+        }
+
     } else {
         next(value);
     }
