@@ -1,13 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useReactTree } from "./useReactTree";
 
 const createNodeState = (index: number) => ({
     state: {
         childCount: 0,
-        meta: { label: `node-${index}` },
+        childCanExpand: false,
+        childDepth: 0,
+        expandedDepth: 0,
+        expanded: false,
         value: `value-${index}`,
+        key: index,
+        childKeys: [],
+        childOffsets: [],
+        iterateFinish: true,
+        earlyReturn: false,
+        selfStamp: 0,
+        updateToken: 0,
         updateStamp: index,
+        meta: { label: `node-${index}` },
     },
     depth: index,
     paths: ["root", index],
@@ -23,8 +34,27 @@ const createWalkingInstance = () => {
         return nodes.get(index)!;
     });
 
+    const mockResult = {
+        childCount: 3,
+        childCanExpand: false,
+        childDepth: 1,
+        expandedDepth: 0,
+        expanded: true,
+        value: undefined,
+        key: undefined,
+        childKeys: [],
+        childOffsets: [],
+        iterateFinish: true,
+        earlyReturn: false,
+        selfStamp: 0,
+        updateToken: 0,
+        updateStamp: 0,
+        meta: undefined
+    };
+
     return {
-        walking: vi.fn(() => ({ childCount: 3 })),
+        walking: vi.fn(() => mockResult),
+        walkingAsync: vi.fn(function* () { yield mockResult }),
         refreshPath: vi.fn(),
         toggleExpand: vi.fn(),
         getNode,
@@ -32,7 +62,7 @@ const createWalkingInstance = () => {
 };
 
 describe("useReactTree", () => {
-    it("initializes the walking instance and exposes flattened nodes", () => {
+    it("initializes the walking instance and exposes flattened nodes", async () => {
         const instance = createWalkingInstance();
         const factory = vi.fn(() => instance);
         const metaParser = vi.fn((meta: { label: string }) => ({ label: meta.label.toUpperCase() }));
@@ -47,8 +77,11 @@ describe("useReactTree", () => {
         }));
 
         expect(factory).toHaveBeenCalledTimes(1);
-        expect(instance.walking).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1);
-        expect(result.current.childCount).toBe(3);
+        
+        await waitFor(() => {
+             expect(instance.walkingAsync).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1);
+             expect(result.current.childCount).toBe(3);
+        });
 
         const node = result.current.getNodeByIndex(0);
         expect(instance.getNode).toHaveBeenCalledTimes(1);
