@@ -38,8 +38,10 @@ export const useReactTree = <
             setTimeout(async () => {
 
 
+                // console.log("iterate new")
+
                 for (let result of iterate) {
-                    console.count("iterate")
+                    // console.log("iterate", { isRunning })
 
                     if (isRunning) {
                         setWalkingResult({ ...result });
@@ -47,18 +49,13 @@ export const useReactTree = <
                         await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
 
                     } else {
-                        console.log("stop, switch to new")
+                        // console.log("stop, switch to new")
                         break;
                     }
-
                 }
+                // console.log("iterate finish", { isRunning })
 
-                // console.timeEnd("iterate")
-                // console.log("iterate count %s", count)
-                // console.log("iterate cpu time: %s ms", totalT)
 
-                // let tFinish = performance.now()
-                // console.log("Time ti finish")
             }, 0)
 
             return () => { isRunning = false }
