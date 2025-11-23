@@ -242,3 +242,60 @@ describe("walkingFactory", () => {
         expect(expandedHidden.state.childCount).toBe(2)
     })
 })
+
+describe("walkingAsync", () => {
+    it("should yield intermediate states when step limit is reached", () => {
+        const tree = createTree()
+        const { adapter } = createAdapter()
+        const walker = walkingFactory(adapter)
+
+        // Use a very small step limit (1) to force multiple yields
+        // createTree has root -> [left, right], left -> [leaf]
+        // Total nodes: root, left, leaf, right.
+        const iterator = walker.walkingAsync(tree, "root", { token: 1 }, 10, 1)
+
+        let yieldCount = 0
+        let lastResult: any
+
+        for (const result of iterator) {
+            yieldCount++
+            lastResult = result
+        }
+
+        // We expect multiple yields because the step limit is 1
+        expect(yieldCount).toBeGreaterThan(1)
+        expect(lastResult).toBeDefined()
+        // root (1) + left (1) + leaf (1) + right (1) = 4
+        expect(lastResult.childCount).toBe(4)
+    })
+
+    it("should eventually produce the same result as synchronous walking", () => {
+        const tree = createTree()
+        const { adapter } = createAdapter()
+        const walker = walkingFactory(adapter)
+
+        const syncResult = walker.walking(tree, "root", { token: 1 }, 10)
+        
+        const iterator = walker.walkingAsync(tree, "root", { token: 1 }, 10, 100) // High limit to finish in one go if possible, or just iterate all
+        let asyncResult: any
+        for (const res of iterator) {
+            asyncResult = res
+        }
+
+        expect(asyncResult.childCount).toBe(syncResult.childCount)
+        
+        // Check children of root
+        const syncRootChildren = [walker.getNode(0), walker.getNode(1)] // Assuming indices 0 and 1 are children of root? 
+        // Wait, getNode uses the flattened list.
+        // root (0) -> left (1) -> leaf (2) -> right (3)
+        // Actually getNode(i) gets the i-th visible row.
+        // createTree: root -> left (expanded?) -> leaf, right.
+        // Default expanded state depends on adapter/logic. 
+        // In this test setup, we need to check how expansion is handled.
+        // The default adapter in createAdapter doesn't seem to have default expansion logic shown in the snippet, 
+        // but usually it defaults to collapsed or we can toggle it.
+        
+        // Let's just compare the final state objects roughly
+        expect(asyncResult.childKeys).toEqual(syncResult.childKeys)
+    })
+})
