@@ -4,6 +4,7 @@ import { LazyValue } from "../custom-class/LazyValueWrapper";
 import { mapResolver, setResolver, CustomIterator, iteraterResolver } from "./collections";
 import { lazyValueResolver } from "./lazyValueResolver";
 import { InternalPromise, internalPromiseResolver, promiseResolver } from "./promise";
+import { groupProxyResolver } from "./grouped";
 
 
 export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
@@ -14,6 +15,7 @@ export const DEFAULT_RESOLVER = new Map<any, ResolverFn>([
     [Map, mapResolver],
     [Set, setResolver],
     [Promise, promiseResolver],
+    [GroupedProxy, groupProxyResolver],
 ]);
 
 export const PROTOTYPE_DISABLE = new Set([

@@ -1,4 +1,5 @@
 import { GroupedProxy, objectGroupProxyFactory } from "../custom-class/groupedProxy";
+import { DEFAULT_COLLAPSE, ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from "../meta" with {type: "macro"};
 import { ResolverFn } from "../types";
 
 const weakMapCache = new WeakMap()
@@ -17,7 +18,7 @@ export const groupArrayResolver: (size: number) => ResolverFn<any[]> = (size: nu
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
         const proxyValue = groupProxyFactory(arr, size)
-        next(proxyValue);
+        next(proxyValue, (k, v, meta) => cb(k, v, ENUMERABLE_BUT_COLLAPSE));
         proxyValue instanceof GroupedProxy && next([]);
     } else {
         next(arr);
@@ -37,13 +38,32 @@ export const groupObjectResolver: (size: number) => ResolverFn<any[]> = (size: n
         if (!groupProxyFactory) {
             weakMapCache.set(stableRef, groupProxyFactory = objectGroupProxyFactory())
         }
-        const proxyValue = groupProxyFactory(value, size); 
-        next(proxyValue);
+        const proxyValue = groupProxyFactory(value, size);
+        next(proxyValue, (k, v, meta) => cb(k, v, ENUMERABLE_BUT_COLLAPSE));
         proxyValue instanceof GroupedProxy && next({});
     } else {
         next(value);
     }
 };
+
+export const groupProxyResolver: ResolverFn<GroupedProxy> = (
+    value: GroupedProxy,
+    cb,
+    next,
+    isPreview,
+    config,
+    stableRef,
+) => {
+    if (!isPreview) {
+        for (let key in value) {
+            if (cb(
+                key,
+                (value as any)[key],
+                ENUMERABLE_BUT_COLLAPSE
+            )) return
+        }
+    }
+}
 
 export const GROUP_OBJECT_RESOLVER = (size: number) => ([
     [Object, groupObjectResolver(size)]
