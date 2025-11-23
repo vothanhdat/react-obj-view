@@ -422,7 +422,7 @@ export const Test = () => {
     [arrayGrouped, currentLabel, enableGrouping, objectGrouped, selectedThemeLabel],
   )
 
-  console.log(currentDataGetter())
+  // console.log(currentDataGetter())
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
   return (

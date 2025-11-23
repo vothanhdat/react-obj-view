@@ -1,7 +1,9 @@
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { WalkingAdaperBase, InferWalkingInstance, InferWalkingType, InferNodeResult, InferWalkingResult } from "../tree-core";
 import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
 import { ReactTreeHookParams } from "./types";
+import { WalkingResult } from "../tree-core/types";
+import { isDev } from "../../utils/isDev";
 
 
 
@@ -24,14 +26,47 @@ export const useReactTree = <
         ref.current.instance = factory();
     }
 
-    const walkingResult = useMemo(
-        () => ({
-            ...ref.current.instance.walking(
-                value, name, config, expandDepth
-            )
-        }),
+    const [walkingResult, setWalkingResult] = useState<WalkingResult<any, any, any>>()
+
+    useEffect(
+        () => {
+
+            let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth)
+            let isRunning = true
+
+
+            setTimeout(async () => {
+
+
+                for (let result of iterate) {
+                    console.count("iterate")
+
+                    if (isRunning) {
+                        setWalkingResult({ ...result });
+
+                        await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
+
+                    } else {
+                        console.log("stop, switch to new")
+                        break;
+                    }
+
+                }
+
+                // console.timeEnd("iterate")
+                // console.log("iterate count %s", count)
+                // console.log("iterate cpu time: %s ms", totalT)
+
+                // let tFinish = performance.now()
+                // console.log("Time ti finish")
+            }, 0)
+
+            return () => { isRunning = false }
+
+        },
         [ref.current.instance, value, name, config, expandDepth, reload]
-    );
+
+    )
 
     const refreshPath = useCallback(
         ({ paths }: { paths: InferWalkingType<T>['Key'][]; }) => {
@@ -78,8 +113,8 @@ export const useReactTree = <
     );
 
     const computeItemKey = useCallback(
-        (index: number) => index < walkingResult.childCount ? getNodeByIndex(index).path : "",
-        [getNodeByIndex, walkingResult.childCount]
+        (index: number) => walkingResult && index < walkingResult.childCount ? getNodeByIndex(index).path : "",
+        [getNodeByIndex, walkingResult?.childCount]
     );
 
 
@@ -88,6 +123,6 @@ export const useReactTree = <
         toggleChildExpand,
         getNodeByIndex,
         computeItemKey,
-        childCount: walkingResult.childCount,
+        childCount: walkingResult?.childCount ?? 0,
     };
 };

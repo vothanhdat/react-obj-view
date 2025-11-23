@@ -185,7 +185,6 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
         const shoudUpdate = (
             isChange
-            || !state.iterateFinish
             || state.expanded !== isExpand
             || state.updateToken !== ctx.updateToken
             || (isExpand
@@ -198,7 +197,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             )
         )
 
-        if (shoudUpdate) {
+        if (shoudUpdate || !state.iterateFinish) {
             let childCount = 1;
             let childDepth = currentDepth
             let childCanExpand = hasChild && !isExpand;
@@ -208,7 +207,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
             if (hasChild && isExpand) {
 
-                let iterateResult = state.earlyReturn ? iterateChildWrapContinues(
+                let iterateResult = (!shoudUpdate && state.earlyReturn) ? iterateChildWrapContinues(
                     iterateChilds,
                     walkingInternal,
                     value,
