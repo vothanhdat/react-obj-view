@@ -36,13 +36,13 @@ export class CustomEntry {
 
     private static getEntryMap = weakMapCache(iterator => new Map<any, CustomEntry>())
 
-    static getEntry(ref: any, key: any, value: any) {
+    static getEntry(ref: any, key: any, value: any): CustomEntry {
         let map = this.getEntryMap(ref)
         let entry = map.get(key)
         if (entry?.value !== value || (!map?.has(key))) {
             map.set(key, entry = new CustomEntry(key, value))
         }
-        return entry
+        return entry!
     }
 
     private constructor(
