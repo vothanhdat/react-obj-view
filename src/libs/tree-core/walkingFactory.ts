@@ -69,11 +69,11 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
     getChild: GetStateFn<WalkingResult<Value, Key, Meta>>,
 ) => {
 
-    let childCount = 1
-    let childDepth = currentDepth
-    let childCanExpand = false;
-    let childOffsets = [childCount]
-    let childKeys = [] as Key[]
+    let childCount = state.childCount
+    let childDepth = state.childDepth
+    let childCanExpand = state.childCanExpand
+    let childOffsets = state.childOffsets!
+    let childKeys = state.childKeys!
     let iterateIndex = 0
     let isInCache = true
 
@@ -88,30 +88,63 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
         value, ctx, state,
         (value, key, meta) => {
 
-            let stateWrap = getChild(key as any);
-            let r = stateWrap.state!;
-            if (stateWrap.state.iterateFinish) {
+            if (isInCache && iterateIndex < childKeys.length - 1) {
+                let stateWrap = getChild(key as any);
+                iterateIndex++;
+                return false;
+            } else if (isInCache) {
+                let stateWrap = getChild(key as any);
+                if (stateWrap.state.earlyReturn) {
+                    isInCache = false;
+
+                    childCount -= stateWrap.state.childCount
+
+                    let r = walkingInternal(
+                        value,
+                        key,
+                        meta,
+                        ctx,
+                        currentDepth + 1,
+                        stateWrap,
+                    )
+                    childCount += r.childCount
+
+                    childDepth = Math.max(childDepth, r.childDepth)
+                    childCanExpand ||= r.childCanExpand
+
+                    childOffsets[iterateIndex + 1] = childCount
+
+                    iterateIndex++;
+                    return ctx.iterateCounter < 0;
+
+                } else {
+                    iterateIndex++;
+                    isInCache = false;
+                    return false;
+                }
             } else {
-                r = walkingInternal(
+                isInCache = false;
+                let r = walkingInternal(
                     value,
                     key,
                     meta,
                     ctx,
                     currentDepth + 1,
-                    stateWrap,
+                    getChild(key as any),
                 )
-                iterateIndex++;
+
+                childCount += r.childCount
+                childDepth = Math.max(childDepth, r.childDepth)
+                childCanExpand ||= r.childCanExpand
+
+                childOffsets.push(childCount)
+
+                childKeys.push(key);
+
+                return ctx.iterateCounter < 0;
             }
 
-            childCount += r.childCount
-            childDepth = Math.max(childDepth, r.childDepth)
-            childCanExpand ||= r.childCanExpand
 
-            childOffsets.push(childCount)
-
-            childKeys.push(key);
-
-            return ctx.iterateCounter < 0;
 
 
         }
@@ -193,8 +226,6 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
             let childKeys = undefined
 
             if (hasChild && isExpand) {
-
-                // onEnterNode?.(value, key, meta, ctx);
 
                 let iterateResult = state.earlyReturn ? iterateChildWrapContinues(
                     iterateChilds,
@@ -406,6 +437,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
             }
 
             let keyNames = state.childKeys![start]
+            // console.log({paths: [...paths, keyNames]})
 
             return getNodeInternal(
                 index - childOffsets[start],

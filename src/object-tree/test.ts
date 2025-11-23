@@ -47,11 +47,18 @@ for (let state of walkingIterate) {
     let t: Record<string, any> = {}
 
     for (let i = 0; i < state!.childCount; i++) {
-        let nodeData = getNode(i)
-        t[nodeData.paths.join("/")] = {
-            finish: nodeData.state.iterateFinish,
-            selfStamp: nodeData.state.selfStamp,
-            // updateStamp: nodeData.state.updateStamp,
+        try {
+            let nodeData = getNode(i)
+            t[nodeData.paths.join("/")] = {
+                finish: nodeData.state.iterateFinish,
+                selfStamp: nodeData.state.selfStamp,
+            }
+        } catch (error) {
+            t[`error${i}`] = {
+                finish: false,
+                selfStamp: undefined,
+                error: String(error)
+            }
         }
         // t.push({[nodeData.paths.join("/")]:} ])
     }
