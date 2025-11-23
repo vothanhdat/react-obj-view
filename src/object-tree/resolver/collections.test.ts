@@ -153,7 +153,7 @@ describe('collections resolvers', () => {
       const firstCall = cb.mock.calls[0]
       expect(firstCall[0]).toBe(0)
       expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(ENUMERABLE_BIT)
+      expect(firstCall[2]).toBe(0)
     })
 
     it('should iterate over Set entries', () => {
@@ -166,9 +166,9 @@ describe('collections resolvers', () => {
       iteraterResolver(iterator, cb, next, false, {} as any, iterator)
       
       expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
-      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith(0, 1, 0)
+      expect(cb).toHaveBeenCalledWith(1, 2, 0)
+      expect(cb).toHaveBeenCalledWith(2, 3, 0)
     })
 
     it('should stop iteration when cb returns true', () => {

@@ -80,6 +80,7 @@ describe('FlattenNodeWrapper', () => {
             path: 'root/child',
             paths: ['root', 'child'],
             parents: [0, 1],
+            hasChild: true,
         });
         expect(mockMetaParser).toHaveBeenCalledWith('test-meta');
     });
