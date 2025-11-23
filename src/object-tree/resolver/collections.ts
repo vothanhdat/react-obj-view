@@ -107,7 +107,7 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
             0,
         );
 
-        cb("size", map.size, ENUMERABLE_BIT);
+        cb("size", map.size, 0);
     }
 
     next(map);
@@ -132,7 +132,7 @@ export const setResolver: ResolverFn<Set<any>> = (
             0
         );
 
-        cb("size", set.size, ENUMERABLE_BIT);
+        cb("size", set.size, 0);
     }
     next(set);
 };

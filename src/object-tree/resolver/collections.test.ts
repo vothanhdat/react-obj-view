@@ -102,7 +102,7 @@ describe('collections resolvers', () => {
       
       // Should call cb for [[Entries]] and size
       expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
-      expect(cb).toHaveBeenCalledWith('size', 2, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith('size', 2, 0)
       expect(next).toHaveBeenCalledWith(map)
     })
   })
@@ -133,7 +133,7 @@ describe('collections resolvers', () => {
       
       // Should call cb for [[Entries]] and size
       expect(cb).toHaveBeenCalledWith('[[Entries]]', expect.any(CustomIterator), 0)
-      expect(cb).toHaveBeenCalledWith('size', 3, ENUMERABLE_BIT)
+      expect(cb).toHaveBeenCalledWith('size', 3, 0)
       expect(next).toHaveBeenCalledWith(set)
     })
   })
