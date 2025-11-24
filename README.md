@@ -5,6 +5,11 @@
 [![npm](https://img.shields.io/npm/v/react-obj-view.svg)](https://www.npmjs.com/package/react-obj-view)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/react-obj-view)](https://bundlephobia.com/package/react-obj-view)
 
+
+
+![](/public/screen-shot.png)
+
+
 React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and ships a TypeScript-first API with ESM + UMD bundles.
 
 ---
