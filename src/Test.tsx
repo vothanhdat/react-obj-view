@@ -221,11 +221,12 @@ const testDataOptions: TestDataOption[] = [
   { label: 'Edge • Generators', value: allExamples.edge.generators, category: 'Edge Cases' },
   { label: 'Edge • Promises', value: allExamples.edge.promises, category: 'Edge Cases' },
   { label: 'Edge • Regex Variations', value: allExamples.edge.regexVariations, category: 'Edge Cases' },
-  { label: 'Performance • Medium (100 items)', value: performanceTestData.medium, category: 'Performance' },
-  { label: 'Performance • Large (1000 items)', value: performanceTestData.large, category: 'Performance' },
-  { label: 'Performance • Super Large (10k)', value: performanceTestData.supperLarge, category: 'Performance' },
-  { label: 'Performance • Universe (100k)', value: performanceTestData.suppersupperLarge, category: 'Performance' },
-  { label: 'Performance • Massive (400k)', value: performanceTestData.massive, category: 'Performance' },
+    { label: 'Performance • Small (10 items / ~200 nodes)', value: performanceTestData.small, category: 'Performance' },
+  { label: 'Performance • Medium (100 items / ~2k nodes)', value: performanceTestData.medium, category: 'Performance' },
+  { label: 'Performance • Large (1k items / ~20k nodes)', value: performanceTestData.large, category: 'Performance' },
+  { label: 'Performance • Extra Large (10k items / ~200k nodes)', value: performanceTestData.supperLarge, category: 'Performance' },
+  { label: 'Performance • Huge (100k items / ~2M nodes)', value: performanceTestData.suppersupperLarge, category: 'Performance' },
+  { label: 'Performance • Massive (400k items / ~8M nodes)', value: performanceTestData.massive, category: 'Performance' },
 ]
 
 const expandOptions: Array<{ label: string; value: number | boolean }> = [
