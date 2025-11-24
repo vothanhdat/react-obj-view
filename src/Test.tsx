@@ -13,7 +13,7 @@ import {
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 
-const packageVersion = '1.1.1'
+const packageVersion = '1.1.2'
 
 const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   const { nodeDataWrapper, valueWrapper, actions } = props
