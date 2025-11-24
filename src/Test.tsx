@@ -407,7 +407,7 @@ export const Test = () => {
       { label: 'Highlight', active: enableHighlighting, setter: setEnableHighlighting },
       { label: 'Non-enum', active: showNonEnumerable, setter: setShowNonEnumerable },
       { label: 'Symbols', active: showSymbols, setter: setShowSymbols },
-      { label: 'Live stream', active: useLiveStream, setter: setUseLiveStream },
+      // { label: 'Live stream', active: useLiveStream, setter: setUseLiveStream },
     ],
     [
       stickyHeaders, enableGrouping, enableHighlighting, enablePreviewMode, enableResolvers,
@@ -691,12 +691,12 @@ export const Test = () => {
             </div>
             <div className="viewer-flags">
               {viewerFlags.map((flag) => (
-                <span
+                <button
                   key={flag.label}
-                  // onClick={() => flag.setter(e => !e)}
+                  onClick={() => flag.setter(e => !e)}
                   className={`feature-chip ${flag.active ? 'active' : 'inactive'}`}>
                   {flag.label}
-                </span>
+                </button>
               ))}
             </div>
           </div>

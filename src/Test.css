@@ -359,7 +359,13 @@
   border: 1px solid var(--border-color);
   background: var(--chip-bg);
   color: var(--text-main);
-  /* cursor: pointer; */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.feature-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .feature-chip.active {
