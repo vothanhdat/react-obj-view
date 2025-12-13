@@ -375,7 +375,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         currentState.state.updateToken = -1;
     }
 
-    const toggleExpand = (paths: Key[],) => {
+    const setExpand = (paths: Key[], cb: (prev: boolean) => boolean = (prev) => !prev) => {
         let currentState = stateRead;
         for (let path of paths) {
             if (!currentState) {
@@ -386,7 +386,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         }
         const currentExpand = currentState.state.userExpand
             ?? currentState.state.expanded
-        currentState.state.userExpand = !currentExpand
+        currentState.state.userExpand = cb(currentExpand)
     }
 
     const getNodeInternal = (
@@ -452,7 +452,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         walking,
         walkingAsync,
         refreshPath,
-        toggleExpand,
+        setExpand,
         getNode,
     }
 

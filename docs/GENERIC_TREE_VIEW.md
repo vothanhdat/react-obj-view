@@ -16,7 +16,7 @@ value + adapter --> TreeCore (walkingFactory) --> ReactTreeView hook --> ReactTr
 
 Located in [`src/libs/tree-core`](../src/libs/tree-core), this package exposes a deterministic, memoised walker:
 
-- [`walkingFactory`](../src/libs/tree-core/walkingFactory.ts) accepts a `WalkingAdapter` and returns an instance with `walking`, `getNode`, `refreshPath`, and `toggleExpand` methods. It caches traversal state in [`StateFactory`](../src/libs/tree-core/utils/StateFactory.ts) so only dirty subtrees are recomputed when inputs change.
+- [`walkingFactory`](../src/libs/tree-core/walkingFactory.ts) accepts a `WalkingAdapter` and returns an instance with `walking`, `getNode`, `refreshPath`, and `setExpand` methods. It caches traversal state in [`StateFactory`](../src/libs/tree-core/utils/StateFactory.ts) so only dirty subtrees are recomputed when inputs change.
 - [`types.ts`](../src/libs/tree-core/types.ts) defines strongly-typed contracts for adapters, contexts, and node metadata. Use the provided helpers (`InferWalkingType`, `InferWalkingInstance`, etc.) to keep your React layer type-safe.
 
 An adapter describes how to iterate your domain-specific nodes:
@@ -40,7 +40,7 @@ The walker never assumes anything about objects versus arrays—it only follows 
 
 The UI glue in [`src/libs/react-tree-view`](../src/libs/react-tree-view) connects walkers to React components.
 
-- [`useReactTree`](../src/libs/react-tree-view/useReactTree.tsx) memoises a walker instance, exposes `getNodeByIndex`, `refreshPath`, and `toggleChildExpand`, and keeps traversal output in sync with the current `value`, `config`, and `expandDepth`.
+- [`useReactTree`](../src/libs/react-tree-view/useReactTree.tsx) memoises a walker instance, exposes `getNodeByIndex`, `refreshPath`, `toggleChildExpand`, and `setChildExpand`, and keeps traversal output in sync with the current `value`, `config`, and `expandDepth`.
 - [`FlattenNodeWrapper`](../src/libs/react-tree-view/FlattenNodeWrapper.tsx) converts raw walker nodes into serialisable metadata (`path`, `depth`, parsed meta fields, etc.). Provide a `metaParser` so UI components can consume metadata without knowing about bitmasks or adapter specifics.
 - [`ReactTreeView`](../src/libs/react-tree-view/ReactTreeView.tsx) renders rows via the shared [`VirtualScroller`](../src/libs/virtual-scroller/VirtualScroller.tsx) and wires sticky path headers through [`useRenderIndexesWithSticky`](../src/libs/react-tree-view/useRednerIndexesWithSticky.tsx).
 

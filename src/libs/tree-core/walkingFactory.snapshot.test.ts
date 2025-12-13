@@ -83,18 +83,18 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
     it("should generate correct snapshot on initial walk (expandDepth=0)", () => {
         const { adapter } = createTestAdapter();
         const factory = walkingFactory(adapter);
-        
+
         // Walk with depth 0, so only root is visible initially? 
         // Actually walkingFactory usually starts with root. 
         // If expandDepth is 0, children of root are not expanded.
         const rootState = factory.walking(initialData, "root", { token: 1 }, 0);
 
         const snapshot = getSnapshot(factory, rootState);
-        
+
         // Root is always there. 
         // If expandDepth=0, root is NOT expanded by default logic unless userExpand is set or valueDefaultExpaned returns true.
         // In our adapter valueDefaultExpaned returns ctx.config.expandAll.
-        
+
         expect(snapshot).toHaveLength(1);
         expect(snapshot[0].id).toBe("root");
         expect(snapshot[0].expanded).toBe(false);
@@ -103,7 +103,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
     it("should generate correct snapshot with expandAll", () => {
         const { adapter } = createTestAdapter();
         const factory = walkingFactory(adapter);
-        
+
         // expandDepth 100, expandAll true
         const rootState = factory.walking(initialData, "root", { token: 1, expandAll: true }, 100);
         const snapshot = getSnapshot(factory, rootState);
@@ -111,7 +111,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // Order: Root -> A -> A1 -> A2 -> B -> B1
         const ids = snapshot.map(n => n.id);
         expect(ids).toEqual(["root", "A", "A1", "A2", "B", "B1"]);
-        
+
         // Check depths
         // Root: 1
         // A: 2, A1: 3, A2: 3
@@ -123,7 +123,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
     it("should handle collapse and expand correctly", () => {
         const { adapter } = createTestAdapter();
         const factory = walkingFactory(adapter);
-        
+
         // Initial: Fully expanded
         let rootState = factory.walking(initialData, "root", { token: 1, expandAll: true }, 100);
         let snapshot = getSnapshot(factory, rootState);
@@ -134,9 +134,9 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // Wait, walkingFactory keys: root is passed as key "root".
         // The children of root are A and B.
         // The path to A is ["A"].
-        
-        factory.toggleExpand(["A"]);
-        
+
+        factory.setExpand(["A"]);
+
         // Must re-walk to apply changes? 
         // The walkingFactory state is mutable/internal, but `walking` function triggers the update process.
         // Usually we call walking again with same params to get updated state.
@@ -148,7 +148,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         expect(snapshot.find(n => n.id === "A")?.expanded).toBe(false);
 
         // Expand A again
-        factory.toggleExpand(["A"]);
+        factory.setExpand(["A"]);
         rootState = factory.walking(initialData, "root", { token: 1, expandAll: true }, 100);
         snapshot = getSnapshot(factory, rootState);
         expect(snapshot.map(n => n.id)).toEqual(["root", "A", "A1", "A2", "B", "B1"]);
@@ -163,10 +163,10 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // If expandDepth is 1. Root is depth 1. 1 <= 1 is True.
         // So Root is expanded.
         // Children A (depth 2). 2 <= 1 is False. A is collapsed.
-        
+
         let rootState = factory.walking(initialData, "root", { token: 1, expandAll: true }, 1);
         let snapshot = getSnapshot(factory, rootState);
-        
+
         // Root expanded. A and B visible.
         expect(snapshot.map(n => n.id)).toEqual(["root", "A", "B"]);
         expect(snapshot.find(n => n.id === "root")?.expanded).toBe(true);
@@ -178,12 +178,12 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // We use same token? If token is same, config is same? 
         // getConfigTokenId returns config.token.
         // If we want to force update due to config change, we should change token.
-        
+
         rootState = factory.walking(initialData, "root", { token: 2, expandAll: true }, 2);
         snapshot = getSnapshot(factory, rootState);
 
         expect(snapshot.map(n => n.id)).toEqual(["root", "A", "A1", "A2", "B", "B1"]);
-        
+
         // Verify we visited nodes to expand them
         expect(onVisit).toHaveBeenCalled();
     });
@@ -200,7 +200,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // Re-walk with SAME data and SAME config
         rootState = factory.walking(initialData, "root", { token: 1, expandAll: true }, 100);
         const nodeA_Second = factory.getNode(1);
-        
+
         // Should be identical state object or at least same updateStamp if optimized
         expect(nodeA_Second.state).toBe(nodeA_First.state);
         expect(nodeA_Second.state.updateStamp).toBe(stampA_First);
@@ -233,7 +233,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
 
         // Re-walk with NEW data
         rootState = factory.walking(newData, "root", { token: 1, expandAll: true }, 100);
-        
+
         const snapshot = getSnapshot(factory, rootState);
         // Expected: root, A, A1, A2, B, B1, B2_New
         expect(snapshot.map(n => n.id)).toEqual(["root", "A", "A1", "A2", "B", "B1", "B2_New"]);
@@ -241,7 +241,7 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // Check A - should be untouched (same object reference for state if possible, or at least not re-processed deeply if identity check passes)
         // In our adapter, we don't have isValueChange, so it uses reference equality (state.value !== value).
         // A's value object is same reference in newData.
-        
+
         const nodeA = factory.getNode(1);
         // A should not have updated?
         // The walkingFactory checks:
@@ -250,15 +250,15 @@ describe("walkingFactory - Snapshot & Incremental Updates", () => {
         // state.expanded == isExpand (true == true)
         // state.updateToken == ctx.updateToken (1 == 1)
         // So shouldUpdate is false.
-        
+
         // However, updateStamp in context increments on every walk?
         // getContextDefault: updateStamp: updateStamp++
         // But state.updateStamp is only updated if shouldUpdate is true.
-        
+
         // So A's updateStamp should be OLD.
         // Wait, if we pass same token, updateToken is same.
-        
-        expect(nodeA.state.updateStamp).toBeLessThan(rootState.updateStamp); 
+
+        expect(nodeA.state.updateStamp).toBeLessThan(rootState.updateStamp);
 
         // Check B - value changed (new object), so it should update
         const nodeB = factory.getNode(4);

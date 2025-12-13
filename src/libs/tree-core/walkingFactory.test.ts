@@ -162,7 +162,7 @@ describe("walkingFactory", () => {
         const tree = createTree()
 
         walker.walking(tree, tree.id, { token: 1 }, 10)
-        walker.toggleExpand(["left"])
+        walker.setExpand(["left"])
         walker.walking(tree, tree.id, { token: 1 }, 10)
 
         const leftNode = walker.getNode(1)
@@ -275,7 +275,7 @@ describe("walkingAsync", () => {
         const walker = walkingFactory(adapter)
 
         const syncResult = walker.walking(tree, "root", { token: 1 }, 10)
-        
+
         const iterator = walker.walkingAsync(tree, "root", { token: 1 }, 10, 100) // High limit to finish in one go if possible, or just iterate all
         let asyncResult: any
         for (const res of iterator) {
@@ -283,7 +283,7 @@ describe("walkingAsync", () => {
         }
 
         expect(asyncResult.childCount).toBe(syncResult.childCount)
-        
+
         // Check children of root
         const syncRootChildren = [walker.getNode(0), walker.getNode(1)] // Assuming indices 0 and 1 are children of root? 
         // Wait, getNode uses the flattened list.
@@ -294,7 +294,7 @@ describe("walkingAsync", () => {
         // In this test setup, we need to check how expansion is handled.
         // The default adapter in createAdapter doesn't seem to have default expansion logic shown in the snippet, 
         // but usually it defaults to collapsed or we can toggle it.
-        
+
         // Let's just compare the final state objects roughly
         expect(asyncResult.childKeys).toEqual(syncResult.childKeys)
     })

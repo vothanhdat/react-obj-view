@@ -56,7 +56,7 @@ const createWalkingInstance = () => {
         walking: vi.fn(() => mockResult),
         walkingAsync: vi.fn(function* () { yield mockResult }),
         refreshPath: vi.fn(),
-        toggleExpand: vi.fn(),
+        setExpand: vi.fn(),
         getNode,
     };
 };
@@ -77,10 +77,10 @@ describe("useReactTree", () => {
         }));
 
         expect(factory).toHaveBeenCalledTimes(1);
-        
+
         await waitFor(() => {
-             expect(instance.walkingAsync).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1, undefined);
-             expect(result.current.childCount).toBe(3);
+            expect(instance.walkingAsync).toHaveBeenCalledWith({ foo: "bar" }, "root", {}, 1, undefined);
+            expect(result.current.childCount).toBe(3);
         });
 
         const node = result.current.getNodeByIndex(0);
@@ -120,7 +120,11 @@ describe("useReactTree", () => {
         expect(instance.refreshPath).toHaveBeenCalledWith(["root"]);
 
         act(() => result.current.toggleChildExpand({ paths: ["root", 1] as any }));
-        expect(instance.toggleExpand).toHaveBeenCalledWith(["root", 1]);
+        // Expect setExpand called with path and a function (callback)
+        expect(instance.setExpand).toHaveBeenCalledWith(["root", 1], expect.any(Function));
+
+        act(() => result.current.setChildExpand({ paths: ["root", 1] as any, isExpanded: true }));
+        expect(instance.setExpand).toHaveBeenCalledWith(["root", 1], expect.any(Function));
     });
 
     it("recreates the walking instance when the factory reference changes", () => {

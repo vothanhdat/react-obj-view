@@ -28,7 +28,7 @@ const walkingConfig: ObjectWalkingConfig = {
 
 
 
-const { walking, walkingAsync, refreshPath, toggleExpand, getNode } = objectTreeWalkingFactory()
+const { walking, walkingAsync, refreshPath, setExpand, getNode } = objectTreeWalkingFactory()
 
 const walkingIterate = walkingAsync(a, 'root', walkingConfig, 10, 1)
 

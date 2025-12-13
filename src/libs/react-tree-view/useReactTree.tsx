@@ -73,9 +73,17 @@ export const useReactTree = <
         [ref]
     );
 
+    const setChildExpand = useCallback(
+        ({ paths, isExpanded }: { paths: InferWalkingType<T>['Key'][]; isExpanded: boolean }) => {
+            ref.current.instance.setExpand(paths, () => isExpanded);
+            setReload(e => e + 1);
+        },
+        [ref]
+    );
+
     const toggleChildExpand = useCallback(
         ({ paths }: { paths: InferWalkingType<T>['Key'][]; }) => {
-            ref.current.instance.toggleExpand(paths);
+            ref.current.instance.setExpand(paths, (prev) => !prev);
             setReload(e => e + 1);
         },
         [ref]
@@ -125,6 +133,7 @@ export const useReactTree = <
     return {
         refreshPath,
         toggleChildExpand,
+        setChildExpand,
         getNodeByIndex,
         computeItemKey,
         childCount: walkingResult?.childCount ?? 0,
