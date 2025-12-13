@@ -389,6 +389,47 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         currentState.state.userExpand = cb(currentExpand)
     }
 
+    const expandPath = (paths: Key[]) => {
+        let currentState = stateRoot;
+        for (let path of paths) {
+
+            currentState.state.updateToken = -1;
+
+            const currentExpand = currentState.state.userExpand
+                ?? currentState.state.expanded
+
+            if (!currentExpand) {
+                currentState.state.userExpand = true;
+            }
+
+            currentState = currentState.getChild(path as any)
+        }
+    }
+
+    const getIndexForPath = (paths: Key[]) => {
+        let currentState = stateRead;
+        let index = 0;
+
+        for (let path of paths) {
+            if (!currentState?.state?.childKeys || !currentState?.state?.childOffsets) {
+                return -1;
+            }
+
+            const childIndex = currentState.state.childKeys.indexOf(path);
+            if (childIndex === -1) {
+                return -1;
+            }
+
+            // Add offset of siblings before this child
+            index += currentState.state.childOffsets[childIndex];
+
+            // Move to child
+            currentState = currentState.getChildOnly(path as any);
+        }
+
+        return index;
+    }
+
     const getNodeInternal = (
         index: number,
         { state, getChildOnly }: StateReadonyWrap<WalkingResult<Value, Key, Meta>, Key>,
@@ -453,6 +494,8 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         walkingAsync,
         refreshPath,
         setExpand,
+        expandPath,
+        getIndexForPath,
         getNode,
     }
 

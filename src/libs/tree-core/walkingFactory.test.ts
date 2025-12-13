@@ -241,6 +241,63 @@ describe("walkingFactory", () => {
         expect(expandedHidden.state.expanded).toBe(true)
         expect(expandedHidden.state.childCount).toBe(2)
     })
+    it("supports expandPath and getIndexForPath for jump-to functionality", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        const config = { version: 1, log: [], expandAll: false }
+
+        // Initial walk: only root and alpha/beta keys visible (children of beta hidden?)
+        // createComplexTree structure:
+        // root
+        //  - alpha
+        //  - beta
+        //    - eta
+        //    - zeta
+        //  - gamma (hidden)
+        //    - epsilon
+
+        // Default: hidden=false => expanded? valueDefaultExpanded: !meta.hidden. 
+        // So alpha and beta are default expanded? 
+        // Let's verify initial state first.
+
+        walker.walking(tree, "root", config, 10)
+
+        // Check "beta" path
+        // Path to beta: ["beta"] (since root is "user root", children keys are alpha, beta, gamma)
+        // Initial state:
+        // root (0)
+        // alpha (1)
+        // beta (2) -> children eta/zeta should be visible if beta is expanded.
+        // gamma (collapsed/hidden)
+
+        // Check index of "beta"
+        const indexBeta = walker.getIndexForPath(["beta"])
+        expect(indexBeta).toBeGreaterThan(0)
+
+        // Try to get index of "zeta" (child of beta)
+        // Path: ["beta", "zeta"]
+        const indexZeta = walker.getIndexForPath(["beta", "zeta"])
+        expect(indexZeta).toBeGreaterThan(indexBeta)
+
+        // Try to get index of "epsilon" (child of gamma, which is hidden/collapsed)
+        // Should return -1 initially because gamma is not expanded.
+        const indexEpsilonBefore = walker.getIndexForPath(["gamma", "epsilon"])
+        expect(indexEpsilonBefore).toBe(-1)
+
+        // Expand path to epsilon
+        walker.expandPath(["gamma", "epsilon"])
+
+        // Must re-walk to update layout
+        walker.walking(tree, "root", config, 10)
+
+        const indexEpsilonAfter = walker.getIndexForPath(["gamma", "epsilon"])
+        expect(indexEpsilonAfter).toBeGreaterThan(0)
+
+        // Verify gamma is expanded
+        const gammaNode = walker.getNode(walker.getIndexForPath(["gamma"]))
+        expect(gammaNode.state.expanded).toBe(true)
+    })
 })
 
 describe("walkingAsync", () => {

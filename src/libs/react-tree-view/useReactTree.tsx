@@ -130,12 +130,35 @@ export const useReactTree = <
     );
 
 
+    const expandAndGetIndex = useCallback(
+        (paths: InferWalkingType<T>['Key'][]) => {
+            ref.current.instance.expandPath(paths);
+
+            // Force synchronous walk to update layout
+            // We use the last known params. 
+            // Note: If config/value changed since last render, this might use stale closure values if we strictly used refs for everything,
+            // but here we use the values from the current render scope which `useCallback` captures.
+            // Check dependency array carefully.
+
+            ref.current.instance.walking(value, name, config, expandDepth);
+
+            const index = ref.current.instance.getIndexForPath(paths);
+
+            // Trigger reload to reflect expansion changes in UI
+            setReload(e => e + 1);
+
+            return index;
+        },
+        [ref, value, name, config, expandDepth]
+    );
+
     return {
         refreshPath,
         toggleChildExpand,
         setChildExpand,
         getNodeByIndex,
         computeItemKey,
+        expandAndGetIndex,
         childCount: walkingResult?.childCount ?? 0,
     };
 };

@@ -57,6 +57,8 @@ const createWalkingInstance = () => {
         walkingAsync: vi.fn(function* () { yield mockResult }),
         refreshPath: vi.fn(),
         setExpand: vi.fn(),
+        expandPath: vi.fn(),
+        getIndexForPath: vi.fn(() => 10), // Mock return index
         getNode,
     };
 };
@@ -124,7 +126,19 @@ describe("useReactTree", () => {
         expect(instance.setExpand).toHaveBeenCalledWith(["root", 1], expect.any(Function));
 
         act(() => result.current.setChildExpand({ paths: ["root", 1] as any, isExpanded: true }));
+        act(() => result.current.setChildExpand({ paths: ["root", 1] as any, isExpanded: true }));
         expect(instance.setExpand).toHaveBeenCalledWith(["root", 1], expect.any(Function));
+
+        // Test expandAndGetIndex
+        let index = -1;
+        act(() => {
+            index = result.current.expandAndGetIndex(["root", 2] as any);
+        });
+
+        expect(instance.expandPath).toHaveBeenCalledWith(["root", 2]);
+        expect(instance.walking).toHaveBeenCalled(); // Should assume walking is called to sync
+        expect(instance.getIndexForPath).toHaveBeenCalledWith(["root", 2]);
+        expect(index).toBe(10);
     });
 
     it("recreates the walking instance when the factory reference changes", () => {
