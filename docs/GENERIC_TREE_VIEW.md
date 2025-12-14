@@ -16,7 +16,17 @@ value + adapter --> TreeCore (walkingFactory) --> ReactTreeView hook --> ReactTr
 
 Located in [`src/libs/tree-core`](../src/libs/tree-core), this package exposes a deterministic, memoised walker:
 
-- [`walkingFactory`](../src/libs/tree-core/walkingFactory.ts) accepts a `WalkingAdapter` and returns an instance with `walking`, `getNode`, `refreshPath`, and `setExpand` methods. It caches traversal state in [`StateFactory`](../src/libs/tree-core/utils/StateFactory.ts) so only dirty subtrees are recomputed when inputs change.
+- [`walkingFactory`](../src/libs/tree-core/walkingFactory.ts) accepts a `WalkingAdapter` and returns an instance with the following methods:
+    - `walking(value, key, config, expandDepth)`: Synchronously walks the tree and returns the root state.
+    - `walkingAsync(value, key, config, expandDepth, iterateSize)`: Asynchronously walks the tree, yielding control periodically.
+    - `getNode(index)`: Returns the node at the specific flattened index (for virtual scrolling).
+    - `setExpand(paths, callback)`: Toggles or sets the expansion state of a specific node path.
+    - `refreshPath(paths)`: Marks a path as dirty, forcing re-evaluation in the next walk.
+    - `expandPath(paths)`: Ensures all parents of the target path are marked as expanded.
+    - `getIndexForPath(paths)`: Returns the flattened index of a node at the given path (useful for scroll-to).
+    - `traversalAndFindPaths(callback, config, iterateSize, maxDepth, fullSearch)`: Efficiently searches the tree, optionally traversing unexpanded nodes.
+
+    It caches traversal state in [`StateFactory`](../src/libs/tree-core/utils/StateFactory.ts) so only dirty subtrees are recomputed when inputs change.
 - [`types.ts`](../src/libs/tree-core/types.ts) defines strongly-typed contracts for adapters, contexts, and node metadata. Use the provided helpers (`InferWalkingType`, `InferWalkingInstance`, etc.) to keep your React layer type-safe.
 
 An adapter describes how to iterate your domain-specific nodes:

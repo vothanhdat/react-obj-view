@@ -326,6 +326,7 @@ describe("walkingAsync", () => {
         expect(lastResult.childCount).toBe(4)
     })
 
+
     it("should eventually produce the same result as synchronous walking", () => {
         const tree = createTree()
         const { adapter } = createAdapter()
@@ -354,5 +355,116 @@ describe("walkingAsync", () => {
 
         // Let's just compare the final state objects roughly
         expect(asyncResult.childKeys).toEqual(syncResult.childKeys)
+    })
+})
+
+describe("traversalAndFindPaths", () => {
+    it("searches only expanded nodes when fullSearch is false", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        const config = { version: 1, log: [], expandAll: false }
+
+        // Walk first to populate state. 'gamma' is hidden (collapsed).
+        walker.walking(tree, "root", config, 10)
+
+        const found: string[] = []
+        const iterator = walker.traversalAndFindPaths(
+            (value, key, paths) => {
+                found.push(key)
+            },
+            config,
+            1000,
+            10,
+            false // fullSearch = false
+        )
+
+        for (const _ of iterator) { }
+
+        // Should find root, alpha, beta, eta, zeta.
+        // Should NOT find epsilon because gamma is collapsed.
+        expect(found).toContain("alpha")
+        expect(found).toContain("beta")
+        expect(found).toContain("eta")
+        expect(found).toContain("zeta")
+        expect(found).not.toContain("epsilon")
+    })
+
+    it("searches all nodes when fullSearch is true", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        const config = { version: 1, log: [], expandAll: false }
+
+        // Walk first. 'gamma' is hidden.
+        walker.walking(tree, "root", config, 10)
+
+        const found: string[] = []
+        const iterator = walker.traversalAndFindPaths(
+            (value, key, paths) => {
+                found.push(key)
+            },
+            config,
+            1000,
+            10,
+            true // fullSearch = true
+        )
+
+        for (const _ of iterator) { }
+
+        // Should find epsilon even though gamma is collapsed in the view state.
+        expect(found).toContain("epsilon")
+    })
+
+    it("yields execution to unblock thread", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        const config = { version: 1, log: [], expandAll: true } // Expand all to allow many nodes logic if needed, but here structure is small.
+
+        walker.walking(tree, "root", config, 10)
+
+        let yieldCount = 0
+        const iterator = walker.traversalAndFindPaths(
+            () => { },
+            config,
+            1, // Yield after every 1 visit
+            10,
+            true
+        )
+
+        for (const _ of iterator) {
+            yieldCount++
+        }
+
+        // Total nodes: root, alpha, beta, eta, zeta, gamma, epsilon = 7 nodes.
+        // With iterateSize=1, expect around 7 yields.
+        expect(yieldCount).toBeGreaterThanOrEqual(6)
+    })
+
+    it("provides correct paths in callback", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        const config = { version: 1, log: [], expandAll: false }
+
+        walker.walking(tree, "root", config, 10)
+
+        let epsilonPath: string[] = []
+        const iterator = walker.traversalAndFindPaths(
+            (value, key, paths) => {
+                if (key === "epsilon") {
+                    epsilonPath = [...paths]
+                }
+            },
+            config,
+            1000,
+            10,
+            true
+        )
+        for (const _ of iterator) { }
+
+        // Path to epsilon: gamma/epsilon
+        expect(epsilonPath).toEqual(["gamma", "epsilon"])
     })
 })
