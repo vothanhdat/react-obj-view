@@ -1,13 +1,61 @@
+
 import React, { ReactNode, useEffect, useRef, useState } from "react"
 import { getScrollContainer } from "./getScrollContainer"
-import type { VirtualScrollerProps } from "./types"
+import type { VirtualScrollerProps, VirtualScrollerRef } from "./types"
 
 
-export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode = ({ height, Component = React.Fragment, ...props }) => {
+export const VirtualScroller = <T,>(
+    { height, Component = React.Fragment as any, ref, ...props }: VirtualScrollerProps<T> & { ref?: React.Ref<VirtualScrollerRef> }
+) => {
 
-    const ref = useRef<HTMLDivElement>(null)
+    const innerRef = useRef<HTMLDivElement>(null)
 
     const [{ start, end, offset }, setState] = useState({ start: 0, end: 0, offset: 0 })
+
+    React.useImperativeHandle(ref, () => ({
+        scrollTo: (options: ScrollToOptions) => {
+            if (!innerRef.current) {
+                return
+            }
+            const parent = getScrollContainer(innerRef.current)
+            const isDocumentScroll = parent === document.documentElement || parent === document.body
+            // const scrollTarget: HTMLElement | Window = isDocumentScroll ? window : parent
+
+            const top = (options.top ?? 0)
+
+            // If checking absolute position relative to document/parent?
+            // Usually scrollTo(y) means scrolling the container so that the point y inside the scroller is at top.
+
+            // Calculate absolute top of the scroller element
+            const nodeRect = innerRef.current.getBoundingClientRect()
+
+            // If window scroll
+            if (isDocumentScroll) {
+                const absoluteTop = window.scrollY + nodeRect.top
+                window.scrollTo({
+                    ...options,
+                    top: absoluteTop + top
+                })
+            } else {
+                // If element scroll
+                // parent.scrollTop should be such that ref.current.top is 0 (relative to parent) + top
+
+                // parent.scrollTop = (ref.current.offsetTop - parent.offsetTop) + top? 
+                // Easier: get relative position.
+
+                // Relative position of ref.current within parent:
+                // We can use the difference in getBoundingClientRect().top + parent.scrollTop
+
+                const parentRect = parent.getBoundingClientRect()
+                const relativeTop = nodeRect.top - parentRect.top + parent.scrollTop
+
+                parent.scrollTo({
+                    ...options,
+                    top: relativeTop + top
+                })
+            }
+        }
+    }), [])
 
 
     useEffect(() => {
@@ -16,12 +64,12 @@ export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode =
             console.error("Height is not valid", { height })
         }
 
-        if (!ref.current) {
+        if (!innerRef.current) {
             return
         }
 
 
-        const parent = getScrollContainer(ref.current)
+        const parent = getScrollContainer(innerRef.current)
         const isDocumentScroll = parent === document.documentElement || parent === document.body
         const scrollTarget: HTMLElement | Window = isDocumentScroll ? window : parent
         const listenerOptions: AddEventListenerOptions = { passive: true }
@@ -29,7 +77,7 @@ export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode =
 
         const measure = () => {
             raf = 0
-            const node = ref.current
+            const node = innerRef.current
             if (!node) {
                 return
             }
@@ -79,7 +127,8 @@ export const VirtualScroller: <T>(props: VirtualScrollerProps<T>) => ReactNode =
         }
     }, [height])
 
-    return isFinite(height) && <div ref={ref} style={{ height: height + 'px', position: 'relative' }}>
+    return isFinite(height) && <div ref={innerRef} style={{ height: height + 'px', position: 'relative' }}>
         <Component start={start} end={end} offset={offset} {...props as any} />
     </div>
 }
+

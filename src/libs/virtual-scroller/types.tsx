@@ -13,3 +13,7 @@ export type VirtualScrollerRenderProps<T> = {
     end: number;
     offset: number;
 } & T;
+
+export type VirtualScrollerRef = {
+    scrollTo: (options: ScrollToOptions) => void
+}

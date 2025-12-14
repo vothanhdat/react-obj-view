@@ -37,7 +37,7 @@ describe('VirtualScroller', () => {
     });
 
     it('should not render if height is infinite', () => {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
         render(<VirtualScroller height={Infinity} Component={MockComponent} />);
 
         expect(screen.queryByTestId('content')).not.toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('VirtualScroller', () => {
             value: () => ({ top: 0, height: 500 }),
         });
         Object.defineProperty(mockParent, 'scrollTop', { value: 100 });
-        
+
         (getScrollContainer as any).mockReturnValue(mockParent);
 
         render(<VirtualScroller height={1000} Component={MockComponent} />);
@@ -65,7 +65,7 @@ describe('VirtualScroller', () => {
         // which is hard to mock layout for in jsdom, we mainly check if event listeners are attached
         // and component renders.
         // For precise calculation testing, we might need more complex setup or e2e tests.
-        
+
         expect(screen.getByTestId('content')).toBeInTheDocument();
     });
 
@@ -75,9 +75,37 @@ describe('VirtualScroller', () => {
         (getScrollContainer as any).mockReturnValue(mockParent);
 
         const { unmount } = render(<VirtualScroller height={1000} Component={MockComponent} />);
-        
+
         unmount();
 
         expect(removeEventListenerSpy).toHaveBeenCalledWith('wheel', expect.any(Function), expect.any(Object));
+    });
+    it('should expose scrollTo method via ref', () => {
+        const mockParent = document.createElement('div');
+        mockParent.scrollTo = vi.fn();
+        Object.defineProperty(mockParent, 'getBoundingClientRect', {
+            value: () => ({ top: 0, height: 500 }),
+        });
+
+        (getScrollContainer as any).mockReturnValue(mockParent);
+
+        const ref = { current: null } as any;
+        render(<VirtualScroller ref={ref} height={1000} Component={MockComponent} />);
+
+        expect(ref.current).toBeDefined();
+        expect(ref.current.scrollTo).toBeDefined();
+
+        // Simulate usage
+        act(() => {
+            ref.current.scrollTo({ top: 100 });
+        });
+
+        // Since we can't easily mock ref.current.getBoundingClientRect() inside the component from here 
+        // without more intrusive mocking or setup, we assume logic is correct if function is called.
+        // However, we can check if parent.scrollTo was called.
+        // But `scrollTo` inside VirtualScroller calls `ref.current.getBoundingClientRect()` which might fail or return 0s in jsdom if not mocked.
+        // Let's at least expect no crash and some interaction.
+
+        expect(mockParent.scrollTo).toHaveBeenCalled();
     });
 });
