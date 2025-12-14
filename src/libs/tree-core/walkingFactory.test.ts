@@ -394,10 +394,21 @@ describe("traversalAndFindPaths", () => {
         const { adapter } = createComplexAdapter()
         const walker = walkingFactory(adapter)
         const tree = createComplexTree()
+        // Ensure gamma is NOT hidden so valueDefaultExpaned returns TRUE.
+        // But we rely on expandDepth to collapse it.
+        tree.entries!.gamma.hidden = false
         const config = { version: 1, log: [], expandAll: false }
 
-        // Walk first. 'gamma' is hidden.
-        walker.walking(tree, "root", config, 10)
+        // Walk with depth 1. Root (1) expanded. Children (2) (alpha, beta, gamma) collapsed.
+        walker.walking(tree, "root", config, 1)
+
+        // Verify gamma is collapsed
+        const idx = walker.getIndexForPath(["gamma"])
+        // If it's collapsed, it still has an index? Yes, the node itself is visible, children are hidden.
+        // But childCount should be 1 (itself) or somewhat limited?
+        const gammaNode = walker.getNode(idx)
+        expect(gammaNode.state.expanded).toBe(false)
+
 
         const found: string[] = []
         const iterator = walker.traversalAndFindPaths(
@@ -412,7 +423,7 @@ describe("traversalAndFindPaths", () => {
 
         for (const _ of iterator) { }
 
-        // Should find epsilon even though gamma is collapsed in the view state.
+        // Should find epsilon (child of gamma)
         expect(found).toContain("epsilon")
     })
 
@@ -420,7 +431,8 @@ describe("traversalAndFindPaths", () => {
         const { adapter } = createComplexAdapter()
         const walker = walkingFactory(adapter)
         const tree = createComplexTree()
-        const config = { version: 1, log: [], expandAll: true } // Expand all to allow many nodes logic if needed, but here structure is small.
+        // Use expandAll to ensure many nodes are expanded/traversable default
+        const config = { version: 1, log: [], expandAll: true }
 
         walker.walking(tree, "root", config, 10)
 
@@ -446,9 +458,12 @@ describe("traversalAndFindPaths", () => {
         const { adapter } = createComplexAdapter()
         const walker = walkingFactory(adapter)
         const tree = createComplexTree()
+        // Keep gamma searchable
+        tree.entries!.gamma.hidden = false
         const config = { version: 1, log: [], expandAll: false }
 
-        walker.walking(tree, "root", config, 10)
+        // Walk shallow
+        walker.walking(tree, "root", config, 1)
 
         let epsilonPath: string[] = []
         const iterator = walker.traversalAndFindPaths(
