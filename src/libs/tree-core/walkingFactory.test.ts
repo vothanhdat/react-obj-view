@@ -482,4 +482,32 @@ describe("traversalAndFindPaths", () => {
         // Path to epsilon: gamma/epsilon
         expect(epsilonPath).toEqual(["gamma", "epsilon"])
     })
+
+    it("keeps skipping nodes where valueDefaultExpaned returns false even if fullSearch is true", () => {
+        const { adapter } = createComplexAdapter()
+        const walker = walkingFactory(adapter)
+        const tree = createComplexTree()
+        // gamma is hidden by default -> valueDefaultExpaned returns false
+        const config = { version: 1, log: [], expandAll: false }
+
+        walker.walking(tree, "root", config, 10)
+
+        const found: string[] = []
+        const iterator = walker.traversalAndFindPaths(
+            (value, key, paths) => {
+                found.push(key)
+            },
+            config,
+            1000,
+            10,
+            true // fullSearch = true
+        )
+
+        for (const _ of iterator) { }
+
+        // Should find gamma (it's a child of root)
+        expect(found).toContain("gamma")
+        // But should NOT find epsilon (child of gamma) because gamma is lazy/skipped
+        expect(found).not.toContain("epsilon")
+    })
 })

@@ -32,6 +32,12 @@ const generatePayload = (rows: number) => {
 
 describe('search', () => {
 
+  const walkingConfig: ObjectWalkingConfig = {
+    nonEnumerable: false,
+    symbol: false,
+    resolver: undefined
+  };
+
   for (let [name, payload, iterate] of [
     ["1k nodes", generatePayload(100), 10],
     ["10k nodes", generatePayload(1000), 10],
@@ -42,11 +48,6 @@ describe('search', () => {
 
 
       bench('walking Async Full', async () => {
-        const walkingConfig: ObjectWalkingConfig = {
-          nonEnumerable: true,
-          symbol: false,
-          resolver: undefined
-        };
 
         const factory = objectTreeWalkingFactory()
 
@@ -64,11 +65,7 @@ describe('search', () => {
 
 
       bench('walking Async full and search', async () => {
-        const walkingConfig: ObjectWalkingConfig = {
-          nonEnumerable: true,
-          symbol: false,
-          resolver: undefined
-        };
+
 
         const factory = objectTreeWalkingFactory()
 
@@ -110,11 +107,7 @@ describe('search', () => {
 
 
       bench('walking partial and search Async Full', async () => {
-        const walkingConfig: ObjectWalkingConfig = {
-          nonEnumerable: true,
-          symbol: false,
-          resolver: undefined
-        };
+
 
         const factory = objectTreeWalkingFactory()
 
@@ -153,11 +146,7 @@ describe('search', () => {
 
       }, { iterations: iterate })
       bench('walking Full and search Async Full', async () => {
-        const walkingConfig: ObjectWalkingConfig = {
-          nonEnumerable: true,
-          symbol: false,
-          resolver: undefined
-        };
+
 
         const factory = objectTreeWalkingFactory()
 

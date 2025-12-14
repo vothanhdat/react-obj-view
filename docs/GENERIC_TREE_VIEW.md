@@ -24,7 +24,7 @@ Located in [`src/libs/tree-core`](../src/libs/tree-core), this package exposes a
     - `refreshPath(paths)`: Marks a path as dirty, forcing re-evaluation in the next walk.
     - `expandPath(paths)`: Ensures all parents of the target path are marked as expanded.
     - `getIndexForPath(paths)`: Returns the flattened index of a node at the given path (useful for scroll-to).
-    - `traversalAndFindPaths(callback, config, iterateSize, maxDepth, fullSearch)`: Efficiently searches the tree, optionally traversing unexpanded nodes.
+    - `traversalAndFindPaths(callback, config, iterateSize, maxDepth, fullSearch)`: Efficiently searches the tree. When `fullSearch` is true, it traverses unexpanded nodes but continues to respect `valueDefaultExpaned` (skipping nodes usually meant to be lazy or non-enumerable).
 
     It caches traversal state in [`StateFactory`](../src/libs/tree-core/utils/StateFactory.ts) so only dirty subtrees are recomputed when inputs change.
 - [`types.ts`](../src/libs/tree-core/types.ts) defines strongly-typed contracts for adapters, contexts, and node metadata. Use the provided helpers (`InferWalkingType`, `InferWalkingInstance`, etc.) to keep your React layer type-safe.
