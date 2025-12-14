@@ -479,6 +479,155 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         }
     }
 
+
+    const traversalAndFindPathsInternal = function* (
+        callback: (value: Value, key: Key, path: Key[]) => void,
+        { state, getChildOnly }: StateReadonyWrap<WalkingResult<Value, Key, Meta>, Key>,
+        findContext: { maxIterate: number, iterateLeft: number, currentDepth: number, maxDepth: number, paths: Key[], ctx: Context, fullSearch: boolean }
+    ) {
+
+        // console.log(findContext.paths);
+
+        findContext.iterateLeft--;
+
+
+        callback(state.value!, state.key!, findContext.paths);
+
+        if (findContext.iterateLeft <= 0) {
+            // console.log("yield 2-1", findContext.paths)
+            yield;
+            findContext.iterateLeft = findContext.maxIterate;
+        }
+
+        if (findContext.currentDepth >= findContext.maxDepth) {
+            // console.log("findContext.currentDepth >= findContext.maxDepth")
+            return;
+        }
+
+        if (getChildOnly && state.childKeys && state.childKeys.length > 0) {
+
+            findContext.currentDepth++;
+
+            let currentIterate = 0
+
+            do {
+                while (currentIterate < state.childKeys.length) {
+
+                    let key = state.childKeys[currentIterate]
+
+                    let childState = getChildOnly(key)
+
+                    if (!childState) {
+                        console.log("childState empty", findContext.paths)
+                    }
+
+                    findContext.paths.push(key)
+
+                    for (let _ of traversalAndFindPathsInternal(
+                        callback,
+                        childState,
+                        findContext,
+                    )) {
+                        // console.log("yield 2-2", findContext.paths)
+                        yield;
+                    }
+
+                    findContext.paths.pop()
+
+                    currentIterate++;
+
+                }
+
+                if (state.earlyReturn && !state.iterateFinish) {
+                    // console.log("yield 2-3", findContext.paths)
+
+                    yield;
+                    findContext.iterateLeft = findContext.maxIterate;
+                }
+
+            } while (state.earlyReturn && !state.iterateFinish);
+
+            findContext.currentDepth--;
+
+        } else if (
+            findContext.fullSearch
+            && !state.expanded
+            && (!adapter.valueDefaultExpaned || adapter.valueDefaultExpaned(state.meta!, findContext.ctx))
+            && adapter.valueHasChild(state.value!, state.meta!, findContext.ctx)
+        ) {
+
+
+            findContext.currentDepth++;
+
+            let stacks: { key: Key, value: Value, meta: Meta, expanded: false, childKeys: undefined }[] = []
+
+            adapter.iterateChilds(
+                state.value!, findContext.ctx, state,
+                (value, key, meta) => {
+                    stacks.push({ key, value, meta, expanded: false, childKeys: undefined, })
+                    return false;
+                }
+            )
+
+
+            let currentIterate = 0
+
+
+
+            while (currentIterate < stacks.length) {
+
+                let childState = stacks[currentIterate]
+
+                findContext.paths.push(childState.key)
+
+                for (let _ of traversalAndFindPathsInternal(
+                    callback,
+                    { state: childState, getChildOnly: undefined } as any,
+                    findContext,
+                )) {
+                    // console.log("Yeild 111")
+                    yield;
+                }
+
+                findContext.paths.pop()
+
+
+
+                currentIterate++;
+            }
+
+
+            findContext.currentDepth--;
+
+        }
+
+    }
+
+    const traversalAndFindPaths = function* (
+        callback: (value: Value, key: Key, path: Key[]) => void,
+        walkingConfig: Config,
+        iterateSize = 10000,
+        maxDepth = 10,
+        fullSearch = false,
+    ) {
+
+        const findContext = {
+            maxIterate: iterateSize, iterateLeft: iterateSize,
+            currentDepth: 0, maxDepth: maxDepth,
+            paths: [],
+            ctx: getContextDefault(walkingConfig, maxDepth),
+            fullSearch,
+        }
+
+        for (let _ of traversalAndFindPathsInternal(callback, stateRead, findContext)) {
+            // console.log("yield 1")
+            yield;
+        }
+
+    }
+
+
+
     const getNode = (
         index: number,
     ) => getNodeInternal(
@@ -497,6 +646,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         expandPath,
         getIndexForPath,
         getNode,
+        traversalAndFindPaths,
     }
 
 }
