@@ -40,7 +40,60 @@ Resolvers receive the current [`WalkingConfig`](../src/object-tree/types.ts) so 
 
 The combination gives you virtualization, sticky ancestors, and deterministic expand/collapse semantics for any object graph.
 
-## 4. Extending the object viewer
+## 4. Search & Navigation
+
+`ObjectView` exposes an imperative handle via ref to enable search functionality:
+
+```tsx
+export type ObjectViewRef = {
+  search: (
+    searchTerm: string, 
+    onResult: (paths: Key[][]) => void, 
+    options?: { fullSearch?: boolean; maxDepth?: number }
+  ) => Promise<void>;
+  
+  scrollToPaths: (paths: Key[]) => Promise<void>;
+};
+```
+
+- **`search`**: Generators-based search that yields results in batches to `onResult` without blocking the main thread.
+- **`scrollToPaths`**: Auto-expands necessary parents and scrolls the virtual list to the target node.
+
+## 5. Search Styling & Custom UI
+
+The built-in `SearchComponent` is a separate export that you can use for convenience. It floats over the `ObjectView` container.
+
+### Style overrides
+
+Target the `.big-objview-search` class to customize the appearance:
+
+```css
+.big-objview-search {
+  /* Override position */
+  top: 10px;
+  right: 10px;
+}
+
+.big-objview-search .search-box {
+  /* Customize the input container */
+  background-color: #333;
+  border-radius: 8px;
+}
+```
+
+### Build your own UI
+
+If the default search bar doesn't fit your design, simply ignore `SearchComponent` and use the ref methods directly:
+
+```tsx
+const handleSearch = async (term) => {
+  await objViewRef.current.search(term, (matches) => {
+    // highlighting logic...
+  });
+};
+```
+
+## 6. Extending the object viewer
 
 You can customise behaviour at several layers:
 
@@ -51,7 +104,7 @@ You can customise behaviour at several layers:
 | Rendering | [`src/react-obj-view/components`](../src/react-obj-view/components) | Swap `RenderNode` with a custom row renderer, tweak `RenderValue`, or apply new visual affordances. |
 | Viewer shell | [`ObjectView`](../src/react-obj-view/ObjectView.tsx) | Wire additional props, new toolbar buttons, or bespoke virtualization options before handing control to `ReactTreeView`. |
 
-## 5. Example: extend resolver behaviour
+## 7. Example: extend resolver behaviour
 
 ```tsx
 import { ObjectView, type ResolverFn } from "react-obj-view";

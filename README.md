@@ -29,6 +29,7 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 - **Change awareness** – optional flashing highlights updated values.
 - **Interactive hover** – highlights the indentation guide for the current parent context.
 - **Line numbers** – optional gutter with 0-based indices for debugging.
+- **Search & Navigation** – deeply seaarch through the tree and jump to matching nodes.
 
 ---
 
@@ -263,6 +264,29 @@ Enable a gutter with 0-based line numbers for easier debugging:
   valueGetter={() => largeData}
   showLineNumbers={true}
   lineHeight={18}
+/>
+```
+
+### Search & Navigation
+
+The `ObjectView` exposes search capabilities via a ref:
+
+```tsx
+import { SearchComponent } from "react-obj-view";
+
+const objViewRef = useRef<any>(null);
+const [searchActive, setSearchActive] = useState(false);
+
+<ObjectView 
+  valueGetter={() => data} 
+  ref={objViewRef} 
+/>
+
+<SearchComponent 
+  active={searchActive}
+  onClose={() => setSearchActive(false)}
+  handleSearch={(...args) => objViewRef?.current?.search(...args)}
+  scrollToPaths={(...args) => objViewRef?.current?.scrollToPaths(...args)} 
 />
 ```
 

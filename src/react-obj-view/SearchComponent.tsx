@@ -6,7 +6,7 @@ import "./search.css"
 import { joinClasses } from "../utils/joinClasses";
 
 
-export const SearchComponent: React.FC<{
+export type SearchComponentProps = {
     handleSearch: (
         searchTerm: string,
         onResult: (paths: InferWalkingType<ObjectWalkingAdater>['Key'][][]) => void,
@@ -22,8 +22,12 @@ export const SearchComponent: React.FC<{
     ) => Promise<void>;
     active: boolean;
     onClose: () => void;
+}
 
-}> = ({ handleSearch, scrollToPaths, active = true, onClose }) => {
+export const SearchComponent: React.FC<SearchComponentProps> = ({
+    handleSearch, scrollToPaths,
+    active = true, onClose
+}) => {
 
 
     const [searchTerm, setSearchTerm] = useState("")

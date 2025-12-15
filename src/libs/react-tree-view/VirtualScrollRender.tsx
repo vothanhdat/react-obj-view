@@ -54,13 +54,13 @@ export const VirtualScrollRender: <
                 borderBottom: isLastStick
                     ? "solid 1px color-mix(in srgb, var(--color) 30%, transparent)"
                     : "",
-                "--current-index": String(index),
+                ...{ "--current-index": String(index), }
             } : {
                 position: "absolute",
                 top: `${index * lineHeight}px`,
                 height: `${lineHeight}px`,
                 lineHeight: `${lineHeight}px`,
-                "--current-index": String(index),
+                ...{ "--current-index": String(index), }
             }}
         >
             {showLineNumbers && <span className="line-number" style={{ flexShrink: 0 }}>
