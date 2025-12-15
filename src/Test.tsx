@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { allExamples, quickExamples, performanceTestData } from './exampleData'
 import './Test.css'
 import { ResolverFn, objectHasChild } from './object-tree'
@@ -12,6 +12,7 @@ import {
 } from './react-obj-view-themes'
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
+import { SearchComponent } from './react-obj-view/SearchComponent'
 
 const packageVersion = '1.1.2'
 
@@ -221,7 +222,7 @@ const testDataOptions: TestDataOption[] = [
   { label: 'Edge • Generators', value: allExamples.edge.generators, category: 'Edge Cases' },
   { label: 'Edge • Promises', value: allExamples.edge.promises, category: 'Edge Cases' },
   { label: 'Edge • Regex Variations', value: allExamples.edge.regexVariations, category: 'Edge Cases' },
-    { label: 'Performance • Small (10 items / ~200 nodes)', value: performanceTestData.small, category: 'Performance' },
+  { label: 'Performance • Small (10 items / ~200 nodes)', value: performanceTestData.small, category: 'Performance' },
   { label: 'Performance • Medium (100 items / ~2k nodes)', value: performanceTestData.medium, category: 'Performance' },
   { label: 'Performance • Large (1k items / ~20k nodes)', value: performanceTestData.large, category: 'Performance' },
   { label: 'Performance • Extra Large (10k items / ~200k nodes)', value: performanceTestData.supperLarge, category: 'Performance' },
@@ -428,6 +429,11 @@ export const Test = () => {
   // console.log(currentDataGetter())
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
+
+  const objViewRef = useRef<any>(undefined)
+
+  const [searchActive, setSearchActive] = useState(false)
+
   return (
     <div className={`demo-page ${pageModeClass}`}>
       <header className="demo-header">
@@ -701,24 +707,45 @@ export const Test = () => {
               ))}
             </div>
           </div>
-          <div className="viewer-body" style={selectedTheme}>
-            <ObjectView
-              valueGetter={currentDataGetter}
-              name="testData"
-              expandLevel={expandLevel}
-              highlightUpdate={enableHighlighting}
-              objectGroupSize={enableGrouping ? objectGrouped : 0}
-              arrayGroupSize={enableGrouping ? arrayGrouped : 0}
-              resolver={resolverOverrides}
-              preview={enablePreviewMode}
-              nonEnumerable={showNonEnumerable}
-              showLineNumbers={showLineNumbers}
-              lineHeight={14}
-              includeSymbols={showSymbols}
-              style={selectedTheme}
-              stickyPathHeaders={stickyHeaders}
-              actionRenders={enableCustomActions ? CustomActions : undefined}
+          <div className="viewer-body" style={selectedTheme}
+
+          >
+            <div style={{ overflow: "auto", height: "100%", }}
+              tabIndex={-1}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && (e.key == "f" || e.key == "F")) {
+                  setSearchActive(true)
+                  e.preventDefault()
+                }
+              }}
+            >
+              <ObjectView
+                valueGetter={currentDataGetter}
+                name="testData"
+                expandLevel={expandLevel}
+                highlightUpdate={enableHighlighting}
+                objectGroupSize={enableGrouping ? objectGrouped : 0}
+                arrayGroupSize={enableGrouping ? arrayGrouped : 0}
+                resolver={resolverOverrides}
+                preview={enablePreviewMode}
+                nonEnumerable={showNonEnumerable}
+                showLineNumbers={showLineNumbers}
+                lineHeight={14}
+                includeSymbols={showSymbols}
+                style={selectedTheme}
+                stickyPathHeaders={stickyHeaders}
+                actionRenders={enableCustomActions ? CustomActions : undefined}
+                ref={objViewRef}
+              />
+            </div>
+
+            <SearchComponent
+              active={searchActive}
+              onClose={() => setSearchActive(false)}
+              handleSearch={(...args) => objViewRef?.current?.search(...args)}
+              scrollToPaths={(...args) => objViewRef?.current?.scrollToPaths(...args)}
             />
+
           </div>
         </section>
       </main>

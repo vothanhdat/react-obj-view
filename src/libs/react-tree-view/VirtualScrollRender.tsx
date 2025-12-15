@@ -38,7 +38,7 @@ export const VirtualScrollRender: <
         stickyHeader: stickyPathHeaders,
     });
 
-    const lineNumberChars = Math.max(2,String(renderIndexes.at(-1)?.index ?? 0).length)
+    const lineNumberChars = Math.max(2, String(renderIndexes.at(-1)?.index ?? 0).length)
 
     return <>
         {renderIndexes.map(({ isStick, index, isLastStick, position }) => <div
@@ -53,15 +53,17 @@ export const VirtualScrollRender: <
                 backgroundColor: "var(--bg-color)",
                 borderBottom: isLastStick
                     ? "solid 1px color-mix(in srgb, var(--color) 30%, transparent)"
-                    : ""
+                    : "",
+                "--current-index": String(index),
             } : {
                 position: "absolute",
                 top: `${index * lineHeight}px`,
                 height: `${lineHeight}px`,
                 lineHeight: `${lineHeight}px`,
+                "--current-index": String(index),
             }}
         >
-            {showLineNumbers && <span className="line-number" style={{flexShrink:0}}>
+            {showLineNumbers && <span className="line-number" style={{ flexShrink: 0 }}>
                 {String(index).padStart(lineNumberChars, " ")}:{" "}
             </span>}
             <VirtualScrollRowRender

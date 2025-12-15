@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { RenderNode } from "./components/RenderNode";
 import { RenderOptions } from "./types";
 import { ObjectViewProps } from "./types";
@@ -16,6 +16,7 @@ import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
 import "./components/style.css"
 import { useHoverInteractions } from "./hooks/useHoverInteractions";
+import { HightlightWrapper } from "./hooks/useHighlight";
 
 
 
@@ -37,6 +38,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     stickyPathHeaders = true,
     actionRenders,
     iterateSize,
+    ref,
 }) => {
 
     const value = useMemo(() => valueGetter?.(), [valueGetter])
@@ -79,9 +81,11 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         iterateSize,
     })
 
-    const { getNodeByIndex, childCount } = objectTree
+    const { getNodeByIndex, childCount, expandAndGetIndex, travelAndSearch } = objectTree
 
     const { onMouseEnter, onMouseLeave, containerRef } = useHoverInteractions(childCount, getNodeByIndex);
+
+    const [searchTerm, setSearchTerm] = useState("")
 
     const options: RenderOptions = useMemo(
         () => ({
@@ -94,11 +98,12 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             onMouseLeave,
             actionRenders,
             nonEnumerable,
+            // searchTerm,
         }) as RenderOptions,
         [
             enablePreview, resolver,
             highlightUpdate, includeSymbols, showLineNumbers,
-            actionRenders, nonEnumerable
+            actionRenders, nonEnumerable,
         ]
     )
 
@@ -113,18 +118,153 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         [style, className]
     )
 
-    return <div ref={containerRef} className="big-objview-container">
-        <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
-            {...objectTree}
-            lineHeight={lineHeight}
-            options={options}
-            RowRenderer={RenderNode}
-            stickyPathHeaders={stickyPathHeaders}
-            containerDivProps={containerDivProps}
-            showLineNumbers={showLineNumbers}
-            rowDivProps={rowDivProps}
-        />
+    const reactTreeViewRef = useRef<any>(undefined)
+
+
+    const searchObj = useMemo(
+        () => {
+
+            let currentSearchTerm = ""
+
+            return {
+                async search(
+                    searchTerm: string,
+                    onResult: (paths: InferWalkingType<ObjectWalkingAdater>['Key'][][]) => void,
+                    options: {
+                        iterateSize?: number,
+                        maxDepth?: number,
+                        fullSearch?: boolean,
+                        normalizeSymbol?: (e: string) => string,
+                    } = {}
+                ) {
+
+                    let searchTermNomalize = searchTerm.toLowerCase();
+
+                    if (options.normalizeSymbol) {
+                        searchTermNomalize = [...searchTermNomalize].map(options.normalizeSymbol).join("")
+                    }
+
+                    let tokens = searchTermNomalize.split(" ").filter(Boolean)
+
+                    if (!tokens.length)
+                        return;
+
+                    currentSearchTerm = searchTerm;
+
+                    setSearchTerm(currentSearchTerm);
+
+                    let currentResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
+
+                    const filterFunctions = (value: any, key: any, paths: any[]) => {
+                        try {
+                            let str = String(key)
+
+                            if (typeof value === 'string'
+                                || typeof value === 'number'
+                                || typeof value === 'bigint'
+                                || (typeof value === 'object' && (
+                                    value instanceof Date || value instanceof RegExp
+                                ))) {
+                                str += " " + String(value);
+                            }
+
+                            str = str.toLowerCase();
+
+                            if (options.normalizeSymbol) {
+                                str = [...str].map(options.normalizeSymbol).join("")
+                            }
+
+                            let prevIndex = 0;
+
+                            for (let token of tokens) {
+                                prevIndex = str.indexOf(token, prevIndex)
+                                if (prevIndex < 0)
+                                    return false;
+                                // console.log({ prevIndex })
+                            }
+
+                            return prevIndex > -1;
+
+                        } catch (error) {
+                            return false
+                        }
+
+                    }
+
+                    for (let _ of objectTree.travelAndSearch(
+                        (value, key, path) => {
+                            if (filterFunctions(value, key, path)) {
+                                // console.log("Match ", { value, key, path })
+                                currentResults.push([...path])
+                            }
+
+                        },
+                        options.iterateSize,
+                        options.maxDepth,
+                        options.fullSearch,
+                    )) {
+
+                        onResult(currentResults);
+
+                        currentResults = []
+
+                        await new Promise(r => (window.requestIdleCallback || window.requestAnimationFrame)(r));
+
+                        // console.log({ currentSearchTerm, searchTerm })
+                        if (currentSearchTerm !== searchTerm) {
+                            currentResults = [];
+                            return;
+                        }
+                    }
+
+                    if (currentResults.length) {
+                        onResult(currentResults);
+                        currentResults = []
+                    }
+                },
+                async scrollToPaths(
+                    paths: InferWalkingType<ObjectWalkingAdater>['Key'][],
+                    options?: ScrollToOptions
+                ) {
+                    let pathIndex = await expandAndGetIndex(paths);
+                    if (pathIndex > -1) {
+
+                        containerRef.current?.style.setProperty(
+                            "--mark-index", String(pathIndex)
+                        )
+
+                        reactTreeViewRef?.current?.scrollTo(
+                            {
+                                top: pathIndex * lineHeight - 200,
+                                behavior: "instant",
+                                ...options,
+                            } as ScrollToOptions
+                        )
+                    }
+                }
+            }
+        }, [reactTreeViewRef, expandAndGetIndex, travelAndSearch]
+    )
+
+    useImperativeHandle(ref, () => searchObj, [searchObj])
+
+    return <div ref={containerRef} className="big-objview-container" >
+        <HightlightWrapper highlight={searchTerm}>
+            <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
+                {...objectTree}
+                lineHeight={lineHeight}
+                options={options}
+                RowRenderer={RenderNode}
+                stickyPathHeaders={stickyPathHeaders}
+                containerDivProps={containerDivProps}
+                showLineNumbers={showLineNumbers}
+                rowDivProps={rowDivProps}
+                ref={reactTreeViewRef}
+            />
+        </HightlightWrapper>
+
     </div>
+
 }
 
 

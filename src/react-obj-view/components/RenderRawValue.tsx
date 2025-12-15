@@ -6,6 +6,7 @@ import { RenderFunction } from "../value-renders/RenderFunction";
 import { ItemViewBase } from "../../object-tree/resolver";
 import { RenderBufferItem } from "../value-renders/BufferItemView";
 import { RenderRegex } from "../value-renders/RenderRegex";
+import { HighlightString } from "../hooks/useHighlight";
 
 
 export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: RenderOptions }> = ({ valueWrapper, depth, options }) => {
@@ -17,9 +18,9 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
         case "number":
         case "symbol":
         case "undefined":
-            return String(value);
+            return <HighlightString text={String(value)} />
         case "bigint":
-            return String(value) + "n";
+            return <HighlightString text={String(value) + "n"} />
         case "function": {
             return <RenderFunction {...{ value, depth }} />
         }
@@ -30,8 +31,8 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
             if (!value)
                 return String(value);
 
+            if (value instanceof Date) return <HighlightString text={String(value)} />;;
             if (value instanceof RegExp) return <RenderRegex {...{ value: value, depth }} />
-            if (value instanceof Date) return String(value);
             if (value instanceof Array) return `Array(${value.length})`;
             if (value instanceof Map) return `Map(${value.size})`;
             if (value instanceof Set) return `Set(${value.size})`;

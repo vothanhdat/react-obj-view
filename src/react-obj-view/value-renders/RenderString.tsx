@@ -1,3 +1,4 @@
+import { HighlightString } from "../hooks/useHighlight";
 import { RenderPopover } from "./Popover";
 import { useStringDisplay } from "./useStringDisplay";
 
@@ -19,7 +20,7 @@ export const RenderString: React.FC<{ value: string; depth: number; }> = ({ valu
                 value: fullValue,
                 shortValue: renderStr
             }} />
-            : renderStr
+            : <HighlightString text={renderStr} />
         }
     </>
 };

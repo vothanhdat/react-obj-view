@@ -1,5 +1,6 @@
 import { useId } from "react";
 import "./popover.css"
+import { HighlightString } from "../hooks/useHighlight";
 
 
 
@@ -9,10 +10,10 @@ export const RenderPopover: React.FC<{ value: string; shortValue: string; }> = (
 
     return <>
         <span style={{ anchorName: id, } as any} className="popover-anchor">
-            {shortValue}
+            <HighlightString text={shortValue} />
         </span>
         <pre style={{ positionAnchor: id } as any} className="popover-content">
-            {value}
+            <HighlightString text={value} />
         </pre>
     </>;
 };

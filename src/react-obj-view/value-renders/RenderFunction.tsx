@@ -1,5 +1,6 @@
 import React from "react";
 import { RenderPopover } from "./Popover";
+import { HighlightString } from "../hooks/useHighlight";
 
 
 export const RenderFunction: React.FC<{ value: Function, depth: any }> = ({ value, depth }) => {
@@ -23,6 +24,6 @@ export const RenderFunction: React.FC<{ value: Function, depth: any }> = ({ valu
         .includes('{ [native code] }')
 
     return isNativeCode
-        ? preview
+        ? <HighlightString text={preview} />
         : <RenderPopover {...{ value: render, shortValue: preview }} />
 }

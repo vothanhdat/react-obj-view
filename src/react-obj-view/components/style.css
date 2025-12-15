@@ -17,8 +17,8 @@
     --bigobjview-type-object-regexp-color: red;
     --bigobjview-type-object-date-color: #08f;
     --bigobjview-type-object-error-color: red;
-    --bigobjview-action-btn:  light-dark(#ddd,#555);
-    --bigobjview-action-success: light-dark(rgb(0, 184, 0),#0c0);
+    --bigobjview-action-btn: light-dark(#ddd, #555);
+    --bigobjview-action-success: light-dark(rgb(0, 184, 0), #0c0);
     --bigobjview-action-error: red;
 }
 
@@ -40,9 +40,20 @@
         text-overflow: ellipsis;
         width: 100%;
 
+        --compare-mark: calc(100% - 100% * clamp(0,
+                    abs(var(--mark-index, -1) - var(--current-index, -1)),
+                    1));
+
+        --mark-color: color-mix(in srgb, rgb(255, 128, 0) var(--compare-mark), rgb(255, 234, 0));
+
+
         &:hover {
             background-color: color-mix(in srgb, var(--bigobjview-color) 3%, transparent);
         }
+    }
+
+    mark {
+        background-color: var(--mark-color, rgb(121, 109, 0));
     }
 
     .line-number {
@@ -73,7 +84,7 @@
         user-select: none;
 
         >span {
-            --compare: calc(clamp(0, abs(var(--indent-index,-1) - var(--active-parent,-1)), 1));
+            --compare: calc(clamp(0, abs(var(--indent-index, -1) - var(--active-parent, -1)), 1));
             opacity: clamp(0.07, calc(1 - var(--compare)), 0.4);
             transition: opacity 0.3s;
         }
@@ -109,14 +120,15 @@
         }
 
 
-        button, .tag {
+        button,
+        .tag {
             font-size: 0.8em;
             border-radius: 3px;
             border-width: 0;
             cursor: pointer;
             text-transform: uppercase;
             padding-inline: 0.6em;
-            padding-block: 1px 0 ;
+            padding-block: 1px 0;
             vertical-align: middle;
             line-height: 1.2;
         }
@@ -186,7 +198,8 @@
             --color: var(--bigobjview-type-object-date-color, #08f);
         }
 
-        &.type-object-error, &[class*="error"] {
+        &.type-object-error,
+        &[class*="error"] {
             --color: var(--bigobjview-type-object-error-color, red);
         }
 
@@ -222,12 +235,14 @@
             background-color: var(--bigobjview-action-btn);
             font-weight: bold;
             margin-inline: 0.3em;
+
             &.circular {
                 background-color: rgb(193, 45, 0);
                 color: white;
             }
         }
     }
+
     .actions {
         display: none;
         user-select: none;
@@ -240,12 +255,12 @@
         padding-block: 0.2em;
         font-family: monospace;
         overflow: hidden;
-        flex-grow:1;
+        flex-grow: 1;
 
         button {
             opacity: 0.5;
             color: var(--color);
-            background-color: oklch(from var(--color) clamp(0,70 - l * 100,1) 0 0);
+            background-color: oklch(from var(--color) clamp(0, 70 - l * 100, 1) 0 0);
             font-weight: bold;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -265,11 +280,12 @@
 
         button.error {
             background-color: var(--bigobjview-action-error, red);
-            color: oklch(from var(--bigobjview-action-error) clamp(0,70 - l * 100,1) 0 0);
+            color: oklch(from var(--bigobjview-action-error) clamp(0, 70 - l * 100, 1) 0 0);
         }
+
         button.success {
             background-color: var(--bigobjview-action-success, rgb(0, 139, 0));
-            color: oklch(from var(--bigobjview-action-success) clamp(0,70 - l * 100,1) 0 0);
+            color: oklch(from var(--bigobjview-action-success) clamp(0, 70 - l * 100, 1) 0 0);
         }
     }
 
@@ -295,7 +311,7 @@
         >span {
             display: inline-block;
             width: 1.5ch;
-            text-align: center; 
+            text-align: center;
         }
     }
 

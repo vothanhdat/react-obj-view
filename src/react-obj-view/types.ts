@@ -42,4 +42,5 @@ export type ObjectViewProps = {
     className?: string;
     actionRenders?: React.FC<ObjectViewRenderRowProps>,
     iterateSize?: number;
+    ref?: any
 };

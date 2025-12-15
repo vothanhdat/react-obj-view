@@ -11,7 +11,7 @@ export const useReactTree = <
     T extends WalkingAdaperBase,
     MetaParser extends MetaParserBase<T>
 >({
-    factory, config, expandDepth, metaParser, value, name, iterateSize
+    factory, config, expandDepth, metaParser, value, name, iterateSize,
 }: ReactTreeHookParams<T, MetaParser>) => {
 
     const [reload, setReload] = useState(0);
@@ -28,33 +28,51 @@ export const useReactTree = <
 
     const [walkingResult, setWalkingResult] = useState<WalkingResult<any, any, any>>()
 
+    const runningRef = useRef({
+        each: undefined as PromiseWithResolvers<void> | undefined,
+        finish: undefined as PromiseWithResolvers<void> | undefined,
+    })
+
     useEffect(
         () => {
 
             let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth, iterateSize)
             let isRunning = true
 
+            runningRef.current.each = Promise.withResolvers()
+            runningRef.current.finish = Promise.withResolvers()
 
             setTimeout(async () => {
 
-
-                // console.log("iterate new")
-
                 for (let result of iterate) {
-                    // console.log("iterate", { isRunning })
 
                     if (isRunning) {
                         setWalkingResult({ ...result });
 
+                        runningRef.current.each?.resolve();
+                        runningRef.current.each = Promise.withResolvers()
+
                         await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
 
+                        if (!isRunning) {
+                            runningRef.current.each?.reject();
+
+                            break;
+                        }
+
                     } else {
-                        // console.log("stop, switch to new")
+                        runningRef.current.each?.reject();
+
                         break;
                     }
                 }
-                // console.log("iterate finish", { isRunning })
-
+                if (isRunning) {
+                    runningRef.current.each?.resolve();
+                    runningRef.current.finish?.resolve();
+                } else {
+                    runningRef.current.each?.reject();
+                    runningRef.current.finish?.reject();
+                }
 
             }, 0)
 
@@ -131,26 +149,46 @@ export const useReactTree = <
 
 
     const expandAndGetIndex = useCallback(
-        (paths: InferWalkingType<T>['Key'][]) => {
+        async (paths: InferWalkingType<T>['Key'][]) => {
+
             ref.current.instance.expandPath(paths);
 
-            // Force synchronous walk to update layout
-            // We use the last known params. 
-            // Note: If config/value changed since last render, this might use stale closure values if we strictly used refs for everything,
-            // but here we use the values from the current render scope which `useCallback` captures.
-            // Check dependency array carefully.
-
-            ref.current.instance.walking(value, name, config, expandDepth);
-
-            const index = ref.current.instance.getIndexForPath(paths);
-
-            // Trigger reload to reflect expansion changes in UI
             setReload(e => e + 1);
 
-            return index;
+            do {
+                let r = await Promise
+                    .race([
+                        runningRef.current.finish?.promise.then(() => 2),
+                        runningRef.current.each?.promise.then(() => 1),
+                    ])
+                    .catch(() => 0)
+
+                const index = ref.current.instance.getIndexForPath(paths);
+
+                if (index > -1) {
+                    return index
+                }
+
+                if (r != 1) {
+                    return -1;
+                }
+            } while (true)
+
         },
         [ref, value, name, config, expandDepth]
     );
+
+    const travelAndSearch = useCallback(
+        (
+            cb: (value: InferWalkingType<T>['Value'], key: InferWalkingType<T>['Key'], paths: InferWalkingType<T>['Key'][],) => void,
+            iterateSize?: number, maxDepth?: number, fullSearch?: boolean,
+        ) => ref.current.instance.traversalAndFindPaths(
+            cb,
+            config,
+            iterateSize, maxDepth, fullSearch,
+        ),
+        [config, ref]
+    )
 
     return {
         refreshPath,
@@ -159,6 +197,7 @@ export const useReactTree = <
         getNodeByIndex,
         computeItemKey,
         expandAndGetIndex,
+        travelAndSearch,
         childCount: walkingResult?.childCount ?? 0,
     };
 };

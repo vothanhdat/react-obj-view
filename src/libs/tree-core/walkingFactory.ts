@@ -606,7 +606,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     const traversalAndFindPaths = function* (
         callback: (value: Value, key: Key, path: Key[]) => void,
         walkingConfig: Config,
-        iterateSize = 10000,
+        iterateSize = 100000,
         maxDepth = 10,
         fullSearch = false,
     ) {

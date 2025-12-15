@@ -26,8 +26,13 @@
 }
 
 /* Force modes only change color-scheme; tokens above react automatically */
-.demo-page.light-mode { color-scheme: light; }
-.demo-page.dark-mode { color-scheme: dark; }
+.demo-page.light-mode {
+  color-scheme: light;
+}
+
+.demo-page.dark-mode {
+  color-scheme: dark;
+}
 
 .demo-page {
   min-height: 100vh;
@@ -273,7 +278,7 @@
   color: var(--text-muted);
 }
 
-.slider-field > div {
+.slider-field>div {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -389,6 +394,7 @@
   overflow: auto;
   background: var(--bigobjview-bg-color, #0f172a);
   max-height: min(70vh, 720px);
+  position: relative;
 }
 
 .viewer-body::-webkit-scrollbar,
