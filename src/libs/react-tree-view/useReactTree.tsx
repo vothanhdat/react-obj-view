@@ -4,6 +4,7 @@ import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
 import { ReactTreeHookParams } from "./types";
 import { WalkingResult } from "../tree-core/types";
 import { isDev } from "../../utils/isDev";
+import { promiseWithResolvers } from "../../utils/promiseWithResolvers";
 
 
 
@@ -40,8 +41,8 @@ export const useReactTree = <
             let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth, iterateSize)
             let isRunning = true
 
-            runningRef.current.each = Promise.withResolvers()
-            runningRef.current.finish = Promise.withResolvers()
+            runningRef.current.each = promiseWithResolvers()
+            runningRef.current.finish = promiseWithResolvers()
 
             setTimeout(async () => {
 
@@ -51,7 +52,7 @@ export const useReactTree = <
                         setWalkingResult({ ...result });
 
                         runningRef.current.each?.resolve();
-                        runningRef.current.each = Promise.withResolvers()
+                        runningRef.current.each = promiseWithResolvers()
 
                         await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
 
