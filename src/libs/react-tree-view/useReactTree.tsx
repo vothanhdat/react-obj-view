@@ -134,7 +134,9 @@ export const useReactTree = <
 
                     return data;
                 } catch (error) {
-                    console.error(error)
+                    if (isDev()) {
+                        console.error(`Failed to get node at index ${index}:`, error);
+                    }
                     return undefined;
                 }
             };
@@ -167,10 +169,10 @@ export const useReactTree = <
                         runningRef.current.finish?.promise.then(() => 2),
                         runningRef.current.each?.promise.then(() => 1),
                     ])
-                    .catch((err) => (console.log(err), 0))
+                    .catch(() => 0) // Promise was rejected due to cleanup
 
                 if (runningRef.current.expandingPaths != paths) {
-                    console.log("Break")
+                    // Expansion was cancelled by a new request
                     return -1;
                 }
 

@@ -442,12 +442,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
             return { state, depth, paths, parentIndex }
         } else {
             if (!state.childOffsets || !state.childKeys) {
-                console.log("Wrong state", {
-                    index,
-                    paths,
-                    parentIndex,
-                })
-                throw new Error("Wrong state")
+                throw new Error(`Invalid tree state at index ${index}. Path: ${paths.join(' > ')}`)
             }
 
             const { childOffsets } = state;
@@ -518,7 +513,9 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
                     let childState = getChildOnly(key)
 
                     if (!childState) {
-                        console.log("childState empty", findContext.paths)
+                        // Skip empty child state
+                        currentIterate++;
+                        continue;
                     }
 
                     findContext.paths.push(key)
