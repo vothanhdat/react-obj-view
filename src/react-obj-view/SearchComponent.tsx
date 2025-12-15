@@ -1,7 +1,10 @@
-import React, { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { InferWalkingType } from "../libs/tree-core";
 import { ObjectWalkingAdater } from "../object-tree";
 import { LoadingSimple } from "./LoadingSimple";
+import "./search.css"
+import { joinClasses } from "../utils/joinClasses";
+
 
 export const SearchComponent: React.FC<{
     handleSearch: (
@@ -25,14 +28,13 @@ export const SearchComponent: React.FC<{
 
     const [searchTerm, setSearchTerm] = useState("")
     const [loading, setLoading] = useState(0)
-
     const deferSearchTerm = useDeferredValue(active ? searchTerm : "")
-
     const [results, setSearchResults] = useState({
         searchTerm: "",
         results: [] as any[][],
         currentIndex: 0,
     })
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
 
@@ -90,37 +92,24 @@ export const SearchComponent: React.FC<{
         }
     }, [currentPositionPaths])
 
-    return <div style={{
-        position: "absolute",
-        top: active ? "0.5em" : "-2em",
-        transition: "top 0.4s",
-        right: "0.5em",
-        zIndex: 101,
-    }}>
-        <div style={{
-            backgroundColor: "var(--bigobjview-bg-color)",
-            outline: "solid 1px",
-            borderRadius: "5px",
-            width: "12em",
-            display: "flex",
-            alignItems: "center",
-            padding: "0.2em",
-            height: "1.3em"
-        }}>
-            <small style={{
-                fontSize: "0.7em",
-                transition: 'opacity 0.4s',
-                opacity: loading > 0 ? 0.7 : 0,
-                height: "1em", lineHeight: 1,
-                paddingInlineStart: "0.2em"
-            }}>
+    useEffect(() => {
+        if (active) {
+            inputRef?.current?.focus()
+        }
+    }, [active, inputRef])
+
+    return <div className={joinClasses("big-objview-search", active && "active")}>
+        <div className="search-box">
+            <small className="loading-indicator" style={{ opacity: loading > 0 ? 0.7 : 0, }}  >
                 <LoadingSimple active={true} />
             </small>
-            <input value={searchTerm}
+            <input
+                ref={inputRef}
+                className="input"
+                value={searchTerm}
                 placeholder="Type to search ..."
                 onChange={e => setSearchTerm(e.target.value)}
                 onKeyDown={e => {
-                    console.log(e.key)
                     if (e.key == "Enter") {
                         if (e.shiftKey) prev()
                         else next()
@@ -129,23 +118,20 @@ export const SearchComponent: React.FC<{
                         onClose?.();
                     }
                 }}
-                style={{
-                    border: "none", outline: "none", flex: 1, width: "50px",
-                    background: "none"
-                }} />
+            />
 
 
-            <small style={{ opacity: 0.5, fontSize: "0.7em", fontFamily: "monospace", whiteSpace: "pre" }}>
+            <small className="search-cursor">
                 {" "}{Math.min(results.currentIndex + 1, results.results.length)}/{results.results.length}{" "}
             </small>
-            <button onClick={prev} style={{ border: "none", outline: "none", fontFamily: "monospace" }}>
-                {"<"}
+            <button onClick={prev}>
+                {"▲"}
             </button>
-            <button onClick={next} style={{ border: "none", outline: "none", fontFamily: "monospace" }}>
-                {">"}
+            <button onClick={next}>
+                {"▼"}
             </button>
-            {onClose && <button onClick={onClose} style={{ border: "none", outline: "none", fontFamily: "monospace" }}>
-                {"x"}
+            {onClose && <button onClick={() => (onClose?.(), setSearchTerm(""))}>
+                {"×"}
             </button>}
         </div>
     </div>;

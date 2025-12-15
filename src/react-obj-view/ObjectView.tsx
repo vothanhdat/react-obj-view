@@ -226,7 +226,10 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     paths: InferWalkingType<ObjectWalkingAdater>['Key'][],
                     options?: ScrollToOptions
                 ) {
+
+                    console.log(paths)
                     let pathIndex = await expandAndGetIndex(paths);
+                    console.log({ pathIndex })
                     if (pathIndex > -1) {
 
                         containerRef.current?.style.setProperty(

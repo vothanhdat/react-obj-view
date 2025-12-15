@@ -31,6 +31,7 @@ export const useReactTree = <
     const runningRef = useRef({
         each: undefined as PromiseWithResolvers<void> | undefined,
         finish: undefined as PromiseWithResolvers<void> | undefined,
+        expandingPaths: undefined as PropertyKey[] | undefined,
     })
 
     useEffect(
@@ -151,9 +152,13 @@ export const useReactTree = <
     const expandAndGetIndex = useCallback(
         async (paths: InferWalkingType<T>['Key'][]) => {
 
+            runningRef.current.expandingPaths = paths;
+
             ref.current.instance.expandPath(paths);
 
             setReload(e => e + 1);
+
+            let t = Date.now()
 
             do {
                 let r = await Promise
@@ -161,7 +166,12 @@ export const useReactTree = <
                         runningRef.current.finish?.promise.then(() => 2),
                         runningRef.current.each?.promise.then(() => 1),
                     ])
-                    .catch(() => 0)
+                    .catch((err) => (console.log(err), 0))
+
+                if (runningRef.current.expandingPaths != paths) {
+                    console.log("Break")
+                    return -1;
+                }
 
                 const index = ref.current.instance.getIndexForPath(paths);
 
@@ -169,9 +179,16 @@ export const useReactTree = <
                     return index
                 }
 
-                if (r != 1) {
-                    return -1;
+                if (r == 1) {
+                    continue
+                } else {
+                    if (Date.now() - t >= 2000 || runningRef.current.expandingPaths != paths) {
+                        return -1;
+                    }
+
+                    await new Promise(r => setTimeout(r, 200))
                 }
+
             } while (true)
 
         },
