@@ -29,7 +29,7 @@ React Object View targets React 19 projects (Node 22+ / Yarn 4 recommended) and 
 - **Change awareness** – optional flashing highlights updated values.
 - **Interactive hover** – highlights the indentation guide for the current parent context.
 - **Line numbers** – optional gutter with 0-based indices for debugging.
-- **Search & Navigation** – deeply seaarch through the tree and jump to matching nodes.
+- **Search & Navigation** – streamed, debounced search with keyboard shortcuts, highlighting, and jump-to-match navigation.
 
 ---
 
@@ -130,7 +130,7 @@ Prefer CSS? Override the variables directly:
 <ObjectView valueGetter={getter} className="object-view" />
 ```
 
-Note: The built-in `themeDefault` adapts automatically to light and dark modes using CSS `light-dark()` and the user's `prefers-color-scheme`. Other presets (e.g., One Dark, Dracula, Monokai) are static and do not change automatically. The demo’s light/dark/auto toggle affects the page chrome only — `ObjectView` does not auto-switch its theme; choose a preset explicitly if you want a specific look.
+Note: The built-in `themeDefault` adapts automatically to light and dark modes using CSS `light-dark()` and the user's `prefers-color-scheme`. Other presets (e.g., One Dark, Dracula, Monokai) are static and do not change automatically. The demo’s light/dark/auto toggle affects the page chrome only — `ObjectView` does not auto-switch its theme; choose a preset explicitly if you want a specific look. Additional light presets (`themeGitHubLight`, `themeSolarizedLight`, `themeQuietLight`) plus `themeGeneral` ship from the root entry alongside the dark palettes.
 
 Want full control? Build your own palette with the exported helpers:
 
@@ -269,28 +269,37 @@ Enable a gutter with 0-based line numbers for easier debugging:
 
 ### Search & Navigation
 
-The `ObjectView` exposes search capabilities via a ref:
+`ObjectView` exposes a streaming search handle via `ref`. The built-in floating `SearchComponent` wires it up and renders a loading indicator while results stream in:
 
 ```tsx
-import { SearchComponent } from "react-obj-view";
+import { ObjectViewHandle, SearchComponent } from "react-obj-view";
 
-const objViewRef = useRef<any>(null);
+const objViewRef = useRef<ObjectViewHandle | null>(null);
 const [searchActive, setSearchActive] = useState(false);
 
-<ObjectView 
-  valueGetter={() => data} 
-  ref={objViewRef} 
-/>
+<ObjectView valueGetter={() => data} ref={objViewRef} />
 
-<SearchComponent 
+<SearchComponent
   active={searchActive}
   onClose={() => setSearchActive(false)}
-  handleSearch={(...args) => objViewRef?.current?.search(...args)}
-  scrollToPaths={(...args) => objViewRef?.current?.scrollToPaths(...args)} 
-/>
+  // SearchComponent builds the filter fn + highlight regex for you
+  handleSearch={(filterFn, markTerm, onResult, opts) =>
+    objViewRef.current?.search(filterFn, markTerm, onResult, {
+      ...opts,
+      maxResult: 5000,
+    })
+  }
+  scrollToPaths={(paths, scrollOpts) => objViewRef.current?.scrollToPaths(paths, scrollOpts)}
+  // Optional: normalize diacritics or tweak search iteration depth
+  options={{
+    normalizeSymbol: (c) => c.normalize("NFD").replace(/\p{M}/gu, ""),
+    maxDepth: 8,
+  }}
+/>;
 ```
 
-- Keyboard shortcuts: press **Ctrl/Cmd + F** inside the viewer to open the search bar, and press **Escape** to close it and clear the current query.
+- Keyboard shortcuts: press **Ctrl/Cmd + F** in the viewer to open the search bar, **Enter** to jump to the next match (Shift+Enter for previous), and **Escape** to clear/close.
+- Results stream via `requestIdleCallback` and update highlights with the `markTerm` regex. Stop typing to debounce; `maxResult`, `maxDepth`, `fullSearch`, and `iterateSize` control scope and responsiveness.
 
 ### Building custom tree views
 

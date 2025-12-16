@@ -42,22 +42,22 @@ The combination gives you virtualization, sticky ancestors, and deterministic ex
 
 ## 4. Search & Navigation
 
-`ObjectView` exposes an imperative handle via ref to enable search functionality:
+`ObjectView` exposes a streaming search handle via `ref`:
 
 ```tsx
 export type ObjectViewRef = {
   search: (
-    searchTerm: string, 
-    onResult: (paths: Key[][]) => void, 
-    options?: { fullSearch?: boolean; maxDepth?: number }
+    filterFn: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean) | undefined,
+    markTerm: string | RegExp | undefined,
+    onResult: (paths: Key[][]) => void,
+    options?: { fullSearch?: boolean; maxDepth?: number; iterateSize?: number; maxResult?: number }
   ) => Promise<void>;
-  
-  scrollToPaths: (paths: Key[]) => Promise<void>;
+  scrollToPaths: (paths: Key[], options?: ScrollToOptions) => Promise<void>;
 };
 ```
 
-- **`search`**: Generators-based search that yields results in batches to `onResult` without blocking the main thread.
-- **`scrollToPaths`**: Auto-expands necessary parents and scrolls the virtual list to the target node.
+- **`search`**: Streams batches to `onResult` between `requestIdleCallback` frames so long searches stay responsive. `filterFn` decides matches; `markTerm` powers the highlighter.
+- **`scrollToPaths`**: Auto-expands necessary parents and scrolls the virtual list to the target node (respects native `ScrollToOptions`).
 
 ## 5. Search Styling & Custom UI
 
@@ -86,10 +86,20 @@ Target the `.big-objview-search` class to customize the appearance:
 If the default search bar doesn't fit your design, simply ignore `SearchComponent` and use the ref methods directly:
 
 ```tsx
-const handleSearch = async (term) => {
-  await objViewRef.current.search(term, (matches) => {
-    // highlighting logic...
-  });
+const handleSearch = async () => {
+  const filterFn = (value: unknown, key: PropertyKey) =>
+    String(key).toLowerCase().includes('id');
+
+  const markTerm = /id/gi;
+
+  await objViewRef.current.search(
+    filterFn,
+    markTerm,
+    (matches) => {
+      // handle batches of matching paths
+    },
+    { maxResult: 2000, maxDepth: 8 }
+  );
 };
 ```
 

@@ -19,6 +19,13 @@ This review analyzes the react-obj-view library's algorithms, API design, and ov
 
 ---
 
+## Recent Updates (post-review)
+
+- Search handle now streams tokenised results with `maxResult`, `maxDepth`, and `iterateSize` controls; the floating `SearchComponent` adds debounced input, highlights, and a loading indicator.
+- Theme exports expanded (`themeGeneral`, GitHub/Quiet/Solarized light palettes) and demo refreshed with new datasets (telemetry stream, typed arrays, megabyte payloads) plus a theme picker.
+
+---
+
 ## 2. Algorithm Analysis
 
 ### 2.1 Tree Walking Algorithm (`walkingFactory.ts`)
@@ -66,8 +73,7 @@ This review analyzes the react-obj-view library's algorithms, API design, and ov
 
 **Potential Improvements**:
 1. **Search algorithm complexity**: Current implementation is O(n*m) where n = nodes, m = tokens
-   - Consider pre-indexing for large datasets
-   - Consider debouncing the search input
+   - Consider pre-indexing for very large datasets
 
 2. **Regex support**: Add option for regex-based searching for power users
 
@@ -126,9 +132,8 @@ This review analyzes the react-obj-view library's algorithms, API design, and ov
 2. **Add search configuration prop**:
    ```typescript
    searchConfig?: {
-     caseSensitive?: boolean;
-     useRegex?: boolean;
-     debounceMs?: number;
+      caseSensitive?: boolean;
+      useRegex?: boolean;
    }
    ```
 

@@ -328,6 +328,35 @@ return (
 );
 ```
 
+### Searching large trees
+
+Attach a ref to `ObjectView` to access the streaming search handle. Pair it with the floating `SearchComponent` for keyboard shortcuts, highlights, and a loading indicator:
+
+```tsx
+import { ObjectView, ObjectViewHandle, SearchComponent } from 'react-obj-view';
+
+const ref = useRef<ObjectViewHandle | null>(null);
+
+<ObjectView valueGetter={() => data} ref={ref} />
+
+<SearchComponent
+  active={searchOpen}
+  onClose={() => setSearchOpen(false)}
+  handleSearch={(filterFn, markTerm, onResult, opts) =>
+    ref.current?.search(filterFn, markTerm, onResult, {
+      ...opts,
+      maxResult: 2000,
+      maxDepth: 10,
+    })
+  }
+  scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
+  options={{ normalizeSymbol: (c) => c.normalize('NFD').replace(/\p{M}/gu, '') }}
+/>;
+```
+
+- Typing builds a tokenised filter; matches stream back in batches via `requestIdleCallback` so the UI stays responsive.
+- Tune `maxResult`, `maxDepth`, `iterateSize`, or `fullSearch` to cap work for large payloads.
+
 ## Styling Tips
 
 - Override `.big-objview-root` or child selectors to match your theme.

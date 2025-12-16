@@ -1,6 +1,6 @@
 # Executive Summary: Code Review of react-obj-view
 
-**Date**: December 15, 2025  
+**Date**: December 16, 2025  
 **Library Version**: 1.1.2  
 **Review Type**: Algorithm, API, and Improvement Analysis  
 **Overall Rating**: ⭐⭐⭐⭐ (4/5)
@@ -32,6 +32,10 @@
    - `valueGetter` pattern prevents unnecessary re-renders
    - Extensible resolver system for custom types
    - Type-safe throughout
+5. **Search UX**
+   - Streaming, debounced search with idle callbacks
+   - Keyboard-driven floating bar with inline highlights
+   - Configurable result caps and depth limits
 
 ### ⚠️ Issues Found & Fixed
 
@@ -49,7 +53,7 @@
 
 1. **API Refinements**
    - `expandLevel` prop could be clearer (accepts boolean | number)
-   - No search configuration options (case sensitivity, max results)
+   - Search handle could expose regex/case-sensitive toggles beyond the current tokenised matcher
    - Limited imperative handle API
 
 2. **Performance Optimizations**
@@ -87,6 +91,11 @@
 - `IMPROVEMENT_SUGGESTIONS.md`: 45+ concrete, actionable improvements
 - `EXECUTIVE_SUMMARY.md`: This document
 
+### 4. Search, themes, and demo updates
+- Overhauled `ObjectView` search handle to stream tokenised matches with idle callbacks, highlight providers, and depth/result controls.
+- Shipped floating search UI (loading indicator, keyboard shortcuts) and documented the new filter + highlight API.
+- Expanded theme exports (`themeGeneral`, GitHub/Quiet/Solarized light palettes) and refreshed the demo with new datasets, typed-array heavy cases, and multi-theme picker.
+
 ---
 
 ## Algorithm Analysis Summary
@@ -107,7 +116,7 @@
 - Progressive results via callbacks
 - Uses `requestIdleCallback` for smooth UX
 
-**Suggestions**: Add regex support, debouncing, max results limit
+**Suggestions**: Add regex toggle, case-sensitive mode, and optional pre-indexing for very large datasets
 
 ### Virtualization
 **Rating**: ⭐⭐⭐⭐⭐ Excellent
@@ -133,7 +142,7 @@
 
 **Suggestions**:
 - Split `expandLevel` into `expandLevel` (number) and `expandAll` (boolean)
-- Add `searchConfig` prop for search customization
+- Expose regex/case-sensitive toggles on the search handle via a dedicated prop
 - Add `callbacks` prop for lifecycle hooks
 
 ### Resolver API
@@ -174,7 +183,7 @@ Current: `search()`, `scrollToPaths()`
 **Rating**: ⭐⭐⭐⭐ Good
 
 - Progressive results prevent blocking
-- Could benefit from debouncing and result limits
+- Debounced token search with idle streaming is solid; consider optional indexing or regex mode for power users
 
 ---
 
@@ -219,18 +228,16 @@ Current: `search()`, `scrollToPaths()`
 
 ### High Priority (Blocking for v2.0)
 - [ ] Fix `getNodeByIndex` map caching issue
-- [ ] Add max search results limit
 - [ ] Fix async test
 - [ ] Consider API improvements for v2.0
 
 ### Medium Priority (Can add to v1.x)
-- [ ] Add search configuration options
-- [ ] Implement debounced search
 - [ ] Expand imperative handle API
 - [ ] Better error messages
+- [ ] Add regex/case-sensitive toggle to the search handle and UI
+- [ ] Optional search indexing for very large datasets
 
 ### Low Priority (Future enhancements)
-- [ ] Regex search support
 - [ ] Export/import state
 - [ ] Performance monitoring
 - [ ] More documentation and examples

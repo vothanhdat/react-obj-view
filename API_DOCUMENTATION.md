@@ -212,6 +212,7 @@ Available presets:
 | `themeDracula` | Dracula | Cool-toned purples and teals with neon highlights. |
 | `themeOneDark` | One Dark | Atom-inspired blues and oranges with a slate background. |
 | `themeMaterialDarker` | Material Darker | Material palette with vivid accents on a dark canvas. |
+| `themeGeneral` | Neutral | Balanced light palette with restrained accents for dashboards and data panels. |
 | `themeGitHubLight` | GitHub Light | Neutral GitHub-styled greys with accessible accent colours. |
 | `themeSolarizedLight` | Solarized Light | Pastel teal/orange scheme with soft beige background. |
 | `themeQuietLight` | Quiet Light | VS Code's calm light theme with muted tones. |
@@ -310,6 +311,67 @@ const MyCustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   actionRenders={MyCustomActions}
 />
 ```
+
+## Search API
+
+`ObjectView` exposes an imperative handle for streaming search and navigation. Attach a ref to the component to access it:
+
+```ts
+export interface ObjectViewHandle {
+  search: (
+    filterFn: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean) | undefined,
+    markTerm: string | RegExp | undefined,
+    onResult: (results: PropertyKey[][]) => void,
+    options?: {
+      iterateSize?: number;
+      maxDepth?: number;
+      fullSearch?: boolean;
+      maxResult?: number;
+    }
+  ) => Promise<void>;
+  scrollToPaths: (paths: PropertyKey[], options?: ScrollToOptions) => Promise<void>;
+}
+```
+
+- `filterFn` decides whether a node matches. Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
+- `markTerm` is a string or regex used to highlight matches via the built-in highlighter.
+- `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker options; `maxResult` caps how many matches are emitted.
+- `scrollToPaths` expands ancestors and scrolls the virtual list to the requested path (accepts native `ScrollToOptions`).
+
+### Built-in floating search UI
+
+Use the packaged `SearchComponent` for a ready-made UI with keyboard shortcuts and a loading indicator. It builds a tokenised filter and highlight regex, supports diacritic normalisation, and debounces input for you.
+
+```tsx
+import { useMemo, useRef } from "react";
+import { ObjectView, ObjectViewHandle, SearchComponent } from "react-obj-view";
+
+const ref = useRef<ObjectViewHandle | null>(null);
+
+const searchOptions = useMemo(
+  () => ({
+    normalizeSymbol: (c: string) => c.normalize("NFD").replace(/\p{M}/gu, ""),
+    maxResult: 5000,
+    maxDepth: 12,
+  }),
+  [],
+);
+
+<ObjectView valueGetter={() => data} ref={ref} />
+
+<SearchComponent
+  active={isOpen}
+  onClose={() => setOpen(false)}
+  handleSearch={(filterFn, markTerm, onResult, opts) =>
+    ref.current?.search(filterFn, markTerm, onResult, opts)
+  }
+  scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
+  options={searchOptions}
+/>;
+```
+
+- Keyboard shortcuts: `Cmd/Ctrl+F` focuses the search bar, `Enter` / `Shift+Enter` navigates next/previous, `Esc` clears and closes.
+- The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex. Put `options` in a `useMemo` so `normalizeSymbol`, `maxResult`, and `maxDepth` stay stable across renders.
 
 ## Behaviour Notes
 

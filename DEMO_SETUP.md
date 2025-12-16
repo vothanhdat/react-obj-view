@@ -91,10 +91,12 @@ The demo showcases:
 
 - ✅ **Interactive Controls**: Toggle features and adjust settings
 - ✅ **Virtualized Tree**: Smooth scrolling backed by the built-in `VirtualScroller`
-- ✅ **Resolver Overrides**: User and API endpoint examples
+- ✅ **Resolver Overrides**: User, API endpoint, and class-based resolver examples
+- ✅ **Floating Search**: Keyboard shortcuts, debounced input, streamed results, and inline highlights
 - ✅ **Keyword Styling**: Enhanced boolean and null value display
-- ✅ **Performance Options**: Grouping and highlighting controls
-- ✅ **Theme Picker**: Switch between built-in palettes without touching global styles
+- ✅ **Performance Options**: Grouping, iteration sizing, and highlighting controls
+- ✅ **Theme Picker**: Switch across dark/light palettes (including GitHub Light, Quiet Light, Solarized Light, Sepia, and General)
+- ✅ **Live Data**: Telemetry-style stream, typed-array heavy payloads, and megabyte-scale cases
 - ✅ **Real-time Updates**: See changes instantly
 - ✅ **Multiple Data Types**: Comprehensive examples
 - ✅ **Professional UI**: Header, footer, and documentation links
