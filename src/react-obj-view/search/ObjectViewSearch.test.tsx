@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, act } from '@testing-library/react';
+import { render, act, fireEvent } from '@testing-library/react';
 import React, { createRef } from 'react';
 import { ObjectView } from '../ObjectView';
+import { SearchComponent } from './SearchComponent';
 
 describe('ObjectView Search Integration', () => {
     // Mock the VirtualScroller to avoid layout issues in jsdom
@@ -9,6 +10,10 @@ describe('ObjectView Search Integration', () => {
         VirtualScroller: ({ Component, ...props }: any) => {
             return <div data-testid="virtual-scroller"></div>
         }
+    }));
+    // Mock the spinner to avoid interval-driven updates during tests
+    vi.mock('../LoadingSimple', () => ({
+        LoadingSimple: () => <span>Loading...</span>,
     }));
 
     beforeEach(() => {
@@ -115,5 +120,39 @@ describe('ObjectView Search Integration', () => {
         // "test" is the value of name
         expect(results.length).toBeGreaterThan(0);
         expect(results.some(path => path.join('.') === 'name')).toBe(true);
+    });
+
+    it('should clear search term and close on Escape key', async () => {
+        const onClose = vi.fn();
+        const { getByPlaceholderText } = render(
+            <SearchComponent
+                active={true}
+                onClose={onClose}
+                handleSearch={vi.fn().mockResolvedValue(undefined)}
+                scrollToPaths={vi.fn()}
+            />
+        );
+
+        await act(async () => {
+            vi.runOnlyPendingTimers();
+        });
+
+        const input = getByPlaceholderText('Type to search ...') as HTMLInputElement;
+
+        await act(async () => {
+            fireEvent.change(input, { target: { value: 'hello' } });
+        });
+        expect(input.value).toBe('hello');
+
+        await act(async () => {
+            fireEvent.keyDown(input, { key: 'Escape' });
+        });
+
+        await act(async () => {
+            vi.runOnlyPendingTimers();
+        });
+
+        expect(input.value).toBe('');
+        expect(onClose).toHaveBeenCalledTimes(1);
     });
 });

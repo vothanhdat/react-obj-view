@@ -290,6 +290,8 @@ const [searchActive, setSearchActive] = useState(false);
 />
 ```
 
+- Keyboard shortcuts: press **Ctrl/Cmd + F** inside the viewer to open the search bar, and press **Escape** to close it and clear the current query.
+
 ### Building custom tree views
 
 The library now exports generic tree APIs for non-object data:
