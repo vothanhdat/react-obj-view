@@ -13,7 +13,7 @@ import {
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 import { SearchComponent } from './react-obj-view/search/SearchComponent'
-import { ObjectViewHandle } from './react-obj-view/types'
+import { ObjectViewHandle, SearchOptions } from './react-obj-view/types'
 
 const packageVersion = '1.1.2'
 
@@ -433,6 +433,10 @@ export const Test = () => {
 
   const objViewRef = useRef<ObjectViewHandle | undefined>(undefined)
 
+  const searchOptions = useMemo(
+    () => ({ fullSearch: true, }) as SearchOptions, []
+  )
+
   const [searchActive, setSearchActive] = useState(false)
 
   return (
@@ -742,6 +746,7 @@ export const Test = () => {
 
             <SearchComponent
               active={searchActive}
+              options={searchOptions}
               onClose={() => setSearchActive(false)}
               handleSearch={async (...args) => objViewRef?.current?.search(...args)}
               scrollToPaths={async (...args) => objViewRef?.current?.scrollToPaths(...args)}
