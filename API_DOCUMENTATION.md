@@ -335,8 +335,8 @@ export interface ObjectViewHandle {
 
 - `filterFn` decides whether a node matches. Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
 - `markTerm` is a string or regex used to highlight matches via the built-in highlighter.
-- `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker options; `maxResult` caps how many matches are emitted.
-- `scrollToPaths` expands ancestors and scrolls the virtual list to the requested path (accepts native `ScrollToOptions`).
+- Options: `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker settings; `maxResult` caps how many matches are emitted (default `99_999`).
+- `scrollToPaths` expands ancestors and scrolls the virtual list to a single requested path; forwards native `ScrollToOptions` to the scroller.
 
 ### Built-in floating search UI
 
@@ -371,7 +371,8 @@ const searchOptions = useMemo(
 ```
 
 - Keyboard shortcuts: `Cmd/Ctrl+F` focuses the search bar, `Enter` / `Shift+Enter` navigates next/previous, `Esc` clears and closes.
-- The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex. Put `options` in a `useMemo` so `normalizeSymbol`, `maxResult`, and `maxDepth` stay stable across renders.
+- Search options: `normalizeSymbol` (available on `SearchComponent` only), `iterateSize`, `maxDepth`, `fullSearch`, and `maxResult` (defaults mirror `ObjectViewHandle.search`). Memoize `options` (e.g., via `useMemo`) so the handlers stay stable.
+- The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex.
 
 ## Behaviour Notes
 

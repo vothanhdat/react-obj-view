@@ -66,6 +66,8 @@ export function DebugPanel() {
 }
 ```
 
+Add the floating `SearchComponent` if you want Cmd/Ctrl+F to pop open a search bar with match navigation out of the box.
+
 ### Keep the getter stable
 
 ```tsx
@@ -96,6 +98,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
+| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn, markTerm, onResult, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts)` (forwards `ScrollToOptions`) for jump-to-match navigation, used by the floating `SearchComponent`. Keep the ref stable and memoize search options. |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). [See example](./API_DOCUMENTATION.md#custom-action-renders). |
 | `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
 
@@ -300,6 +303,15 @@ const [searchActive, setSearchActive] = useState(false);
 
 - Keyboard shortcuts: press **Ctrl/Cmd + F** in the viewer to open the search bar, **Enter** to jump to the next match (Shift+Enter for previous), and **Escape** to clear/close.
 - Results stream via `requestIdleCallback` and update highlights with the `markTerm` regex. Stop typing to debounce; `maxResult`, `maxDepth`, `fullSearch`, and `iterateSize` control scope and responsiveness.
+
+Search options supported by `ObjectViewHandle.search` and the built-in `SearchComponent`:
+- `iterateSize`: override traversal batch size when searching.
+- `maxDepth`: cap how deep the walker searches.
+- `fullSearch`: force traversal of already-collapsed branches.
+- `maxResult`: limit streamed matches (default `99999`).
+- `normalizeSymbol`: SearchComponent-only hook to normalize characters (e.g., strip diacritics) before matching.
+
+`scrollToPaths` accepts the same options as `ScrollToOptions` when jumping to highlighted matches.
 
 ### Building custom tree views
 
