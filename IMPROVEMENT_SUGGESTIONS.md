@@ -162,59 +162,34 @@ export type ObjectViewProps = {
 
 ## 2. Performance Optimizations
 
-### 2.1 Fix getNodeByIndex Map Caching
+### 2.1 getNodeByIndex Map Caching (Already Correct)
 
-**Current Issue**: Map is recreated on every call (line 113 in useReactTree.tsx).
+**Status**: ✅ Already implemented correctly
 
-**Current Code**:
+The current implementation in `useReactTree.tsx` (line 113) correctly caches nodes:
+
 ```typescript
 const getNodeByIndex = useMemo(
     () => {
-        let m = new Map<any, FlattenNodeWrapper<T, MetaParser>>();  // Recreated each call!
+        let m = new Map<any, FlattenNodeWrapper<T, MetaParser>>();
         
         return (index: number) => {
-            // ...
-        };
-    },
-    [ref.current.instance, walkingResult, reload]
-);
-```
-
-**Improved Implementation**:
-```typescript
-const getNodeByIndex = useMemo(
-    () => {
-        const cache = new Map<any, FlattenNodeWrapper<T, MetaParser>>();
-        
-        return (index: number) => {
-            try {
-                let data = cache.get(index);
-                
-                if (!data) {
-                    let state = ref.current.instance.getNode(index);
-                    data = new FlattenNodeWrapper(
-                        metaParser,
-                        state.state as InferWalkingResult<T>,
-                        state.depth,
-                        state.paths,
-                        state.parentIndex
-                    );
-                    
-                    cache.set(index, data);
-                }
-                
-                return data;
-            } catch (error) {
-                if (isDev()) {
-                    console.error(`Failed to get node at index ${index}:`, error);
-                }
-                return undefined;
+            let data = m.get(index);
+            if (!data) {
+                // Create and cache new node
+                data = new FlattenNodeWrapper(...);
+                m.set(index, data);
             }
+            return data;
         };
     },
     [ref.current.instance, walkingResult, reload]
 );
 ```
+
+**Why this works**: The map `m` is created once inside `useMemo` and persists across all calls to the returned function. It's only recreated when dependencies change (instance, walkingResult, or reload), which is the correct behavior.
+
+**Note**: While renaming `m` to `cache` would improve readability, the current implementation is functionally correct and performs well.
 
 ### 2.2 Add Max Search Results Limit
 
@@ -303,29 +278,22 @@ export const SearchComponent: React.FC<Props> = ({
 }
 ```
 
-### 2.4 Optimize Binary Search Limit
+### 2.4 Binary Search Iteration Limit (Intentional Safety Guard)
 
-**Location**: `walkingFactory.ts:458`
+**Location**: `walkingFactory.ts:453`
+
+**Status**: ✅ Working as intended
 
 **Current**:
 ```typescript
-while (start + 1 < end && c++ < 50) {  // Why 50?
+while (start + 1 < end && c++ < 50) {  // Safety limit
     // binary search logic
 }
 ```
 
-**Improved**:
-```typescript
-// Remove arbitrary limit - binary search is already O(log n)
-while (start + 1 < end) {
-    let mid = (start + end) >> 1
-    if (index >= childOffsets[mid]) {
-        start = mid
-    } else {
-        end = mid
-    }
-}
-```
+**Why the limit exists**: The `c++ < 50` condition is a **safety guard** against potential infinite loops due to bugs. Since binary search is O(log n), even for extremely large trees (2^50 nodes, which is impossible in practice), the loop would complete in 50 iterations. This prevents the application from freezing if there's a bug in the tree structure or search logic.
+
+**Recommendation**: Keep the safety limit as-is. It provides protection against edge cases without any practical performance impact. The limit would only be reached if there's a bug in the code, at which point failing fast is better than freezing.
 
 ---
 
