@@ -515,43 +515,75 @@ const restoreState = () => {
 ### 4.2 Regex Search Support
 
 ```typescript
-// In search filter function
-const filterFunctions = (value: any, key: any, paths: any[]) => {
-    try {
-        let str = String(key);
-        
-        if (typeof value === 'string' || typeof value === 'number' || /* ... */) {
-            str += " " + String(value);
-        }
-        
-        str = str.toLowerCase();
-        
-        if (options.normalizeSymbol) {
-            str = [...str].map(options.normalizeSymbol).join("")
-        }
-        
-        // NEW: Regex support
-        if (options.useRegex) {
-            try {
-                const regex = new RegExp(searchTerm, options.caseSensitive ? '' : 'i');
-                return regex.test(str);
-            } catch (e) {
-                // Invalid regex, fall back to normal search
+// In search logic (ObjectView.tsx), compile regex once before iteration
+const searchObj = useMemo(() => {
+    return {
+        async search(
+            searchTerm: string,
+            onResult: (paths: Key[][]) => void,
+            options: {
+                iterateSize?: number,
+                maxDepth?: number,
+                fullSearch?: boolean,
+                normalizeSymbol?: (e: string) => string,
+                useRegex?: boolean,
+                caseSensitive?: boolean,
+            } = {}
+        ) {
+            let searchTermNormalize = searchTerm.toLowerCase();
+            
+            // Compile regex once outside the filter function to avoid recreation on every iteration
+            let compiledRegex: RegExp | null = null;
+            if (options.useRegex) {
+                try {
+                    compiledRegex = new RegExp(
+                        searchTerm, 
+                        options.caseSensitive ? '' : 'i'
+                    );
+                } catch (e) {
+                    // Invalid regex, fall back to normal search
+                    console.warn('Invalid regex pattern, falling back to text search:', e);
+                }
             }
+            
+            // ... rest of search setup ...
+            
+            const filterFunctions = (value: any, key: any, paths: any[]) => {
+                try {
+                    let str = String(key);
+                    
+                    if (typeof value === 'string' || typeof value === 'number' || /* ... */) {
+                        str += " " + String(value);
+                    }
+                    
+                    str = str.toLowerCase();
+                    
+                    if (options.normalizeSymbol) {
+                        str = [...str].map(options.normalizeSymbol).join("")
+                    }
+                    
+                    // Use pre-compiled regex (no recreation on each iteration)
+                    if (compiledRegex) {
+                        return compiledRegex.test(str);
+                    }
+                    
+                    // Existing token-based search
+                    let prevIndex = 0;
+                    for (let token of tokens) {
+                        prevIndex = str.indexOf(token, prevIndex)
+                        if (prevIndex < 0) return false;
+                    }
+                    return prevIndex > -1;
+                    
+                } catch (error) {
+                    return false
+                }
+            }
+            
+            // ... rest of search implementation ...
         }
-        
-        // Existing token-based search
-        let prevIndex = 0;
-        for (let token of tokens) {
-            prevIndex = str.indexOf(token, prevIndex)
-            if (prevIndex < 0) return false;
-        }
-        return prevIndex > -1;
-        
-    } catch (error) {
-        return false
     }
-}
+}, [/* deps */]);
 ```
 
 ### 4.3 Copy Value Enhancement
