@@ -1,6 +1,8 @@
+import { promiseWithResolvers } from "../../utils/promiseWithResolvers";
+
 export const promiseEvent = <T,>() => {
 
-    let current = Promise.withResolvers<T>();
+    let current = promiseWithResolvers<T>();
 
     return {
         wait(): Promise<T> {
@@ -8,7 +10,7 @@ export const promiseEvent = <T,>() => {
         },
         emit(e: T) {
             current.resolve(e);
-            current = Promise.withResolvers<T>();
+            current = promiseWithResolvers<T>();
         }
     };
 };
