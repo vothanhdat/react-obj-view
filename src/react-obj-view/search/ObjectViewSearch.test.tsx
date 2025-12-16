@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act, fireEvent } from '@testing-library/react';
 import React, { createRef } from 'react';
 import { ObjectView } from '../ObjectView';
+import { ObjectViewHandle } from '../types';
 import { SearchComponent } from './SearchComponent';
 
 describe('ObjectView Search Integration', () => {
@@ -39,8 +40,27 @@ describe('ObjectView Search Integration', () => {
         list: [1, 2, 3]
     };
 
+    const buildFilter = (term: string) => {
+        const lowered = term.toLowerCase();
+        const matcher = lowered.split(/\s+/).filter(Boolean);
+
+        const filterFn = (value: unknown, key: PropertyKey) => {
+            const haystack = [key, value]
+                .map((v) => {
+                    try { return String(v).toLowerCase(); } catch { return ""; }
+                })
+                .join(" ");
+
+            return matcher.every((token) => haystack.includes(token));
+        };
+
+        const markTerm = matcher.length ? new RegExp(matcher.join("|"), "gi") : undefined;
+
+        return { filterFn, markTerm } as const;
+    };
+
     it('should expose search method via ref', async () => {
-        const ref = createRef<any>();
+        const ref = createRef<ObjectViewHandle>();
         render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
 
         // Allow initial walk to complete to silence "act" warnings
@@ -49,12 +69,12 @@ describe('ObjectView Search Integration', () => {
         });
 
         expect(ref.current).toBeDefined();
-        expect(ref.current.search).toBeInstanceOf(Function);
-        expect(ref.current.scrollToPaths).toBeInstanceOf(Function);
+        expect(ref.current?.search).toBeInstanceOf(Function);
+        expect(ref.current?.scrollToPaths).toBeInstanceOf(Function);
     });
 
     it('should find exact matches', async () => {
-        const ref = createRef<any>();
+        const ref = createRef<ObjectViewHandle>();
         render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
 
         // Allow initial walk to complete
@@ -63,8 +83,9 @@ describe('ObjectView Search Integration', () => {
         });
 
         const results: any[] = [];
+        const { filterFn, markTerm } = buildFilter("foo");
         await act(async () => {
-            await ref.current.search("foo", (batch: any[]) => {
+            await ref.current?.search(filterFn, markTerm, (batch: any[]) => {
                 results.push(...batch);
             }, { fullSearch: true });
             vi.runAllTimers();
@@ -76,7 +97,7 @@ describe('ObjectView Search Integration', () => {
     });
 
     it('should find values', async () => {
-        const ref = createRef<any>();
+        const ref = createRef<ObjectViewHandle>();
         render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
 
         // Allow initial walk to complete
@@ -85,8 +106,9 @@ describe('ObjectView Search Integration', () => {
         });
 
         const results: any[] = [];
+        const { filterFn, markTerm } = buildFilter("bar");
         await act(async () => {
-            await ref.current.search("bar", (batch: any[]) => {
+            await ref.current?.search(filterFn, markTerm, (batch: any[]) => {
                 results.push(...batch);
             }, { fullSearch: true });
             vi.runAllTimers();
@@ -101,7 +123,7 @@ describe('ObjectView Search Integration', () => {
     });
 
     it('should respect case insensitivity by default', async () => {
-        const ref = createRef<any>();
+        const ref = createRef<ObjectViewHandle>();
         render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
 
         // Allow initial walk to complete
@@ -110,8 +132,9 @@ describe('ObjectView Search Integration', () => {
         });
 
         const results: any[] = [];
+        const { filterFn, markTerm } = buildFilter("TEST");
         await act(async () => {
-            await ref.current.search("TEST", (batch: any[]) => {
+            await ref.current?.search(filterFn, markTerm, (batch: any[]) => {
                 results.push(...batch);
             }, { fullSearch: true });
             vi.runAllTimers();

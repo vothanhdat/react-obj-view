@@ -59,8 +59,8 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         () => {
             let searchTermNomalize = deferSearchTerm.toLowerCase();
 
-            if (options?.normalizeSymbol) {
-                searchTermNomalize = [...searchTermNomalize].map(options.normalizeSymbol).join("")
+            if (typeof options?.normalizeSymbol == 'function') {
+                searchTermNomalize = options.normalizeSymbol(searchTermNomalize)
             }
             return searchTermNomalize
         },
