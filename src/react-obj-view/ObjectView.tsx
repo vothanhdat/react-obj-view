@@ -85,9 +85,9 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
     const { onMouseEnter, onMouseLeave, containerRef } = useHoverInteractions(childCount, getNodeByIndex);
 
-    const [search, setSearch] = useState(() => ({
-        markTerm: "" as string | RegExp,
-        filterFn: (value: any, key: any, paths: any[]) => (false as boolean)
+    const [search, setSearch] = useState<RenderOptions['search']>(() => ({
+        markTerm: "",
+        filterFn: (value: any, key: any, paths: any[]) => false
     }))
 
     const options: RenderOptions = useMemo(
@@ -135,6 +135,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     currentFilterFn = filterFn;
 
                     setSearch({ markTerm, filterFn });
+
+                    if (!filterFn) { return; }
 
                     let searchResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
                     let searchResultCouter = 0
@@ -195,7 +197,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     useImperativeHandle(ref, () => searchObj, [searchObj])
 
     return <div ref={containerRef} className="big-objview-container" >
-        <HightlightWrapper highlight={search.markTerm}>
+        <HightlightWrapper highlight={search?.markTerm}>
             <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
                 {...objectTree}
                 lineHeight={lineHeight}

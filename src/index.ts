@@ -17,8 +17,10 @@ export {
     ObjectView,
     SearchComponent,
     type ObjectViewProps,
+    type ObjectViewHandle,
     type ObjectViewRenderRowProps,
     type SearchComponentProps,
+    type SearchComponentHandler,
     type SearchOptions,
 } from "./react-obj-view"
 

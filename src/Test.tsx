@@ -12,7 +12,7 @@ import {
 } from './react-obj-view-themes'
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
-import { SearchComponent } from './react-obj-view/search/SearchComponent'
+import { SearchComponent, SearchComponentHandler, SearchComponentProps } from './react-obj-view/search/SearchComponent'
 import { ObjectViewHandle, SearchOptions } from './react-obj-view/types'
 
 const packageVersion = '1.1.2'
@@ -431,7 +431,8 @@ export const Test = () => {
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
 
-  const objViewRef = useRef<ObjectViewHandle | undefined>(undefined)
+  const objViewRef = useRef<ObjectViewHandle>(undefined)
+  const searchRef = useRef<SearchComponentHandler>(undefined)
 
   const searchOptions = useMemo(
     () => ({ fullSearch: true, }) as SearchOptions, []
@@ -712,21 +713,20 @@ export const Test = () => {
               ))}
             </div>
           </div>
-          <div className="viewer-body" style={selectedTheme}
-
-          >
-            <div style={{ overflow: "auto", height: "100%", }}
-              tabIndex={-1}
-              onKeyDown={(e) => {
-                if ((e.ctrlKey || e.metaKey) && (e.key == "f" || e.key == "F")) {
-                  setSearchActive(true)
-                  e.preventDefault()
-                } else if (e.key == "Escape") {
-                  setSearchActive(false)
-                  e.preventDefault()
-                }
-              }}
-            >
+          <div className="viewer-body"
+            style={selectedTheme}
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && (e.key == "f" || e.key == "F")) {
+                setSearchActive(true)
+                searchRef?.current?.focus();
+                e.preventDefault()
+              } else if (e.key == "Escape") {
+                setSearchActive(false)
+                e.preventDefault()
+              }
+            }}>
+            <div style={{ overflow: "auto", height: "100%", }} >
               <ObjectView
                 valueGetter={currentDataGetter}
                 name="testData"
@@ -753,6 +753,7 @@ export const Test = () => {
               onClose={() => setSearchActive(false)}
               handleSearch={async (...args) => objViewRef?.current?.search(...args)}
               scrollToPaths={async (...args) => objViewRef?.current?.scrollToPaths(...args)}
+              ref={searchRef}
             />
 
           </div>

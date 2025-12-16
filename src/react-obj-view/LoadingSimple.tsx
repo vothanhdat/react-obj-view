@@ -15,5 +15,5 @@ export const LoadingSimple = ({ active = true }) => {
     }, [active]);
 
 
-    return `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`.charAt(t);
+    return <>{`⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`.charAt(t)}</>
 };

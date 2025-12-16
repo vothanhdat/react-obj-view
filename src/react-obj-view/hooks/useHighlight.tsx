@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from "react";
 
-export function useHighlight(highlightTerm: string | RegExp) {
+export function useHighlight(highlightTerm: string | RegExp | undefined) {
     const highlight = useMemo(
         () => highlightTerm
             && typeof highlightTerm == 'string' ? buildRegex(highlightTerm.toLowerCase().split(" "), 'gi')
@@ -50,7 +50,7 @@ const HighLightInternal: React.FC<{ text: string }> = ({ text }) => {
 
 };
 
-export const HightlightWrapper: React.FC<{ highlight: string | RegExp, children: any }> = ({ children, highlight }) => {
+export const HightlightWrapper: React.FC<{ highlight: string | RegExp | undefined, children: any }> = ({ children, highlight }) => {
     return <highlightCtx.Provider value={useHighlight(highlight)}>
         {children}
     </highlightCtx.Provider>

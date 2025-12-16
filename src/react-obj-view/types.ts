@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import type { FlattenNodeData, ReactTreeRowRenderProps } from "../libs/react-tree-view";
 import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser } from "../object-tree";
 import { ThemeColor } from "../react-obj-view-themes";
@@ -13,7 +14,7 @@ export type RenderOptions = {
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
     actionRenders?: React.FC<ObjectViewRenderRowProps>;
-    search?: { markTerm: string | RegExp, filterFn: (value: any, key: any, paths: any[]) => boolean };
+    search?: { markTerm?: string | RegExp, filterFn?: (value: any, key: any, paths: any[]) => boolean };
     enableMark?: boolean;
 };
 
@@ -44,7 +45,7 @@ export type ObjectViewProps = {
     className?: string;
     actionRenders?: React.FC<ObjectViewRenderRowProps>,
     iterateSize?: number;
-    ref?: any
+    ref?: RefObject<ObjectViewHandle | undefined>
 };
 
 export interface SearchOptionBase {
@@ -60,8 +61,8 @@ export interface SearchOptions extends SearchOptionBase {
 
 export interface ObjectViewHandle {
     search: (
-        filterFn: (value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean,
-        markTerm: string | RegExp,
+        filterFn: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean )| undefined,
+        markTerm: string | RegExp | undefined,
         onResult: (results: PropertyKey[][]) => void,
         options?: SearchOptionBase
     ) => Promise<void>;
