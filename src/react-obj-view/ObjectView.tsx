@@ -227,9 +227,9 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     options?: ScrollToOptions
                 ) {
 
-                    console.log(paths)
+                    // console.log(paths)
                     let pathIndex = await expandAndGetIndex(paths);
-                    console.log({ pathIndex })
+                    // console.log({ pathIndex })
                     if (pathIndex > -1) {
 
                         containerRef.current?.style.setProperty(

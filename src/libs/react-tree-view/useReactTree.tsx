@@ -162,7 +162,7 @@ export const useReactTree = <
                 let ev = await runningRef.current.event.wait()
 
                 if (runningRef.current.expandingPaths != paths) {
-                    console.log("Break")
+                    // console.log("Break")
                     return -1;
                 }
 
@@ -171,15 +171,18 @@ export const useReactTree = <
                 if (index > -1) { return index }
 
                 if (ev == IterateEvent.ROUND) {
+                    // console.log("Wait Round")
                     continue;
                 } else if (ev == IterateEvent.ABORT) {
-                    console.log("Break")
+                    // console.log("Break")
                     return -1;
                 } else {
 
                     if (Date.now() - t >= 2000 || runningRef.current.expandingPaths != paths) {
-                        console.log("Break")
+                        // console.log("Break")
                         return -1;
+                    } else {
+                        // console.log("Wait tree walking")
                     }
 
                     await new Promise(r => setTimeout(r, 200))
