@@ -1,13 +1,12 @@
 import React, { useContext, useMemo } from "react";
 
-export function useHighlight(filterString: string) {
+export function useHighlight(highlightTerm: string | RegExp) {
     const highlight = useMemo(
-        () => filterString
-            ? buildRegex(filterString
-                .toLowerCase()
-                .split(" "), 'gi')
-            : undefined,
-        [filterString]
+        () => highlightTerm
+            && typeof highlightTerm == 'string' ? buildRegex(highlightTerm.toLowerCase().split(" "), 'gi')
+            : highlightTerm instanceof RegExp ? highlightTerm
+                : undefined,
+        [highlightTerm]
     );
     return { highlight };
 }
@@ -16,7 +15,7 @@ function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function buildRegex(words: string[], flags = 'gi') {
+export function buildRegex(words: string[], flags = 'gi') {
     const pattern = words.map(escapeRegex).join('|');
     return new RegExp(`(${pattern})`, flags);
 }
@@ -51,7 +50,7 @@ const HighLightInternal: React.FC<{ text: string }> = ({ text }) => {
 
 };
 
-export const HightlightWrapper: React.FC<{ highlight: string, children: any }> = ({ children, highlight }) => {
+export const HightlightWrapper: React.FC<{ highlight: string | RegExp, children: any }> = ({ children, highlight }) => {
     return <highlightCtx.Provider value={useHighlight(highlight)}>
         {children}
     </highlightCtx.Provider>

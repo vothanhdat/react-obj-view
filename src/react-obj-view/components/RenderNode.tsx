@@ -6,7 +6,6 @@ import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../../object-tree";
 import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
-import { HightlightWrapper } from "../hooks/useHighlight";
 
 
 export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
@@ -40,9 +39,9 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
         && !(value instanceof GroupedProxy)
 
     const isSearchMatch = useMemo(
-        () => !!search?.searchTerm
+        () => !!search?.filterFn
             && (search?.filterFn(nodeData.value, nodeData.key, nodeData.paths) ?? false),
-        [search?.searchTerm, search?.filterFn, nodeData.value]
+        [search?.filterFn, search?.filterFn, nodeData.value]
     )
 
 

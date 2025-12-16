@@ -1,10 +1,9 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { InferWalkingType } from "../../libs/tree-core";
-import { ObjectWalkingAdater } from "../../object-tree";
 import { LoadingSimple } from "../LoadingSimple";
 import { joinClasses } from "../../utils/joinClasses";
-import "./search.css"
 import { ObjectViewHandle, SearchOptions } from "../types";
+import { buildRegex } from "../hooks/useHighlight";
+import "./search.css"
 
 
 export type SearchComponentProps = {
@@ -33,7 +32,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     className,
     containerDivProps,
     options,
-    active = true, 
+    active = true,
     onClose
 }) => {
 
@@ -43,38 +42,111 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     const deferSearchTerm = useDeferredValue(active ? searchTerm : "")
     const [loading, setLoading] = useState(0)
     const [results, setSearchResults] = useState({
-        searchTerm: "",
+        filterFn: undefined as any,
         results: [] as any[][],
         currentIndex: 0,
     })
+
     const inputRef = useRef<HTMLInputElement | null>(null)
+
+    const searchTermNomalize = useMemo(
+        () => {
+            let searchTermNomalize = deferSearchTerm.toLowerCase();
+
+            if (options?.normalizeSymbol) {
+                searchTermNomalize = [...searchTermNomalize].map(options.normalizeSymbol).join("")
+            }
+            return searchTermNomalize
+        },
+        [deferSearchTerm, options?.normalizeSymbol]
+    )
+
+    const { filterFn, markTerm } = useMemo(
+        () => {
+
+            let tokens = searchTermNomalize
+                .split(" ")
+                .filter(Boolean)
+
+            const filterFn = tokens.length
+                ? (value: any, key: any, paths: any[]) => {
+                    try {
+                        let str = String(key)
+
+                        if (typeof value === 'string'
+                            || typeof value === 'number'
+                            || typeof value === 'boolean'
+                            || typeof value === 'bigint'
+                            || (typeof value === 'object' && (
+                                value instanceof Date || value instanceof RegExp
+                            ))) {
+                            str += " " + String(value);
+                        }
+
+                        str = str.toLowerCase();
+
+                        if (options?.normalizeSymbol) {
+                            str = [...str].map(options?.normalizeSymbol!).join("")
+                        }
+
+
+                        let prevIndex = 0;
+
+                        for (let token of tokens) {
+                            prevIndex = str.indexOf(token, prevIndex)
+                            if (prevIndex < 0)
+                                return false;
+                        }
+
+                        return prevIndex > -1;
+
+                    } catch (error) {
+                        return false
+                    }
+
+                }
+                : undefined
+
+            return {
+                filterFn,
+                markTerm: buildRegex(tokens)
+            }
+
+        },
+        [searchTermNomalize, options?.normalizeSymbol]
+    )
+
+    // console.log({ filterFn, markTerm })
 
     useEffect(() => {
 
-        setSearchResults({
-            searchTerm: deferSearchTerm,
-            currentIndex: 0,
-            results: []
-        });
+        setSearchResults({ filterFn, currentIndex: 0, results: [] });
+
+        if (!filterFn) {
+            return;
+        }
 
         (async () => {
             setLoading((l) => l + 1);
+
             await handleSearch?.(
-                deferSearchTerm,
+                filterFn,
+                markTerm,
                 (results: any[][]) => {
-                    setSearchResults(e => e.searchTerm === deferSearchTerm
+                    setSearchResults(e => e.filterFn === filterFn
                         ? ({
                             ...e,
                             results: [...e.results, ...results]
                         }) : e)
                 },
                 options,
-            )
+            );
+
             setLoading((l) => Math.max(l - 1, 0));
         })();
 
 
-    }, [deferSearchTerm, handleSearch, scrollToPaths, options])
+    }, [filterFn, markTerm, handleSearch, options])
 
 
     let currentPositionPaths = useMemo(

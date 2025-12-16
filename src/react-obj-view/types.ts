@@ -13,7 +13,7 @@ export type RenderOptions = {
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
     actionRenders?: React.FC<ObjectViewRenderRowProps>;
-    search?: { searchTerm: string, filterFn: (value: any, key: any, paths: any[]) => boolean };
+    search?: { markTerm: string | RegExp, filterFn: (value: any, key: any, paths: any[]) => boolean };
     enableMark?: boolean;
 };
 
@@ -47,17 +47,24 @@ export type ObjectViewProps = {
     ref?: any
 };
 
-
-export interface SearchOptions {
+export interface SearchOptionBase {
     iterateSize?: number;
     maxDepth?: number;
     fullSearch?: boolean;
-    normalizeSymbol?: (e: string) => string;
     maxResult?: number;
 }
 
+export interface SearchOptions extends SearchOptionBase {
+    normalizeSymbol?: (e: string) => string;
+}
+
 export interface ObjectViewHandle {
-    search: (term: string, onResult: (results: PropertyKey[][]) => void, options?: SearchOptions) => Promise<void>;
+    search: (
+        filterFn: (value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean,
+        markTerm: string | RegExp,
+        onResult: (results: PropertyKey[][]) => void,
+        options?: SearchOptionBase
+    ) => Promise<void>;
     scrollToPaths: (paths: PropertyKey[], options?: ScrollOptions) => Promise<void>;
 }
 
