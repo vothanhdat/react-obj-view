@@ -15,7 +15,7 @@ import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 import { SearchComponent, SearchComponentHandler, SearchComponentProps } from './react-obj-view/search/SearchComponent'
 import { ObjectViewHandle, SearchOptions } from './react-obj-view/types'
 
-const packageVersion = '1.1.2'
+const packageVersion = '1.1.3'
 
 const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
   const { nodeDataWrapper, valueWrapper, actions } = props
