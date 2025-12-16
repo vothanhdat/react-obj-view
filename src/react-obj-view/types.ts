@@ -46,3 +46,18 @@ export type ObjectViewProps = {
     iterateSize?: number;
     ref?: any
 };
+
+
+export interface SearchOptions {
+    iterateSize?: number;
+    maxDepth?: number;
+    fullSearch?: boolean;
+    normalizeSymbol?: (e: string) => string;
+    maxResult?: number;
+}
+
+export interface ObjectViewHandle {
+    search: (term: string, onResult: (results: PropertyKey[][]) => void, options?: SearchOptions) => Promise<void>;
+    scrollToPaths: (paths: PropertyKey[], options?: ScrollOptions) => Promise<void>;
+}
+

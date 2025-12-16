@@ -13,6 +13,7 @@ import {
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 import { SearchComponent } from './react-obj-view/search/SearchComponent'
+import { ObjectViewHandle } from './react-obj-view/types'
 
 const packageVersion = '1.1.2'
 
@@ -430,7 +431,7 @@ export const Test = () => {
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
 
-  const objViewRef = useRef<any>(undefined)
+  const objViewRef = useRef<ObjectViewHandle | undefined>(undefined)
 
   const [searchActive, setSearchActive] = useState(false)
 
@@ -742,8 +743,8 @@ export const Test = () => {
             <SearchComponent
               active={searchActive}
               onClose={() => setSearchActive(false)}
-              handleSearch={(...args) => objViewRef?.current?.search(...args)}
-              scrollToPaths={(...args) => objViewRef?.current?.scrollToPaths(...args)}
+              handleSearch={async (...args) => objViewRef?.current?.search(...args)}
+              scrollToPaths={async (...args) => objViewRef?.current?.scrollToPaths(...args)}
             />
 
           </div>

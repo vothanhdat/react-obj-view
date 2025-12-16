@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { RenderNode } from "./components/RenderNode";
-import { RenderOptions } from "./types";
+import { ObjectViewHandle, RenderOptions } from "./types";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
@@ -124,21 +124,16 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
     const reactTreeViewRef = useRef<any>(undefined)
 
-    const searchObj = useMemo(
+    const searchObj: ObjectViewHandle = useMemo(
         () => {
 
             let currentSearchTerm = ""
 
             return {
                 async search(
-                    searchTerm: string,
-                    onResult: (paths: InferWalkingType<ObjectWalkingAdater>['Key'][][]) => void,
-                    options: {
-                        iterateSize?: number,
-                        maxDepth?: number,
-                        fullSearch?: boolean,
-                        normalizeSymbol?: (e: string) => string,
-                    } = {}
+                    searchTerm,
+                    onResult,
+                    options = ({} as never)
                 ) {
 
                     currentSearchTerm = searchTerm;
@@ -193,12 +188,15 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                         return;
 
                     let searchResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
+                    let searchResultCouter = 0
+                    let MAX_RESULT = options.maxResult ?? 99999
 
                     for (let _ of objectTree.travelAndSearch(
                         (value, key, path) => {
                             if (filterFn(value, key, path)) {
-                                // console.log("Match ", { value, key, path })
                                 searchResults.push([...path])
+                                searchResultCouter++;
+                                return searchResultCouter >= MAX_RESULT
                             }
                         },
                         options.iterateSize,
@@ -211,10 +209,12 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                         await new Promise(r => (window.requestIdleCallback || window.requestAnimationFrame)(r));
 
-                        // console.log({ currentSearchTerm, searchTerm })
                         if (currentSearchTerm !== searchTerm) {
                             searchResults = [];
                             return;
+                        }
+                        if(searchResultCouter >= MAX_RESULT){
+                            break;
                         }
                     }
 

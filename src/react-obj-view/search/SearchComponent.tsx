@@ -4,39 +4,43 @@ import { ObjectWalkingAdater } from "../../object-tree";
 import { LoadingSimple } from "../LoadingSimple";
 import { joinClasses } from "../../utils/joinClasses";
 import "./search.css"
+import { ObjectViewHandle } from "../types";
 
 
 export type SearchComponentProps = {
-    handleSearch: (
-        searchTerm: string,
-        onResult: (paths: InferWalkingType<ObjectWalkingAdater>['Key'][][]) => void,
-        options: {
-            iterateSize?: number;
-            maxDepth?: number;
-            fullSearch?: boolean;
-            normalizeSymbol?: (e: string) => string;
-        }
-    ) => void;
-    scrollToPaths: (
-        paths: InferWalkingType<ObjectWalkingAdater>['Key'][]
-    ) => Promise<void>;
+    handleSearch: ObjectViewHandle['search']
+    scrollToPaths: ObjectViewHandle['scrollToPaths']
     active: boolean;
     onClose: () => void;
+    maxResult?: number,
     className?: string,
     containerDivProps?: React.HTMLAttributes<HTMLDivElement>
+}
+
+export const useDebounceValue = <T,>(value: T, debounce = 100): T => {
+    let [debounceValue, setValue] = useState<T>(() => value);
+
+    useEffect(() => {
+        let t = setTimeout(() => setValue(value), debounce)
+        return () => clearTimeout(t);
+    }, [value, debounce])
+
+    return debounceValue
 }
 
 export const SearchComponent: React.FC<SearchComponentProps> = ({
     handleSearch, scrollToPaths,
     className,
     containerDivProps,
+    maxResult = 99999,
     active = true, onClose
 }) => {
 
 
-    const [searchTerm, setSearchTerm] = useState("")
-    const [loading, setLoading] = useState(0)
+    const [searchTermRaw, setSearchTerm] = useState("")
+    const searchTerm = useDebounceValue(searchTermRaw)
     const deferSearchTerm = useDeferredValue(active ? searchTerm : "")
+    const [loading, setLoading] = useState(0)
     const [results, setSearchResults] = useState({
         searchTerm: "",
         results: [] as any[][],
@@ -63,15 +67,13 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                             results: [...e.results, ...results]
                         }) : e)
                 },
-                {
-                    fullSearch: true
-                },
+                { fullSearch: true, maxResult },
             )
             setLoading((l) => Math.max(l - 1, 0));
         })();
 
 
-    }, [deferSearchTerm, handleSearch, scrollToPaths])
+    }, [deferSearchTerm, handleSearch, scrollToPaths, maxResult])
 
 
     let currentPositionPaths = useMemo(
@@ -114,7 +116,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             <input
                 ref={inputRef}
                 className="input"
-                value={searchTerm}
+                value={searchTermRaw}
                 placeholder="Type to search ..."
                 onChange={e => setSearchTerm(e.target.value)}
                 onKeyDown={e => {

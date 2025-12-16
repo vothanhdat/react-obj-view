@@ -476,7 +476,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
 
     const traversalAndFindPathsInternal = function* (
-        callback: (value: Value, key: Key, path: Key[]) => void,
+        callback: (value: Value, key: Key, path: Key[]) => boolean | void,
         { state, getChildOnly }: StateReadonyWrap<WalkingResult<Value, Key, Meta>, Key>,
         findContext: { maxIterate: number, iterateLeft: number, currentDepth: number, maxDepth: number, paths: Key[], ctx: Context, fullSearch: boolean }
     ) {
@@ -486,7 +486,9 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         findContext.iterateLeft--;
 
 
-        callback(state.value!, state.key!, findContext.paths);
+        if (callback(state.value!, state.key!, findContext.paths)){
+            yield;
+        }
 
         if (findContext.iterateLeft <= 0) {
             // console.log("yield 2-1", findContext.paths)
@@ -601,7 +603,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     }
 
     const traversalAndFindPaths = function* (
-        callback: (value: Value, key: Key, path: Key[]) => void,
+        callback: (value: Value, key: Key, path: Key[]) => boolean | void,
         walkingConfig: Config,
         iterateSize = 100000,
         maxDepth = 10,

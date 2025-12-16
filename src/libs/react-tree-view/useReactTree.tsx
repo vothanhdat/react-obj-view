@@ -199,7 +199,7 @@ export const useReactTree = <
 
     const travelAndSearch = useCallback(
         (
-            cb: (value: InferWalkingType<T>['Value'], key: InferWalkingType<T>['Key'], paths: InferWalkingType<T>['Key'][],) => void,
+            cb: (value: InferWalkingType<T>['Value'], key: InferWalkingType<T>['Key'], paths: InferWalkingType<T>['Key'][],) => boolean | void,
             iterateSize?: number, maxDepth?: number, fullSearch?: boolean,
         ) => ref.current.instance.traversalAndFindPaths(
             cb,
