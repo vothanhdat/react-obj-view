@@ -39,6 +39,18 @@ const highlightCtx = React.createContext<{ highlight?: RegExp }>({
     highlight: undefined
 })
 
+const HighLightInternal: React.FC<{ text: string }> = ({ text }) => {
+    const { highlight } = useContext(highlightCtx)
+
+    const render = useMemo(
+        () => (highlight) ? markByToken(text, highlight) : text,
+        [text, highlight]
+    );
+
+    return <>{render}</>;
+
+};
+
 export const HightlightWrapper: React.FC<{ highlight: string, children: any }> = ({ children, highlight }) => {
     return <highlightCtx.Provider value={useHighlight(highlight)}>
         {children}
@@ -46,13 +58,7 @@ export const HightlightWrapper: React.FC<{ highlight: string, children: any }> =
 }
 
 export const HighlightString: React.FC<{ text: string; enable?: boolean }> = ({ text, enable = true }) => {
-    const { highlight } = useContext(highlightCtx)
-
-    const render = useMemo(
-        () => (highlight && enable) ? markByToken(text, highlight) : text,
-        [enable, text, highlight]
-    );
-
-    return <>{render}</>;
-
+    return enable
+        ? <HighLightInternal text={text} />
+        : text
 };
