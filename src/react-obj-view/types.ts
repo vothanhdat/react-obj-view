@@ -12,7 +12,8 @@ export type RenderOptions = {
     nonEnumerable: boolean;
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
-    actionRenders?: React.FC<ObjectViewRenderRowProps>
+    actionRenders?: React.FC<ObjectViewRenderRowProps>;
+    search?: { searchTerm: string, filterFn: (value: any, key: any, paths: any[]) => boolean };
 };
 
 export type ObjectViewRenderRowProps = ReactTreeRowRenderProps<

@@ -6,13 +6,14 @@ import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../../object-tree";
 import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
+import { HightlightWrapper } from "../hooks/useHighlight";
 
 
 export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const { nodeDataWrapper, valueWrapper, options, renderIndex, actions, } = props
 
-    const { enablePreview, actionRenders, nonEnumerable, includeSymbols } = options
+    const { enablePreview, actionRenders, nonEnumerable, includeSymbols, search } = options
 
     const nodeData = nodeDataWrapper()
 
@@ -56,6 +57,10 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
         enable: options.highlightUpdate,
     }) as any
 
+    const isSearchMatch = useMemo(
+        () => search?.filterFn(nodeData.value, nodeData.key, nodeData.paths) ?? false,
+        [search?.filterFn, nodeData.value]
+    )
 
     return <>
         <div
@@ -102,5 +107,6 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
                 <ActionRenders {...props} />
             </span>
         </div>
-    </>;
+    </>
+
 }

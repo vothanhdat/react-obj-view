@@ -85,7 +85,10 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
     const { onMouseEnter, onMouseLeave, containerRef } = useHoverInteractions(childCount, getNodeByIndex);
 
-    const [searchTerm, setSearchTerm] = useState("")
+    const [search, setSearch] = useState(() => ({
+        searchTerm: "",
+        filterFn: (value: any, key: any, paths: any[]) => (false as boolean)
+    }))
 
     const options: RenderOptions = useMemo(
         () => ({
@@ -98,12 +101,13 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             onMouseLeave,
             actionRenders,
             nonEnumerable,
-            // searchTerm,
+            search,
         }) as RenderOptions,
         [
             enablePreview, resolver,
             highlightUpdate, includeSymbols, showLineNumbers,
             actionRenders, nonEnumerable,
+            search,
         ]
     )
 
@@ -119,7 +123,6 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     )
 
     const reactTreeViewRef = useRef<any>(undefined)
-
 
     const searchObj = useMemo(
         () => {
@@ -138,6 +141,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     } = {}
                 ) {
 
+                    currentSearchTerm = searchTerm;
+
                     let searchTermNomalize = searchTerm.toLowerCase();
 
                     if (options.normalizeSymbol) {
@@ -146,16 +151,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                     let tokens = searchTermNomalize.split(" ").filter(Boolean)
 
-                    if (!tokens.length)
-                        return;
 
-                    currentSearchTerm = searchTerm;
-
-                    setSearchTerm(currentSearchTerm);
-
-                    let currentResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
-
-                    const filterFunctions = (value: any, key: any, paths: any[]) => {
+                    const filterFn = (value: any, key: any, paths: any[]) => {
                         try {
                             let str = String(key)
 
@@ -180,7 +177,6 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                                 prevIndex = str.indexOf(token, prevIndex)
                                 if (prevIndex < 0)
                                     return false;
-                                // console.log({ prevIndex })
                             }
 
                             return prevIndex > -1;
@@ -191,35 +187,40 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                     }
 
+                    setSearch({ searchTerm, filterFn });
+
+                    if (!tokens.length)
+                        return;
+
+                    let searchResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
+
                     for (let _ of objectTree.travelAndSearch(
                         (value, key, path) => {
-                            if (filterFunctions(value, key, path)) {
+                            if (filterFn(value, key, path)) {
                                 // console.log("Match ", { value, key, path })
-                                currentResults.push([...path])
+                                searchResults.push([...path])
                             }
-
                         },
                         options.iterateSize,
                         options.maxDepth,
                         options.fullSearch,
                     )) {
 
-                        onResult(currentResults);
-
-                        currentResults = []
+                        onResult(searchResults);
+                        searchResults = []
 
                         await new Promise(r => (window.requestIdleCallback || window.requestAnimationFrame)(r));
 
                         // console.log({ currentSearchTerm, searchTerm })
                         if (currentSearchTerm !== searchTerm) {
-                            currentResults = [];
+                            searchResults = [];
                             return;
                         }
                     }
 
-                    if (currentResults.length) {
-                        onResult(currentResults);
-                        currentResults = []
+                    if (searchResults.length) {
+                        onResult(searchResults);
+                        searchResults = []
                     }
                 },
                 async scrollToPaths(
@@ -252,7 +253,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     useImperativeHandle(ref, () => searchObj, [searchObj])
 
     return <div ref={containerRef} className="big-objview-container" >
-        <HightlightWrapper highlight={searchTerm}>
+        <HightlightWrapper highlight={search.searchTerm}>
             <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
                 {...objectTree}
                 lineHeight={lineHeight}
@@ -265,7 +266,6 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                 ref={reactTreeViewRef}
             />
         </HightlightWrapper>
-
     </div>
 
 }
