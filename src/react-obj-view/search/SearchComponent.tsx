@@ -33,7 +33,8 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     className,
     containerDivProps,
     options,
-    active = true, onClose
+    active = true, 
+    onClose
 }) => {
 
 

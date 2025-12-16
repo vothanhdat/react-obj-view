@@ -721,6 +721,9 @@ export const Test = () => {
                 if ((e.ctrlKey || e.metaKey) && (e.key == "f" || e.key == "F")) {
                   setSearchActive(true)
                   e.preventDefault()
+                } else if (e.key == "Escape") {
+                  setSearchActive(false)
+                  e.preventDefault()
                 }
               }}
             >
