@@ -48,7 +48,7 @@
   "author": "Vo Thanh Dat",
   "license": "MIT",
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=20.0.0",
     "yarn": ">=4.0.0"
   },
   "peerDependencies": {
