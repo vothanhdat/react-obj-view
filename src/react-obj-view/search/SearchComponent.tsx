@@ -22,10 +22,14 @@ export type SearchComponentProps = {
     ) => Promise<void>;
     active: boolean;
     onClose: () => void;
+    className?: string,
+    containerDivProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export const SearchComponent: React.FC<SearchComponentProps> = ({
     handleSearch, scrollToPaths,
+    className,
+    containerDivProps,
     active = true, onClose
 }) => {
 
@@ -102,7 +106,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         }
     }, [active, inputRef])
 
-    return <div className={joinClasses("big-objview-search", active && "active")}>
+    return <div {...containerDivProps} className={joinClasses("big-objview-search", active && "active", className)}>
         <div className="search-box">
             <small className="loading-indicator" style={{ opacity: loading > 0 ? 0.7 : 0, }}  >
                 <LoadingSimple active={true} />
