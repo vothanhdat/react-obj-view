@@ -4,7 +4,7 @@ import { ObjectWalkingAdater } from "../../object-tree";
 import { LoadingSimple } from "../LoadingSimple";
 import { joinClasses } from "../../utils/joinClasses";
 import "./search.css"
-import { ObjectViewHandle } from "../types";
+import { ObjectViewHandle, SearchOptions } from "../types";
 
 
 export type SearchComponentProps = {
@@ -12,7 +12,7 @@ export type SearchComponentProps = {
     scrollToPaths: ObjectViewHandle['scrollToPaths']
     active: boolean;
     onClose: () => void;
-    maxResult?: number,
+    options?: SearchOptions,
     className?: string,
     containerDivProps?: React.HTMLAttributes<HTMLDivElement>
 }
@@ -32,7 +32,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
     handleSearch, scrollToPaths,
     className,
     containerDivProps,
-    maxResult = 99999,
+    options,
     active = true, onClose
 }) => {
 
@@ -67,13 +67,13 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                             results: [...e.results, ...results]
                         }) : e)
                 },
-                { fullSearch: true, maxResult },
+                options,
             )
             setLoading((l) => Math.max(l - 1, 0));
         })();
 
 
-    }, [deferSearchTerm, handleSearch, scrollToPaths, maxResult])
+    }, [deferSearchTerm, handleSearch, scrollToPaths, options])
 
 
     let currentPositionPaths = useMemo(
