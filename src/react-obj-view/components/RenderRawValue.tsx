@@ -18,21 +18,21 @@ export const RenderRawValue: React.FC<{ valueWrapper: any; depth: any; options: 
         case "number":
         case "symbol":
         case "undefined":
-            return <HighlightString text={String(value)} />
+            return <HighlightString text={String(value)} enable={options.enableMark} />
         case "bigint":
-            return <HighlightString text={String(value) + "n"} />
+            return <HighlightString text={String(value) + "n"} enable={options.enableMark} />
         case "function": {
-            return <RenderFunction {...{ value, depth }} />
+            return <RenderFunction {...{ value, depth, highlight: options.enableMark }} />
         }
         case "string": {
-            return <RenderString {...{ value, depth }} />
+            return <RenderString {...{ value, depth, highlight: options.enableMark }} />
         }
         case "object": {
             if (!value)
                 return String(value);
 
-            if (value instanceof Date) return <HighlightString text={String(value)} />;;
-            if (value instanceof RegExp) return <RenderRegex {...{ value: value, depth }} />
+            if (value instanceof Date) return <HighlightString text={String(value)} enable={options.enableMark} />;;
+            if (value instanceof RegExp) return <RenderRegex {...{ value: value, depth, highlight: options.enableMark }} />
             if (value instanceof Array) return `Array(${value.length})`;
             if (value instanceof Map) return `Map(${value.size})`;
             if (value instanceof Set) return `Set(${value.size})`;

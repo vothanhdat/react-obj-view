@@ -45,12 +45,12 @@ export const HightlightWrapper: React.FC<{ highlight: string, children: any }> =
     </highlightCtx.Provider>
 }
 
-export const HighlightString: React.FC<{ text: string; }> = ({ text }) => {
+export const HighlightString: React.FC<{ text: string; enable?: boolean }> = ({ text, enable = true }) => {
     const { highlight } = useContext(highlightCtx)
 
     const render = useMemo(
-        () => highlight ? markByToken(text, highlight) : text,
-        [text, highlight]
+        () => (highlight && enable) ? markByToken(text, highlight) : text,
+        [enable, text, highlight]
     );
 
     return <>{render}</>;

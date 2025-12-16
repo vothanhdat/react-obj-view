@@ -14,6 +14,7 @@ export type RenderOptions = {
     onMouseLeave: (index: number) => void;
     actionRenders?: React.FC<ObjectViewRenderRowProps>;
     search?: { searchTerm: string, filterFn: (value: any, key: any, paths: any[]) => boolean };
+    enableMark?: boolean;
 };
 
 export type ObjectViewRenderRowProps = ReactTreeRowRenderProps<

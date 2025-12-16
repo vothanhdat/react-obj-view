@@ -2,7 +2,7 @@ import { HighlightString } from "../hooks/useHighlight";
 import { RenderPopover } from "./Popover";
 import { useStringDisplay } from "./useStringDisplay";
 
-export const RenderString: React.FC<{ value: string; depth: number; }> = ({ value, depth }) => {
+export const RenderString: React.FC<{ value: string; depth: number; highlight?: boolean }> = ({ value, depth, highlight = true }) => {
 
     const { fullValue, shortValue, enablePopover } = useStringDisplay(
         JSON.stringify(value).slice(1, -1),
@@ -20,7 +20,7 @@ export const RenderString: React.FC<{ value: string; depth: number; }> = ({ valu
                 value: fullValue,
                 shortValue: renderStr
             }} />
-            : <HighlightString text={renderStr} />
+            : <HighlightString text={renderStr} enable={highlight} />
         }
     </>
 };
