@@ -6,13 +6,14 @@ import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../../object-tree";
 import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
+import { HightlightWrapper } from "../hooks/useHighlight";
 
 
 export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
-    const { nodeDataWrapper, valueWrapper, options, renderIndex, actions, } = props
+    const { nodeDataWrapper, valueWrapper, options: _options, renderIndex, actions, } = props
 
-    const { enablePreview, actionRenders, nonEnumerable, includeSymbols } = options
+    const { enablePreview, actionRenders, nonEnumerable, includeSymbols, search } = _options
 
     const nodeData = nodeDataWrapper()
 
@@ -38,6 +39,17 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
         && !(value instanceof Error)
         && !(value instanceof GroupedProxy)
 
+    const isSearchMatch = useMemo(
+        () => !!search?.searchTerm
+            && (search?.filterFn(nodeData.value, nodeData.key, nodeData.paths) ?? false),
+        [search?.searchTerm, search?.filterFn, nodeData.value]
+    )
+
+
+    const options = useMemo(
+        () => ({ ..._options, highlight: isSearchMatch }),
+        [_options, isSearchMatch]
+    )
 
     const onMouseEnter = useCallback(
         () => options.onMouseEnter(renderIndex),
@@ -81,6 +93,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
             </span>
 
             <RenderName ref={ref} {...{
+                highlight: isSearchMatch,
                 depth: nodeData.depth,
                 name: String(nodeData.key ?? "ROOT"),
             }} />
@@ -102,5 +115,6 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
                 <ActionRenders {...props} />
             </span>
         </div>
-    </>;
+    </>
+
 }

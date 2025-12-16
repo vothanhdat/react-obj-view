@@ -3,7 +3,7 @@ import { RenderPopover } from "./Popover";
 import { HighlightString } from "../hooks/useHighlight";
 
 
-export const RenderFunction: React.FC<{ value: Function, depth: any }> = ({ value, depth }) => {
+export const RenderFunction: React.FC<{ value: Function, depth: any; highlight?: boolean }> = ({ value, depth, highlight = true }) => {
     if (depth > 0)
         return "ƒ";
 
@@ -24,6 +24,6 @@ export const RenderFunction: React.FC<{ value: Function, depth: any }> = ({ valu
         .includes('{ [native code] }')
 
     return isNativeCode
-        ? <HighlightString text={preview} />
+        ? <HighlightString text={preview} enable={highlight} />
         : <RenderPopover {...{ value: render, shortValue: preview }} />
 }

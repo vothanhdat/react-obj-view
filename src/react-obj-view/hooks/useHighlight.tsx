@@ -2,9 +2,11 @@ import React, { useContext, useMemo } from "react";
 
 export function useHighlight(filterString: string) {
     const highlight = useMemo(
-        () => buildRegex(filterString
-            .toLowerCase()
-            .split(" "), 'gi'),
+        () => filterString
+            ? buildRegex(filterString
+                .toLowerCase()
+                .split(" "), 'gi')
+            : undefined,
         [filterString]
     );
     return { highlight };
@@ -37,20 +39,26 @@ const highlightCtx = React.createContext<{ highlight?: RegExp }>({
     highlight: undefined
 })
 
+const HighLightInternal: React.FC<{ text: string }> = ({ text }) => {
+    const { highlight } = useContext(highlightCtx)
+
+    const render = useMemo(
+        () => (highlight) ? markByToken(text, highlight) : text,
+        [text, highlight]
+    );
+
+    return <>{render}</>;
+
+};
+
 export const HightlightWrapper: React.FC<{ highlight: string, children: any }> = ({ children, highlight }) => {
     return <highlightCtx.Provider value={useHighlight(highlight)}>
         {children}
     </highlightCtx.Provider>
 }
 
-export const HighlightString: React.FC<{ text: string; }> = ({ text }) => {
-    const { highlight } = useContext(highlightCtx)
-
-    const render = useMemo(
-        () => highlight ? markByToken(text, highlight) : text,
-        [text, highlight]
-    );
-
-    return <>{render}</>;
-
+export const HighlightString: React.FC<{ text: string; enable?: boolean }> = ({ text, enable = true }) => {
+    return enable
+        ? <HighLightInternal text={text} />
+        : text
 };

@@ -1,12 +1,12 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { InferWalkingType } from "../libs/tree-core";
-import { ObjectWalkingAdater } from "../object-tree";
-import { LoadingSimple } from "./LoadingSimple";
+import { InferWalkingType } from "../../libs/tree-core";
+import { ObjectWalkingAdater } from "../../object-tree";
+import { LoadingSimple } from "../LoadingSimple";
+import { joinClasses } from "../../utils/joinClasses";
 import "./search.css"
-import { joinClasses } from "../utils/joinClasses";
 
 
-export const SearchComponent: React.FC<{
+export type SearchComponentProps = {
     handleSearch: (
         searchTerm: string,
         onResult: (paths: InferWalkingType<ObjectWalkingAdater>['Key'][][]) => void,
@@ -22,8 +22,16 @@ export const SearchComponent: React.FC<{
     ) => Promise<void>;
     active: boolean;
     onClose: () => void;
+    className?: string,
+    containerDivProps?: React.HTMLAttributes<HTMLDivElement>
+}
 
-}> = ({ handleSearch, scrollToPaths, active = true, onClose }) => {
+export const SearchComponent: React.FC<SearchComponentProps> = ({
+    handleSearch, scrollToPaths,
+    className,
+    containerDivProps,
+    active = true, onClose
+}) => {
 
 
     const [searchTerm, setSearchTerm] = useState("")
@@ -98,7 +106,7 @@ export const SearchComponent: React.FC<{
         }
     }, [active, inputRef])
 
-    return <div className={joinClasses("big-objview-search", active && "active")}>
+    return <div {...containerDivProps} className={joinClasses("big-objview-search", active && "active", className)}>
         <div className="search-box">
             <small className="loading-indicator" style={{ opacity: loading > 0 ? 0.7 : 0, }}  >
                 <LoadingSimple active={true} />

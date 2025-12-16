@@ -2,7 +2,7 @@ import { HighlightString } from "../hooks/useHighlight";
 import { RenderPopover } from "./Popover";
 import { useStringDisplay } from "./useStringDisplay";
 
-export const RenderRegex: React.FC<{ value: RegExp; depth: number; }> = ({ value, depth }) => {
+export const RenderRegex: React.FC<{ value: RegExp; depth: number; highlight?: boolean }> = ({ value, depth, highlight = true }) => {
 
     const { fullValue, shortValue, enablePopover } = useStringDisplay(
         String(value),
@@ -12,8 +12,8 @@ export const RenderRegex: React.FC<{ value: RegExp; depth: number; }> = ({ value
     return <>
 
         {enablePopover
-            ? <RenderPopover {...{ value: fullValue, shortValue }} />
-            : <HighlightString text={shortValue} />
+            ? <RenderPopover {...{ value: fullValue, shortValue, highlight }} />
+            : <HighlightString text={shortValue} enable={highlight} />
         }
     </>
 };

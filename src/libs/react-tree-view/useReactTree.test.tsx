@@ -100,7 +100,7 @@ describe("useReactTree", () => {
         expect(result.current.computeItemKey(5)).toBe("");
     });
 
-    it("caches node wrappers per render and proxies instance actions", () => {
+    it("caches node wrappers per render and proxies instance actions", async () => {
         const instance = createWalkingInstance();
         const factory = vi.fn(() => instance);
 
@@ -131,12 +131,12 @@ describe("useReactTree", () => {
 
         // Test expandAndGetIndex
         let index = -1;
-        act(() => {
-            index = result.current.expandAndGetIndex(["root", 2] as any);
+        await act(async () => {
+            index = await result.current.expandAndGetIndex(["root", 2] as any);
         });
 
         expect(instance.expandPath).toHaveBeenCalledWith(["root", 2]);
-        expect(instance.walking).toHaveBeenCalled(); // Should assume walking is called to sync
+        expect(instance.walkingAsync).toHaveBeenCalled(); // walkingAsync is called due to setReload
         expect(instance.getIndexForPath).toHaveBeenCalledWith(["root", 2]);
         expect(index).toBe(10);
     });

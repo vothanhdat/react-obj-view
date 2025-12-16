@@ -75,7 +75,7 @@ export const RenderPreview: React.FC<{
             .filter(e => e.enumerable)
             .map(({ key, value }, index) => <Fragment key={typeof key === "symbol" ? key.toString() : `${String(key)}-${index}`}>
                 {index > 0 ? customSeperator : ""}
-                {!hideKey && <><RenderName name={String(key)} />: </>}
+                {!hideKey && <><RenderName name={String(key)} highlight={options.enableMark} />: </>}
                 <RenderValue {...{
                     valueWrapper: () => value,
                     options,
