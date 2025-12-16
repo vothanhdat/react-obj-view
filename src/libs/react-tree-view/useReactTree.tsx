@@ -4,6 +4,7 @@ import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
 import { ReactTreeHookParams } from "./types";
 import { WalkingResult } from "../tree-core/types";
 import { PromiseEvent, promiseEvent } from "./promiseEvent";
+import { isDev } from "../../utils/isDev";
 
 
 
@@ -130,7 +131,9 @@ export const useReactTree = <
 
                     return data;
                 } catch (error) {
-                    console.error(error)
+                    if (isDev) {
+                        console.error(`Failed to get node at index ${index}:`, error);
+                    }
                     return undefined;
                 }
             };
