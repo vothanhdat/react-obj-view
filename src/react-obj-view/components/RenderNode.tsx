@@ -47,7 +47,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
 
     const options = useMemo(
-        () => ({ ..._options, highlight: isSearchMatch }),
+        () => ({ ..._options, enableMark: isSearchMatch }),
         [_options, isSearchMatch]
     )
 

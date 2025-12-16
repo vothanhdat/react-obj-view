@@ -152,9 +152,12 @@ export const useReactTree = <
     const expandAndGetIndex = useCallback(
         async (paths: InferWalkingType<T>['Key'][]) => {
 
-            runningRef.current.expandingPaths = paths;
+            if (!ref.current.instance.expandPath(paths)) {
+                let index = ref.current.instance.getIndexForPath(paths);
+                if (index > -1) { return index }
+            }
 
-            ref.current.instance.expandPath(paths);
+            runningRef.current.expandingPaths = paths;
 
             setReload(e => e + 1);
 
@@ -164,14 +167,13 @@ export const useReactTree = <
 
                 let ev = await runningRef.current.event.wait()
 
-                if (runningRef.current.expandingPaths != paths) {
-                    // console.log("Break")
-                    return -1;
-                }
-
                 const index = ref.current.instance.getIndexForPath(paths);
 
                 if (index > -1) { return index }
+
+                if (runningRef.current.expandingPaths != paths) {
+                    return -1;
+                }
 
                 if (ev == IterateEvent.ROUND) {
                     // console.log("Wait Round")

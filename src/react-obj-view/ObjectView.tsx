@@ -153,6 +153,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                             if (typeof value === 'string'
                                 || typeof value === 'number'
+                                || typeof value === 'boolean'
                                 || typeof value === 'bigint'
                                 || (typeof value === 'object' && (
                                     value instanceof Date || value instanceof RegExp
@@ -213,7 +214,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                             searchResults = [];
                             return;
                         }
-                        if(searchResultCouter >= MAX_RESULT){
+                        if (searchResultCouter >= MAX_RESULT) {
                             break;
                         }
                     }
@@ -239,7 +240,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                         reactTreeViewRef?.current?.scrollTo(
                             {
-                                top: pathIndex * lineHeight - 200,
+                                top: pathIndex * lineHeight,
                                 behavior: "instant",
                                 ...options,
                             } as ScrollToOptions

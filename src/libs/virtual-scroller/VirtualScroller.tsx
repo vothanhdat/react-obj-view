@@ -13,7 +13,7 @@ export const VirtualScroller = <T,>(
     const [{ start, end, offset }, setState] = useState({ start: 0, end: 0, offset: 0 })
 
     React.useImperativeHandle(ref, () => ({
-        scrollTo: (options: ScrollToOptions) => {
+        scrollTo: (options: ScrollToOptions, offset = 100) => {
             if (!innerRef.current) {
                 return
             }
@@ -31,11 +31,20 @@ export const VirtualScroller = <T,>(
 
             // If window scroll
             if (isDocumentScroll) {
-                const absoluteTop = window.scrollY + nodeRect.top
-                window.scrollTo({
-                    ...options,
-                    top: absoluteTop + top
-                })
+                const scrollToMax = window.scrollY + nodeRect.top + top - offset
+                const scrollToMin = window.scrollY + nodeRect.top + top - window.innerHeight + offset
+                if (window.scrollY < scrollToMin) {
+                    window.scrollTo({
+                        ...options,
+                        top: scrollToMax
+                    })
+                } else if (window.scrollY > scrollToMax) {
+                    window.scrollTo({
+                        ...options,
+                        top: scrollToMin
+                    })
+                }
+
             } else {
                 // If element scroll
                 // parent.scrollTop should be such that ref.current.top is 0 (relative to parent) + top
@@ -47,12 +56,22 @@ export const VirtualScroller = <T,>(
                 // We can use the difference in getBoundingClientRect().top + parent.scrollTop
 
                 const parentRect = parent.getBoundingClientRect()
-                const relativeTop = nodeRect.top - parentRect.top + parent.scrollTop
+                const scrollToMax = nodeRect.top - parentRect.top + parent.scrollTop + top - offset
+                const scrollToMin = nodeRect.top - parentRect.top + parent.scrollTop + top - parentRect.height + offset
 
-                parent.scrollTo({
-                    ...options,
-                    top: relativeTop + top
-                })
+                if (parent.scrollTop < scrollToMin) {
+                    parent.scrollTo({
+                        ...options,
+                        top: scrollToMax
+                    })
+                } else if (parent.scrollTop > scrollToMax) {
+                    parent.scrollTo({
+                        ...options,
+                        top: scrollToMin
+                    })
+                }
+
+
             }
         }
     }), [])

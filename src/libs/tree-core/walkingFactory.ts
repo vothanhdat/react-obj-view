@@ -391,18 +391,29 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
 
     const expandPath = (paths: Key[]) => {
         let currentState = stateRoot;
+        let updated = false
         for (let path of paths) {
-
-            currentState.state.updateToken = -1;
 
             const currentExpand = currentState.state.userExpand
                 ?? currentState.state.expanded
 
             if (!currentExpand) {
                 currentState.state.userExpand = true;
+                updated = true
             }
 
             currentState = currentState.getChild(path as any)
+        }
+
+        if (updated) {
+            currentState = stateRoot;
+            for (let path of paths) {
+                currentState.state.updateToken = -1;
+                currentState = currentState.getChild(path as any)
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 
