@@ -1,9 +1,9 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { InferWalkingType } from "../libs/tree-core";
-import { ObjectWalkingAdater } from "../object-tree";
-import { LoadingSimple } from "./LoadingSimple";
+import { InferWalkingType } from "../../libs/tree-core";
+import { ObjectWalkingAdater } from "../../object-tree";
+import { LoadingSimple } from "../LoadingSimple";
 import "./search.css"
-import { joinClasses } from "../utils/joinClasses";
+import { joinClasses } from "../../utils/joinClasses";
 
 
 export type SearchComponentProps = {

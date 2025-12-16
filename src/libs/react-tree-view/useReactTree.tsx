@@ -3,9 +3,16 @@ import { WalkingAdaperBase, InferWalkingInstance, InferWalkingType, InferNodeRes
 import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
 import { ReactTreeHookParams } from "./types";
 import { WalkingResult } from "../tree-core/types";
-import { isDev } from "../../utils/isDev";
+import { PromiseEvent, promiseEvent } from "./promiseEvent";
 
 
+
+
+enum IterateEvent {
+    ROUND = "ROUND",
+    FINISH = "FINISH",
+    ABORT = "ABORT",
+}
 
 export const useReactTree = <
     T extends WalkingAdaperBase,
@@ -29,10 +36,13 @@ export const useReactTree = <
     const [walkingResult, setWalkingResult] = useState<WalkingResult<any, any, any>>()
 
     const runningRef = useRef({
-        each: undefined as PromiseWithResolvers<void> | undefined,
-        finish: undefined as PromiseWithResolvers<void> | undefined,
+        event: undefined as any as PromiseEvent<IterateEvent>,
         expandingPaths: undefined as PropertyKey[] | undefined,
     })
+
+    if (!runningRef.current.event) {
+        runningRef.current.event = promiseEvent()
+    }
 
     useEffect(
         () => {
@@ -40,39 +50,26 @@ export const useReactTree = <
             let iterate = ref.current.instance.walkingAsync(value, name, config, expandDepth, iterateSize)
             let isRunning = true
 
-            runningRef.current.each = Promise.withResolvers()
-            runningRef.current.finish = Promise.withResolvers()
-
             setTimeout(async () => {
 
                 for (let result of iterate) {
 
-                    if (isRunning) {
-                        setWalkingResult({ ...result });
+                    setWalkingResult({ ...result });
 
-                        runningRef.current.each?.resolve();
-                        runningRef.current.each = Promise.withResolvers()
+                    runningRef.current.event.emit(IterateEvent.ROUND)
 
-                        await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
+                    await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
 
-                        if (!isRunning) {
-                            runningRef.current.each?.reject();
-
-                            break;
-                        }
-
-                    } else {
-                        runningRef.current.each?.reject();
-
+                    if (!isRunning) {
                         break;
                     }
+
                 }
+
                 if (isRunning) {
-                    runningRef.current.each?.resolve();
-                    runningRef.current.finish?.resolve();
+                    runningRef.current.event.emit(IterateEvent.FINISH);
                 } else {
-                    runningRef.current.each?.reject();
-                    runningRef.current.finish?.reject();
+                    runningRef.current.event.emit(IterateEvent.ABORT);
                 }
 
             }, 0)
@@ -161,12 +158,8 @@ export const useReactTree = <
             let t = Date.now()
 
             do {
-                let r = await Promise
-                    .race([
-                        runningRef.current.finish?.promise.then(() => 2),
-                        runningRef.current.each?.promise.then(() => 1),
-                    ])
-                    .catch((err) => (console.log(err), 0))
+
+                let ev = await runningRef.current.event.wait()
 
                 if (runningRef.current.expandingPaths != paths) {
                     console.log("Break")
@@ -175,14 +168,17 @@ export const useReactTree = <
 
                 const index = ref.current.instance.getIndexForPath(paths);
 
-                if (index > -1) {
-                    return index
-                }
+                if (index > -1) { return index }
 
-                if (r == 1) {
-                    continue
+                if (ev == IterateEvent.ROUND) {
+                    continue;
+                } else if (ev == IterateEvent.ABORT) {
+                    console.log("Break")
+                    return -1;
                 } else {
+
                     if (Date.now() - t >= 2000 || runningRef.current.expandingPaths != paths) {
+                        console.log("Break")
                         return -1;
                     }
 

@@ -12,7 +12,7 @@ import {
 } from './react-obj-view-themes'
 import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
-import { SearchComponent } from './react-obj-view/SearchComponent'
+import { SearchComponent } from './react-obj-view/search/SearchComponent'
 
 const packageVersion = '1.1.2'
 

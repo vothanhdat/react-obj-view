@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
 import React, { createRef } from 'react';
-import { ObjectView } from './ObjectView';
+import { ObjectView } from '../ObjectView';
 
 describe('ObjectView Search Integration', () => {
     // Mock the VirtualScroller to avoid layout issues in jsdom
@@ -34,9 +34,14 @@ describe('ObjectView Search Integration', () => {
         list: [1, 2, 3]
     };
 
-    it('should expose search method via ref', () => {
+    it('should expose search method via ref', async () => {
         const ref = createRef<any>();
         render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
+
+        // Allow initial walk to complete to silence "act" warnings
+        await act(async () => {
+            vi.runAllTimers();
+        });
 
         expect(ref.current).toBeDefined();
         expect(ref.current.search).toBeInstanceOf(Function);
