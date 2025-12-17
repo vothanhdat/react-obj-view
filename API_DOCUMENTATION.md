@@ -343,34 +343,43 @@ export interface ObjectViewHandle {
 Use the packaged `SearchComponent` for a ready-made UI with keyboard shortcuts and a loading indicator. It builds a tokenised filter and highlight regex, supports diacritic normalisation, and debounces input for you.
 
 ```tsx
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ObjectView, ObjectViewHandle, SearchComponent } from "react-obj-view";
 
-const ref = useRef<ObjectViewHandle | null>(null);
 
-const searchOptions = useMemo(
-  () => ({
-    normalizeSymbol: (c: string) => c.normalize("NFD").replace(/\p{M}/gu, ""),
-    maxResult: 5000,
-    maxDepth: 12,
-  }),
-  [],
-);
+function DebugPanel({data}) {
 
-<ObjectView valueGetter={() => data} ref={ref} />
+  const ref = useRef<ObjectViewHandle | null>(null);
 
-<SearchComponent
-  active={isOpen}
-  onClose={() => setOpen(false)}
-  handleSearch={(filterFn, markTerm, onResult, opts) =>
-    ref.current?.search(filterFn, markTerm, onResult, opts)
-  }
-  scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
-  options={searchOptions}
-/>;
+  const [isOpen, setOpen] = useState(false)
+
+  const searchOptions = useMemo(
+    () => ({
+      normalizeSymbol: (c: string) => c.normalize("NFD").replace(/\p{M}/gu, ""),
+      maxResult: 5000,
+      maxDepth: 12,
+    }),
+    [],
+  );
+
+  return <div>
+    <ObjectView valueGetter={() => data} ref={ref} />
+    <SearchComponent
+      active={isOpen}
+      onClose={() => setOpen(false)}
+      handleSearch={(filterFn, markTerm, onResult, opts) =>
+        ref.current?.search(filterFn, markTerm, onResult, opts)
+      }
+      scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
+      options={searchOptions}
+    />
+  <div/>
+
+}
+
 ```
 
-- Keyboard shortcuts: `Cmd/Ctrl+F` focuses the search bar, `Enter` / `Shift+Enter` navigates next/previous, `Esc` clears and closes.
+
 - Search options: `normalizeSymbol` (available on `SearchComponent` only), `iterateSize`, `maxDepth`, `fullSearch`, and `maxResult` (defaults mirror `ObjectViewHandle.search`). Memoize `options` (e.g., via `useMemo`) so the handlers stay stable.
 - The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex.
 
