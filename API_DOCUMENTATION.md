@@ -374,6 +374,62 @@ const searchOptions = useMemo(
 - Search options: `normalizeSymbol` (available on `SearchComponent` only), `iterateSize`, `maxDepth`, `fullSearch`, and `maxResult` (defaults mirror `ObjectViewHandle.search`). Memoize `options` (e.g., via `useMemo`) so the handlers stay stable.
 - The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex.
 
+### Rolling your own search bar
+
+You can skip `SearchComponent` and wire a bespoke search UI straight to the handle:
+
+```tsx
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ObjectView, ObjectViewHandle } from "react-obj-view";
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+
+export function CustomSearchViewer({ data }: { data: unknown }) {
+  const ref = useRef<ObjectViewHandle | null>(null);
+  const [term, setTerm] = useState("");
+
+  const tokens = useMemo(
+    () => term.toLowerCase().trim().split(/\s+/).filter(Boolean),
+    [term]
+  );
+
+  const filterFn = useMemo(() => {
+    if (!tokens.length) return undefined;
+    return (value: unknown, key: PropertyKey) => {
+      const haystack = `${String(key)} ${String(value)}`.toLowerCase();
+      return tokens.every((t) => haystack.includes(t));
+    };
+  }, [tokens]);
+
+  const markTerm = useMemo(
+    () => (tokens.length ? new RegExp(tokens.map(escapeRegex).join("|"), "gi") : undefined),
+    [tokens]
+  );
+
+  const runSearch = useCallback(async () => {
+    await ref.current?.search(filterFn, markTerm, () => {}, {
+      maxResult: 5000,
+      maxDepth: 12,
+    });
+  }, [filterFn, markTerm]);
+
+  return (
+    <>
+      <input
+        value={term}
+        onChange={(e) => setTerm(e.target.value)}
+        placeholder="Search keys/values"
+      />
+      <button onClick={runSearch}>Search</button>
+      <ObjectView valueGetter={() => data} ref={ref} />
+    </>
+  );
+}
+```
+
+- Provide your own `filterFn` and `markTerm` (string or regex). Results stream through `onResult`; capture them if you want a side list of matches.
+- Call `scrollToPaths(paths, scrollOpts)` when the user clicks a result row to jump there.
+
 ## Behaviour Notes
 
 - **Expansion state** – `useReactTree` keeps expansion toggles inside the walker state keyed by each node path. Clicking a caret invokes `toggleChildExpand`, which mutates the cached node and triggers a re-render.
