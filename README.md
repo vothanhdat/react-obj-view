@@ -301,7 +301,7 @@ const [searchActive, setSearchActive] = useState(false);
 />;
 ```
 
-- Keyboard shortcuts: press **Ctrl/Cmd + F** in the viewer to open the search bar, **Enter** to jump to the next match (Shift+Enter for previous), and **Escape** to clear/close.
+- Keyboard shortcuts: press **Enter** to jump to the next match (Shift+Enter for previous), and **Escape** to clear/close.
 - Results stream via `requestIdleCallback` and update highlights with the `markTerm` regex. Stop typing to debounce; `maxResult`, `maxDepth`, `fullSearch`, and `iterateSize` control scope and responsiveness.
 
 Search options supported by `ObjectViewHandle.search` and the built-in `SearchComponent`:
