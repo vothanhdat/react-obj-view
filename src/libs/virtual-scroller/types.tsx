@@ -14,6 +14,6 @@ export type VirtualScrollerRenderProps<T> = {
     offset: number;
 } & T;
 
-export type VirtualScrollerRef = {
-    scrollTo: (options: ScrollToOptions) => void
+export type VirtualScrollerHandler = {
+    scrollTo: (options: ScrollToOptions, offsetTop?: number, offsetBottom?: number) => void
 }

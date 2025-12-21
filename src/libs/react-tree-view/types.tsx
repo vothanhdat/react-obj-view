@@ -1,7 +1,7 @@
-import React from "react";
+import React, { RefObject } from "react";
 import type { useReactTree } from "./useReactTree";
 import type { WalkingAdaperBase, InferWalkingInstance, InferWalkingType } from "../tree-core";
-import type { VirtualScrollerRenderProps } from "../virtual-scroller/types";
+import type { VirtualScrollerHandler, VirtualScrollerRenderProps } from "../virtual-scroller/types";
 import type { MetaParserBase, FlattenNodeData } from "./FlattenNodeWrapper";
 
 
@@ -46,7 +46,7 @@ export type ReactTreeViewProps<
     rowDivProps?: React.HTMLAttributes<HTMLDivElement>;
     stickyPathHeaders?: boolean,
     showLineNumbers?: boolean,
-    ref: any,
+    ref:  RefObject<VirtualScrollerHandler>,
 };
 
 export type ReactTreeViewVitualRenderProps<

@@ -169,7 +169,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                 },
                 async scrollToPaths(
                     paths: InferWalkingType<ObjectWalkingAdater>['Key'][],
-                    options?: ScrollToOptions
+                    options?: ScrollToOptions,
+                    ...args
                 ) {
 
                     // console.log(paths)
@@ -186,7 +187,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                                 top: pathIndex * lineHeight,
                                 behavior: "instant",
                                 ...options,
-                            } as ScrollToOptions
+                            } as ScrollToOptions,
+                            ...args
                         )
                     }
                 }

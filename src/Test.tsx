@@ -752,7 +752,7 @@ export const Test = () => {
               options={searchOptions}
               onClose={() => setSearchActive(false)}
               handleSearch={async (...args) => objViewRef?.current?.search(...args)}
-              scrollToPaths={async (...args) => objViewRef?.current?.scrollToPaths(...args)}
+              scrollToPaths={async (paths, options) => objViewRef?.current?.scrollToPaths(paths, options, 100 + paths.length * 14, 50)}
               ref={searchRef}
             />
 

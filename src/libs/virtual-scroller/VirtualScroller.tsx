@@ -1,11 +1,11 @@
 
 import React, { ReactNode, useEffect, useRef, useState } from "react"
 import { getScrollContainer } from "./getScrollContainer"
-import type { VirtualScrollerProps, VirtualScrollerRef } from "./types"
+import type { VirtualScrollerProps, VirtualScrollerHandler } from "./types"
 
 
 export const VirtualScroller = <T,>(
-    { height, Component = React.Fragment as any, ref, ...props }: VirtualScrollerProps<T> & { ref?: React.Ref<VirtualScrollerRef> }
+    { height, Component = React.Fragment as any, ref, ...props }: VirtualScrollerProps<T> & { ref?: React.Ref<VirtualScrollerHandler> }
 ) => {
 
     const innerRef = useRef<HTMLDivElement>(null)
@@ -13,7 +13,7 @@ export const VirtualScroller = <T,>(
     const [{ start, end, offset }, setState] = useState({ start: 0, end: 0, offset: 0 })
 
     React.useImperativeHandle(ref, () => ({
-        scrollTo: (options: ScrollToOptions, offset = 100) => {
+        scrollTo: (options: ScrollToOptions, offsetTop = 200, offsetBottom = 100) => {
             if (!innerRef.current) {
                 return
             }
@@ -31,8 +31,8 @@ export const VirtualScroller = <T,>(
 
             // If window scroll
             if (isDocumentScroll) {
-                const scrollToMax = window.scrollY + nodeRect.top + top - offset
-                const scrollToMin = window.scrollY + nodeRect.top + top - window.innerHeight + offset
+                const scrollToMax = window.scrollY + nodeRect.top + top - offsetTop
+                const scrollToMin = window.scrollY + nodeRect.top + top - window.innerHeight + offsetBottom
                 if (window.scrollY < scrollToMin) {
                     window.scrollTo({
                         ...options,
@@ -56,8 +56,8 @@ export const VirtualScroller = <T,>(
                 // We can use the difference in getBoundingClientRect().top + parent.scrollTop
 
                 const parentRect = parent.getBoundingClientRect()
-                const scrollToMax = nodeRect.top - parentRect.top + parent.scrollTop + top - offset
-                const scrollToMin = nodeRect.top - parentRect.top + parent.scrollTop + top - parentRect.height + offset
+                const scrollToMax = nodeRect.top - parentRect.top + parent.scrollTop + top - offsetTop
+                const scrollToMin = nodeRect.top - parentRect.top + parent.scrollTop + top - parentRect.height + offsetBottom
 
                 if (parent.scrollTop < scrollToMin) {
                     parent.scrollTo({
