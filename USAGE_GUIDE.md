@@ -349,13 +349,15 @@ const ref = useRef<ObjectViewHandle | null>(null);
       maxDepth: 10,
     })
   }
-  scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
+  scrollToPaths={(paths, scrollOpts) =>
+    ref.current?.scrollToPaths(paths, scrollOpts, 200, 120)
+  }
   options={{ normalizeSymbol: (c) => c.normalize('NFD').replace(/\p{M}/gu, '') }}
 />;
 ```
 
 - Typing builds a tokenised filter; matches stream back in batches via `requestIdleCallback` so the UI stays responsive.
-- Tune `maxResult`, `maxDepth`, `iterateSize`, or `fullSearch` to cap work for large payloads.
+- Tune `maxResult`, `maxDepth`, `iterateSize`, or `fullSearch` to cap work for large payloads; pass `offsetTop` / `offsetBottom` to `scrollToPaths` when sticky UI could obscure the target row.
 
 ## Styling Tips
 

@@ -329,14 +329,19 @@ export interface ObjectViewHandle {
       maxResult?: number;
     }
   ) => Promise<void>;
-  scrollToPaths: (paths: PropertyKey[], options?: ScrollToOptions) => Promise<void>;
+  scrollToPaths: (
+    paths: PropertyKey[],
+    options?: ScrollToOptions,
+    offsetTop?: number,
+    offsetBottom?: number,
+  ) => Promise<void>;
 }
 ```
 
 - `filterFn` decides whether a node matches. Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
 - `markTerm` is a string or regex used to highlight matches via the built-in highlighter.
 - Options: `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker settings; `maxResult` caps how many matches are emitted (default `99_999`).
-- `scrollToPaths` expands ancestors and scrolls the virtual list to a single requested path; forwards native `ScrollToOptions` to the scroller.
+- `scrollToPaths` expands ancestors and scrolls the virtual list to a single requested path; forwards native `ScrollToOptions` and accepts optional `offsetTop` / `offsetBottom` padding (defaults: `200` / `100`) so sticky headers or surrounding UI don't cover the target row.
 
 ### Built-in floating search UI
 
@@ -370,7 +375,9 @@ function DebugPanel({data}) {
       handleSearch={(filterFn, markTerm, onResult, opts) =>
         ref.current?.search(filterFn, markTerm, onResult, opts)
       }
-      scrollToPaths={(paths, scrollOpts) => ref.current?.scrollToPaths(paths, scrollOpts)}
+      scrollToPaths={(paths, scrollOpts) =>
+        ref.current?.scrollToPaths(paths, scrollOpts, 200, 120)
+      }
       options={searchOptions}
     />
   <div/>
@@ -437,7 +444,7 @@ export function CustomSearchViewer({ data }: { data: unknown }) {
 ```
 
 - Provide your own `filterFn` and `markTerm` (string or regex). Results stream through `onResult`; capture them if you want a side list of matches.
-- Call `scrollToPaths(paths, scrollOpts)` when the user clicks a result row to jump there.
+- Call `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` when the user clicks a result row to jump there and add viewport padding if needed.
 
 ## Behaviour Notes
 

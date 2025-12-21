@@ -52,12 +52,17 @@ export type ObjectViewRef = {
     onResult: (paths: Key[][]) => void,
     options?: { fullSearch?: boolean; maxDepth?: number; iterateSize?: number; maxResult?: number }
   ) => Promise<void>;
-  scrollToPaths: (paths: Key[], options?: ScrollToOptions) => Promise<void>;
+  scrollToPaths: (
+    paths: Key[],
+    options?: ScrollToOptions,
+    offsetTop?: number,
+    offsetBottom?: number,
+  ) => Promise<void>;
 };
 ```
 
 - **`search`**: Streams batches to `onResult` between `requestIdleCallback` frames so long searches stay responsive. `filterFn` decides matches; `markTerm` powers the highlighter.
-- **`scrollToPaths`**: Auto-expands necessary parents and scrolls the virtual list to the target node (respects native `ScrollToOptions`).
+- **`scrollToPaths`**: Auto-expands necessary parents and scrolls the virtual list to the target node (respects native `ScrollToOptions`) and accepts optional `offsetTop` / `offsetBottom` padding (defaults: `200` / `100`).
 
 ## 5. Search Styling & Custom UI
 
