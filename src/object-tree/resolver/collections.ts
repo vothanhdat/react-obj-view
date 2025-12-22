@@ -1,7 +1,7 @@
 import { hidePrototype } from "../getEntries";
 import { ResolverFn } from "../types";
 import { weakMapCache } from "./_shared";
-import { ENUMERABLE_BIT } from "../meta" with {type: "macro"};
+import { ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from "../meta" with {type: "macro"};
 
 
 const MapIterater = Object.getPrototypeOf(new Map().entries());
@@ -71,14 +71,14 @@ export const iteraterResolver: ResolverFn<CustomIterator> = (
             if (cb(
                 index++,
                 CustomEntry.getEntry(e, key, value),
-                _isPreview ? ENUMERABLE_BIT : 0
+                ENUMERABLE_BUT_COLLAPSE
             )) return;
         }
     } else {
         let index = 0;
 
         for (let entry of iterator) {
-            if (cb(index++, entry, _isPreview ? ENUMERABLE_BIT : 0))
+            if (cb(index++, entry, ENUMERABLE_BUT_COLLAPSE))
                 return;
         }
     }
