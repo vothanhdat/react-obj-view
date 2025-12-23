@@ -12,6 +12,8 @@ import {
     GROUP_OBJECT_RESOLVER,
     TYPED_ARRAY_RESOLVERS,
     ItemViewBase,
+    LazyValue,
+    InternalPromise,
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
@@ -166,6 +168,8 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                                 && key !== "[[Prototype]]"
                                 && key !== "[[buffer]]"
                                 && key !== "[[data]]"
+                                && !(value instanceof LazyValue)
+                                && !(value instanceof InternalPromise)
                         }
                     )) {
 
