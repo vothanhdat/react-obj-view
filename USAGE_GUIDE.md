@@ -505,6 +505,40 @@ const fileTreeFactory = () => walkingFactory(fileAdapter);
 
 See [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) for a complete example including React integration.
 
+## Programmatic Search
+
+You can control the search functionality programmatically using a ref. This allows you to build custom search UIs or integrate with existing ones.
+
+```tsx
+import { ObjectView, ObjectViewHandle } from 'react-obj-view';
+
+const MyComponent = () => {
+  const objViewRef = useRef<ObjectViewHandle>(null);
+
+  const handleSearch = () => {
+    // Search for values containing "error"
+    objViewRef.current?.search(
+      (value) => String(value).includes("error"),
+      "error", // Term to highlight
+      (results) => console.log("Found matches at:", results)
+    );
+  };
+
+  const clearSearch = () => {
+    // Clear search by calling with no arguments
+    objViewRef.current?.search();
+  };
+
+  return (
+    <>
+      <button onClick={handleSearch}>Find Errors</button>
+      <button onClick={clearSearch}>Clear</button>
+      <ObjectView ref={objViewRef} valueGetter={...} />
+    </>
+  );
+};
+```
+
 ## Troubleshooting
 
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.
