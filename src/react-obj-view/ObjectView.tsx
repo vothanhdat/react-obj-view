@@ -11,15 +11,14 @@ import {
     GROUP_ARRAY_RESOLVER,
     GROUP_OBJECT_RESOLVER,
     TYPED_ARRAY_RESOLVERS,
-    CustomIterator,
-    InternalPromise,
-    CustomEntry,
+    ItemViewBase,
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
 import "./components/style.css"
 import { useHoverInteractions } from "./hooks/useHoverInteractions";
 import { HightlightWrapper } from "./hooks/useHighlight";
+import { NON_CIRCULAR_BIT } from "../object-tree/meta" with {type: "macro"};;
 
 
 
@@ -139,6 +138,10 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                     setSearch({ markTerm, filterFn });
 
+                    containerRef.current?.style.setProperty(
+                        "--mark-index", String(-1)
+                    )
+
                     if (!filterFn) { return; }
 
                     let searchResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
@@ -156,15 +159,14 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                         options?.iterateSize,
                         options?.maxDepth,
                         options?.fullSearch,
-                        (value, key, meta, ctx) => typeof value === 'object'
-                            && (
-                                value instanceof CustomIterator ||
-                                value instanceof InternalPromise ||
-                                value instanceof CustomEntry || 
-                                value instanceof Error || 
-                                value instanceof Map || 
-                                value instanceof Set
-                            )
+                        (value, key, meta, ctx) => {
+                            // console.log(value);
+                            return typeof value === 'object'
+                                && (meta & NON_CIRCULAR_BIT) === NON_CIRCULAR_BIT
+                                && key !== "[[Prototype]]"
+                                && key !== "[[buffer]]"
+                                && key !== "[[data]]"
+                        }
                     )) {
 
                         onResult(searchResults);
