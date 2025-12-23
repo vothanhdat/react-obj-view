@@ -145,6 +145,69 @@ describe('ObjectView Search Integration', () => {
         expect(results.some(path => path.join('.') === 'name')).toBe(true);
     });
 
+    it('should allow clearing search without arguments', async () => {
+        const ref = createRef<ObjectViewHandle>();
+        render(<ObjectView valueGetter={() => simpleData} ref={ref} />);
+
+        await act(async () => {
+            vi.runAllTimers();
+        });
+
+        expect(ref.current).toBeDefined();
+
+        let promise: Promise<void> | undefined;
+        await act(async () => {
+            promise = ref.current?.search();
+        });
+        expect(promise).toBeInstanceOf(Promise);
+
+        await act(async () => {
+            await promise;
+            vi.runAllTimers();
+        });
+    });
+
+    it('should pass undefined search args when the query is empty', async () => {
+        const handleSearch = vi.fn().mockResolvedValue(undefined);
+        const { getByPlaceholderText } = render(
+            <SearchComponent
+                active={true}
+                onClose={vi.fn()}
+                handleSearch={handleSearch}
+                scrollToPaths={vi.fn()}
+            />
+        );
+
+        await act(async () => {
+            vi.runAllTimers();
+        });
+
+        expect(handleSearch).toHaveBeenCalled();
+        let [filterFn, markTerm] = handleSearch.mock.calls.at(-1)!;
+        expect(filterFn).toBeUndefined();
+        expect(markTerm).toBeUndefined();
+
+        const input = getByPlaceholderText('Type to search ...') as HTMLInputElement;
+
+        await act(async () => {
+            fireEvent.change(input, { target: { value: 'value' } });
+            vi.runAllTimers();
+        });
+
+        [filterFn, markTerm] = handleSearch.mock.calls.at(-1)!;
+        expect(typeof filterFn).toBe('function');
+        expect(markTerm).toBeInstanceOf(RegExp);
+
+        await act(async () => {
+            fireEvent.change(input, { target: { value: '' } });
+            vi.runAllTimers();
+        });
+
+        [filterFn, markTerm] = handleSearch.mock.calls.at(-1)!;
+        expect(filterFn).toBeUndefined();
+        expect(markTerm).toBeUndefined();
+    });
+
     it('should clear search term and close on Escape key', async () => {
         const onClose = vi.fn();
         const { getByPlaceholderText } = render(

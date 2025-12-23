@@ -98,7 +98,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
-| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn, markTerm, onResult, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` for jump-to-match navigation. `scrollToPaths` forwards `ScrollToOptions` and lets you add viewport padding to keep sticky headers or toolbars from covering the target (defaults: `offsetTop=200`, `offsetBottom=100`). Keep the ref stable and memoize search options. |
+| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn?, markTerm?, onResult?, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` for jump-to-match navigation. Call `search()` with no arguments to clear highlights/results. `scrollToPaths` forwards `ScrollToOptions` and lets you add viewport padding to keep sticky headers or toolbars from covering the target (defaults: `offsetTop=200`, `offsetBottom=100`). Keep the ref stable and memoize search options. |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `DefaultActions` | Custom component to render row actions (copy, expand, etc.). [See example](./API_DOCUMENTATION.md#custom-action-renders). |
 | `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
 
@@ -304,6 +304,7 @@ const [searchActive, setSearchActive] = useState(false);
 ```
 
 - Keyboard shortcuts: press **Enter** to jump to the next match (Shift+Enter for previous), and **Escape** to clear/close.
+- Programmatic clear: call `objViewRef.current?.search()` with no args to reset highlights and jump markers.
 - Results stream via `requestIdleCallback` and update highlights with the `markTerm` regex. Stop typing to debounce; `maxResult`, `maxDepth`, `fullSearch`, and `iterateSize` control scope and responsiveness.
 
 Search options supported by `ObjectViewHandle.search` and the built-in `SearchComponent`:

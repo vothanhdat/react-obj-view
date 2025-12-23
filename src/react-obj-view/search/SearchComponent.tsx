@@ -74,7 +74,9 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                 .split(" ")
                 .filter(Boolean)
 
-            const filterFn = tokens.length
+            const hasTokens = tokens.length > 0
+
+            const filterFn = hasTokens
                 ? (value: any, key: any, paths: any[]) => {
                     try {
                         let str = String(key)
@@ -116,7 +118,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
 
             return {
                 filterFn,
-                markTerm: buildRegex(tokens)
+                markTerm: hasTokens ? buildRegex(tokens) : undefined
             }
 
         },

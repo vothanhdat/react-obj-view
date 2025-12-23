@@ -60,12 +60,12 @@ export interface SearchOptions extends SearchOptionBase {
 }
 
 export interface ObjectViewHandle {
-    search: (
+    search: ((
         filterFn: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean) | undefined,
         markTerm: string | RegExp | undefined,
         onResult: (results: PropertyKey[][]) => void,
         options?: SearchOptionBase
-    ) => Promise<void>;
+    ) => Promise<void>) | (() => Promise<void>);
     scrollToPaths: (paths: PropertyKey[], options?: ScrollOptions, offsetTop?: number, offsetBottom?: number) => Promise<void>;
 }
 

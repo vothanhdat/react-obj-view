@@ -341,6 +341,7 @@ export interface ObjectViewHandle {
 - `filterFn` decides whether a node matches. Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
 - `markTerm` is a string or regex used to highlight matches via the built-in highlighter.
 - Options: `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker settings; `maxResult` caps how many matches are emitted (default `99_999`).
+- Call `ref.current?.search()` with no arguments to clear highlights/results without wiring an `onResult` callback.
 - `scrollToPaths` expands ancestors and scrolls the virtual list to a single requested path; forwards native `ScrollToOptions` and accepts optional `offsetTop` / `offsetBottom` padding (defaults: `200` / `100`) so sticky headers or surrounding UI don't cover the target row.
 
 ### Built-in floating search UI
@@ -423,7 +424,7 @@ export function CustomSearchViewer({ data }: { data: unknown }) {
   );
 
   const runSearch = useCallback(async () => {
-    await ref.current?.search(filterFn, markTerm, () => {}, {
+    await ref.current?.search(filterFn, markTerm, undefined, {
       maxResult: 5000,
       maxDepth: 12,
     });
