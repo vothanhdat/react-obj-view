@@ -134,11 +134,15 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             let currentFilterFn = undefined
 
             return {
-                async search(filterFn, markTerm, onResult, options = ({} as never)) {
+                async search(filterFn, markTerm, onResult = () => { }, options = ({} as never)) {
 
                     currentFilterFn = filterFn;
 
-                    setSearch({ markTerm, filterFn });
+                    const nextSearch = filterFn
+                        ? { markTerm, filterFn }
+                        : { markTerm: undefined, filterFn: undefined }
+
+                    setSearch(nextSearch);
 
                     containerRef.current?.style.setProperty(
                         "--mark-index", String(-1)
