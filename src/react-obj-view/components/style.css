@@ -45,10 +45,11 @@
                     1));
 
         --mark-color: color-mix(in srgb, rgb(255, 128, 0) var(--compare-mark), rgb(255, 234, 0));
+        --row-bg-mark: color-mix(in srgb, rgba(255, 128, 0, 0.1) var(--compare-mark), transparent);
 
-
+        background-color: var(--row-bg-mark);
         &:hover {
-            background-color: color-mix(in srgb, var(--bigobjview-color) 3%, transparent);
+            background-color: color-mix(in srgb, var(--bigobjview-color) 3%, var(--row-bg-mark));
         }
     }
 
