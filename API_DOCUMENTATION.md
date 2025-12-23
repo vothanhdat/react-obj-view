@@ -338,7 +338,7 @@ export interface ObjectViewHandle {
 }
 ```
 
-- `filterFn` decides whether a node matches. Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
+- `filterFn` decides whether a node matches. **Note that `ObjectView` does not store search results internally (only `markTerm` and `filterFn` are stored for highlighting). You must use `onResult` to capture and store the matching paths if you need to display a list of results.** Results stream in batches and are yielded to `onResult` between `requestIdleCallback` frames so large searches stay responsive.
 - `markTerm` is a string or regex used to highlight matches via the built-in highlighter.
 - Options: `iterateSize`, `maxDepth`, and `fullSearch` mirror the walker settings; `maxResult` caps how many matches are emitted (default `99_999`).
 - Call `ref.current?.search()` with no arguments to clear highlights/results without wiring an `onResult` callback.
@@ -424,7 +424,10 @@ export function CustomSearchViewer({ data }: { data: unknown }) {
   );
 
   const runSearch = useCallback(async () => {
-    await ref.current?.search(filterFn, markTerm, undefined, {
+    await ref.current?.search(filterFn, markTerm, (results) => {
+      // Capture results here (e.g. update state to show a list)
+      console.log("Found:", results);
+    }, {
       maxResult: 5000,
       maxDepth: 12,
     });
@@ -444,7 +447,7 @@ export function CustomSearchViewer({ data }: { data: unknown }) {
 }
 ```
 
-- Provide your own `filterFn` and `markTerm` (string or regex). Results stream through `onResult`; capture them if you want a side list of matches.
+- Provide your own `filterFn` and `markTerm` (string or regex). Results stream through `onResult`; **you must capture them if you want a side list of matches, as the component does not store them.**
 - Call `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` when the user clicks a result row to jump there and add viewport padding if needed.
 
 ## Behaviour Notes
