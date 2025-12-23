@@ -108,9 +108,9 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
         );
 
         cb("size", map.size, 0);
+        next(map);
     }
 
-    next(map);
 
 };
 
@@ -133,7 +133,7 @@ export const setResolver: ResolverFn<Set<any>> = (
         );
 
         cb("size", set.size, 0);
+        next(set);
     }
-    next(set);
 };
 

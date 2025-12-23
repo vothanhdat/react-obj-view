@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mapResolver, setResolver, iteraterResolver, CustomIterator, CustomEntry } from './collections'
-import { ENUMERABLE_BIT } from '../meta'
+import { ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from '../meta'
 
 describe('collections resolvers', () => {
   describe('CustomIterator', () => {
@@ -83,7 +83,8 @@ describe('collections resolvers', () => {
       mapResolver(map, cb, next, true, {} as any, map)
       
       expect(cb).toHaveBeenCalledTimes(3)
-      expect(next).toHaveBeenCalledWith(map)
+      // preview should not walk children; no next() calls
+      expect(next).not.toHaveBeenCalled()
       
       // Check that CustomEntry instances were created
       const firstCall = cb.mock.calls[0]
@@ -120,7 +121,8 @@ describe('collections resolvers', () => {
       expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT)
       expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BIT)
       expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BIT)
-      expect(next).toHaveBeenCalledWith(set)
+      // preview should not walk children; no next() calls
+      expect(next).not.toHaveBeenCalled()
     })
 
     it('should resolve set in normal mode', () => {
@@ -153,7 +155,8 @@ describe('collections resolvers', () => {
       const firstCall = cb.mock.calls[0]
       expect(firstCall[0]).toBe(0)
       expect(firstCall[1]).toBeInstanceOf(CustomEntry)
-      expect(firstCall[2]).toBe(0)
+      // iterator entries collapse by default in meta
+      expect(firstCall[2]).toBe(ENUMERABLE_BUT_COLLAPSE)
     })
 
     it('should iterate over Set entries', () => {
@@ -166,9 +169,10 @@ describe('collections resolvers', () => {
       iteraterResolver(iterator, cb, next, false, {} as any, iterator)
       
       expect(cb).toHaveBeenCalledTimes(3)
-      expect(cb).toHaveBeenCalledWith(0, 1, 0)
-      expect(cb).toHaveBeenCalledWith(1, 2, 0)
-      expect(cb).toHaveBeenCalledWith(2, 3, 0)
+      // iterator entries collapse by default in meta
+      expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BUT_COLLAPSE)
+      expect(cb).toHaveBeenCalledWith(1, 2, ENUMERABLE_BUT_COLLAPSE)
+      expect(cb).toHaveBeenCalledWith(2, 3, ENUMERABLE_BUT_COLLAPSE)
     })
 
     it('should stop iteration when cb returns true', () => {
