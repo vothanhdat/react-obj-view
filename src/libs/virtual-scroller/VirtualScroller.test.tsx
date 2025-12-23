@@ -113,7 +113,8 @@ describe('VirtualScroller', () => {
         act(() => {
             ref.current.scrollTo({ top: 450 });
         });
-        expect(mockParent.scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ top: 350 }));
+        // top gets clamped using default offsetTop=200, so 450 -> 250
+        expect(mockParent.scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ top: 250 }));
 
         // In range after previous move: should no-op
         const callCount = (mockParent.scrollTo as any).mock.calls.length;
