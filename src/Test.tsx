@@ -701,6 +701,10 @@ export const Test = () => {
             <div className="viewer-title">
               <h2>{currentLabel}</h2>
               <p>Experiment with nested data, high volume datasets, and resolver previews in one place.</p>
+              <p>
+                Press <kbd>Cmd/Ctrl</kbd> + <kbd>F</kbd> to search.
+                Use <kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd> to navigate results, <kbd>Esc</kbd> to close.
+              </p>
             </div>
             <div className="viewer-flags">
               {viewerFlags.map((flag) => (
@@ -751,7 +755,7 @@ export const Test = () => {
               active={searchActive}
               options={searchOptions}
               onClose={() => setSearchActive(false)}
-              handleSearch={async (...args) => objViewRef?.current?.search(...args)}
+              handleSearch={async (...args: any[]) => objViewRef?.current?.search(...args)}
               scrollToPaths={async (paths, options) => objViewRef?.current?.scrollToPaths(paths, options, 100 + paths.length * 14, 50)}
               ref={searchRef}
             />
