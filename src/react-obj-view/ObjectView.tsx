@@ -11,6 +11,9 @@ import {
     GROUP_ARRAY_RESOLVER,
     GROUP_OBJECT_RESOLVER,
     TYPED_ARRAY_RESOLVERS,
+    CustomIterator,
+    InternalPromise,
+    CustomEntry,
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
@@ -153,6 +156,15 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                         options?.iterateSize,
                         options?.maxDepth,
                         options?.fullSearch,
+                        (value, key, meta, ctx) => typeof value === 'object'
+                            && (
+                                value instanceof CustomIterator ||
+                                value instanceof InternalPromise ||
+                                value instanceof CustomEntry || 
+                                value instanceof Error || 
+                                value instanceof Map || 
+                                value instanceof Set
+                            )
                     )) {
 
                         onResult(searchResults);
