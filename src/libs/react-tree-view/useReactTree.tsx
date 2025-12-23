@@ -203,10 +203,13 @@ export const useReactTree = <
         (
             cb: (value: InferWalkingType<T>['Value'], key: InferWalkingType<T>['Key'], paths: InferWalkingType<T>['Key'][],) => boolean | void,
             iterateSize?: number, maxDepth?: number, fullSearch?: boolean,
+            fullSearchShouldIterate?: (
+                value: InferWalkingType<T>['Value'], key: InferWalkingType<T>['Key'], meta: InferWalkingType<T>['Meta'], ctx: InferWalkingType<T>['Context']
+            ) => boolean
         ) => ref.current.instance.traversalAndFindPaths(
             cb,
             config,
-            iterateSize, maxDepth, fullSearch,
+            iterateSize, maxDepth, fullSearch, fullSearchShouldIterate
         ),
         [config, ref]
     )

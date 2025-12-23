@@ -489,7 +489,11 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
     const traversalAndFindPathsInternal = function* (
         callback: (value: Value, key: Key, path: Key[]) => boolean | void,
         { state, getChildOnly }: StateReadonyWrap<WalkingResult<Value, Key, Meta>, Key>,
-        findContext: { maxIterate: number, iterateLeft: number, currentDepth: number, maxDepth: number, paths: Key[], ctx: Context, fullSearch: boolean }
+        findContext: {
+            maxIterate: number, iterateLeft: number, currentDepth: number, maxDepth: number,
+            paths: Key[], ctx: Context, fullSearch: boolean,
+            fullsearchShouldIterate?: (value: Value, key: Key, meta: Meta, ctx: Context) => boolean
+        }
     ) {
 
         // console.log(findContext.paths);
@@ -562,7 +566,10 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         } else if (
             findContext.fullSearch
             && !state.expanded
-            && (!adapter.valueDefaultExpaned || adapter.valueDefaultExpaned(state.meta!, findContext.ctx))
+            && (
+                (!adapter.valueDefaultExpaned || adapter.valueDefaultExpaned(state.meta!, findContext.ctx))
+                || (findContext.fullsearchShouldIterate?.(state.value!, state.key!, state.meta!, findContext.ctx))
+            )
             && adapter.valueHasChild(state.value!, state.meta!, findContext.ctx)
         ) {
 
@@ -619,6 +626,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         iterateSize = 100000,
         maxDepth = 10,
         fullSearch = false,
+        fullsearchShouldIterate?: (value: Value, key: Key, meta: Meta, ctx: Context) => Boolean
     ) {
 
         const findContext = {
@@ -627,6 +635,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
             paths: [],
             ctx: getContextDefault(walkingConfig, maxDepth),
             fullSearch,
+            fullsearchShouldIterate,
         }
 
         for (let _ of traversalAndFindPathsInternal(callback, stateRead, findContext)) {
