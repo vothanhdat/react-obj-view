@@ -95,7 +95,7 @@ export type ObjectViewProps = {
 | `objectGroupSize` | `0` | When greater than `1`, adds an object grouping resolver that batches enumerable keys into ranges. **Objects don’t expose their “length”, so the walker must enumerate every key to know whether grouping applies—keep this disabled unless you’re comfortable paying that enumeration cost.** |
 | `arrayGroupSize` | `0` | When greater than `1`, adds an array grouping resolver that presents ranges like `[0…49]`. |
 | `resolver` | `undefined` | Custom resolver map merged on top of the built-in resolver map. Keys are constructors; values are `ResolverFn`s. |
-| `highlightUpdate` | `false` | Enables flash-highlighting when a node's value changes. |
+| `highlightUpdate` | `true` | Enables flash-highlighting when a node's value changes; set to `false` to disable. |
 | `stickyPathHeaders` | `true` | Keeps the current ancestor row pinned to the top of the viewport while its children scroll; set to `false` for legacy, non-sticky behaviour. |
 | `preview` | `true` | Shows inline previews (e.g. `Array(10)` or string snippets) for collapsed nodes. |
 | `nonEnumerable` | `false` | Includes non-enumerable properties when traversing objects. |
@@ -504,7 +504,7 @@ Type helpers for extracting walker output types from adapter definitions:
 
 - Ensure `valueGetter` stays stable across renders; changing the function identity forces a full traversal.
 - When grouping is enabled, use the arrow next to a range (e.g. `items[0…49]`) to expand the proxied subset.
-- If change highlighting seems absent, set `highlightUpdate={true}` explicitly.
+- Change highlighting is enabled by default; set `highlightUpdate={false}` to turn it off.
 - Toggle `nonEnumerable` (and `includeSymbols`) to inspect getters, symbols, and prototype members.
 
 ## Related Documentation

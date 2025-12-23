@@ -508,7 +508,7 @@ See [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md) for a complete example inc
 ## Troubleshooting
 
 - **Getter identity changes every render**: Wrap with `useMemo`/`useCallback` using the underlying value as a dependency.
-- **No highlight effect**: Pass `highlightUpdate` explicitly (`false` by default).
+- **Disable highlight effect**: Set `highlightUpdate={false}` (highlighting is on by default).
 - **Large data feels slow**: Enable grouping for arrays/objects and keep getters memoised.
 - **Need to inspect prototypes**: Toggle `nonEnumerable` and `includeSymbols` to include inherited and symbol keys.
 

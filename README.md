@@ -89,7 +89,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `objectGroupSize` | `number` | `0` | Enable grouping for objects when they exceed this many keys. Groups are collapsed by default for performance. **Objects must be fully enumerated to detect size, so only enable this when you need grouped previews and can afford the enumeration cost.** |
 | `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. Groups are collapsed by default for performance. |
 | `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. |
-| `highlightUpdate` | `boolean` | `false` | Flash updated values via `useChangeFlashClasses`. |
+| `highlightUpdate` | `boolean` | `true` | Flash updated values via `useChangeFlashClasses`; set to `false` to disable. |
 | `stickyPathHeaders` | `boolean` | `true` | Pins the current node's ancestor label while you scroll through its children; disable to revert to free-scrolling rows. |
 | `preview` | `boolean` | `true` | Show inline previews (`Array(5)`, `'abc…'`) on collapsed rows. |
 | `nonEnumerable` | `boolean` | `false` | Include non-enumerable properties during traversal. |
