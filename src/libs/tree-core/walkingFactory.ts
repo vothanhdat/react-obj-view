@@ -21,6 +21,8 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
     iterateChilds(
         value, ctx, state,
         (value, key, meta) => {
+            if(ctx.iterateCounter < 0)
+                return true;
 
             let r = walkingInternal(
                 value,
@@ -75,7 +77,9 @@ const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends Wal
     iterateChilds(
         value, ctx, state,
         (value, key, meta) => {
-
+            if(ctx.iterateCounter < 0)
+                return true;
+            
             if (isInCache && iterateIndex < childKeys.length - 1) {
                 touchChild(key as any);
                 iterateIndex++;
