@@ -120,23 +120,23 @@ export interface CustomAction<T = any> {
     name: string;
     /** 
      * Function to prepare data for the action. 
-     * Return undefined to hide the action for this node.
+     * Return undefined/null/false to hide the action for this node.
      * The returned object will be passed to actionRender/performAction.
      */
-    prepareAction: (data: ObjectViewRenderRowProps['nodeData']) => T | undefined;
+    prepareAction: (data: ObjectViewRenderRowProps['nodeData']) => T | null | false | undefined;
     /**
      * Function to execute when the action is clicked.
      * Can return a promise for async actions.
      */
     performAction: (data: T, nodeData: ObjectViewRenderRowProps['nodeData']) => void | Promise<void>;
-    /** Content to render for the button */
+    /** Content to render for the button. Must be a string or a React Component (not a JSX element). */
     actionRender: string | React.FC<T>;
-    /** Content to render while the action is executing (async) */
+    /** Content to render while the action is executing (async). Must be a string or a React Component. */
     actionRunRender: string | React.FC<T>;
-    /** Content to render after successful execution */
+    /** Content to render after successful execution. Must be a string or a React Component. */
     actionSuccessRender?: string | React.FC<T>;
-    /** Content to render if execution fails */
-    actionErrorRender?: string | React.FC<T>;
+    /** Content to render if execution fails. Must be a string or a React Component. */
+    actionErrorRender?: string | React.FC<T & { error: any }>;
     /** Dependencies for useMemo when preparing action */
     dependency?: (data: ObjectViewRenderRowProps['nodeData']) => any[];
     /** Time in ms to reset the button state after success/error */
@@ -406,13 +406,13 @@ const logAction: CustomAction = {
 | Property | Type | Description |
 |----------|------|-------------|
 | `name` | `string` | Unique identifier for the action. |
-| `prepareAction` | `(nodeData) => T \| undefined` | Called for each row. Return an object (props) to enable the action, or `undefined`/`false` to hide it. |
+| `prepareAction` | `(nodeData) => T \| null \| false \| undefined` | Called for each row. Return an object (props) to enable the action, or `undefined`/`null`/`false` to hide it. |
 | `dependency` | `(nodeData) => any[]` | Optional dependency array for memoizing `prepareAction`. |
 | `performAction` | `(props, nodeData) => Promise<void>` | Async function executed when the action is clicked. |
-| `actionRender` | `React.FC<T> \| ReactNode` | Renders the button content (idle state). |
-| `actionRunRender` | `React.FC<T> \| ReactNode` | Renders while `performAction` is pending. |
-| `actionSuccessRender` | `React.FC<T> \| ReactNode` | Renders after success (defaults to "✓ SUCCESS"). |
-| `actionErrorRender` | `React.FC<T> \| ReactNode` | Renders after error (defaults to "❗ ERROR"). |
+| `actionRender` | `string \| React.FC<T>` | Renders the button content (idle state). |
+| `actionRunRender` | `string \| React.FC<T>` | Renders while `performAction` is pending. |
+| `actionSuccessRender` | `string \| React.FC<T>` | Renders after success (defaults to "✓ SUCCESS"). |
+| `actionErrorRender` | `string \| React.FC<T & { error: any }>` | Renders after error (defaults to "❗ ERROR"). |
 | `resetTimeout` | `number` | Time in ms before resetting to idle state (default 5000). |
 
 > **Note:** The `actionRenders` prop is deprecated in favor of `customActions`.
