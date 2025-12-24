@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { RenderName } from "./RenderName";
 import { RenderValue } from "./RenderValue";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
@@ -50,13 +50,27 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
         [_options, isSearchMatch]
     )
 
+    const actionActiveTimeoutRef = useRef<any>(undefined)
+    const [actionActive, setActionActive] = useState(false)
+
     const onMouseEnter = useCallback(
-        () => options.onMouseEnter(renderIndex),
+        () => {
+            options.onMouseEnter(renderIndex)
+            clearTimeout(actionActiveTimeoutRef.current);
+            actionActiveTimeoutRef.current = setTimeout(() => setActionActive(true), 40)
+            console.log("Enter", renderIndex)
+        },
         [options.onMouseEnter, renderIndex]
     )
 
     const onMouseLeave = useCallback(
-        () => options.onMouseLeave(renderIndex),
+        () => {
+            options.onMouseLeave(renderIndex)
+            clearTimeout(actionActiveTimeoutRef.current);
+            setActionActive(false);
+            console.log("Leave", renderIndex)
+
+        },
         [options.onMouseLeave, renderIndex]
     )
 
@@ -111,7 +125,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
                 refreshPath: actions.refreshPath,
             }} />
             <span className="actions">
-                <ActionRenders {...props} />
+                {actionActive && <ActionRenders {...props} />}
             </span>
         </div>
     </>

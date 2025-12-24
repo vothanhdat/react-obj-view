@@ -22,6 +22,7 @@ export {
     type SearchComponentProps,
     type SearchComponentHandler,
     type SearchOptions,
+    type CustomAction,
 } from "./react-obj-view"
 
 

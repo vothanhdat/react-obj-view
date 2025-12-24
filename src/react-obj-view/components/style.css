@@ -245,7 +245,8 @@
     }
 
     .actions {
-        display: none;
+        display: flex;
+        height: 90%;
         user-select: none;
         /* display: flex; */
         align-self: center;
@@ -265,7 +266,6 @@
             font-weight: bold;
             overflow: hidden;
             text-overflow: ellipsis;
-
             &:hover {
                 opacity: 1;
             }
@@ -288,11 +288,6 @@
             background-color: var(--bigobjview-action-success, rgb(0, 139, 0));
             color: oklch(from var(--bigobjview-action-success) clamp(0, 70 - l * 100, 1) 0 0);
         }
-    }
-
-    .row:hover .actions {
-        display: flex;
-        /* flex-shrink: 1; */
     }
 
     .node-default,

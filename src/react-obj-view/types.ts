@@ -1,7 +1,39 @@
 import { RefObject } from "react";
 import type { FlattenNodeData, ReactTreeRowRenderProps } from "../libs/react-tree-view";
-import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser } from "../object-tree";
+import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser, parseWalkingMeta } from "../object-tree";
 import { ThemeColor } from "../react-obj-view-themes";
+import { WalkingMeta } from "../object-tree/types";
+
+
+
+
+export type CustomAction<T = {}> = {
+
+    name: string,
+    /**
+     * 
+     * @param nodeData 
+     * @returns <T> null/false/undefined incase action not available and row will skip render this action
+     */
+    prepareAction(
+        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
+    ): T | null | false | undefined,
+
+    dependency?(
+        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
+    ): any[],
+
+    performAction(
+        preparedAction: T,
+        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>,
+    ): Promise<void>
+
+    actionRender: string | React.FC<T>,
+    actionRunRender: string | React.FC<T>,
+    actionErrorRender?: string | React.FC<T & { error: any }>,
+    actionSuccessRender?: string | React.FC<T>,
+    resetTimeout?: number
+}
 
 
 export type RenderOptions = {
@@ -13,7 +45,12 @@ export type RenderOptions = {
     nonEnumerable: boolean;
     onMouseEnter: (index: number) => void;
     onMouseLeave: (index: number) => void;
+    
+    /**
+     * @deprecated Use `customActions` instead. 
+     */
     actionRenders?: React.FC<ObjectViewRenderRowProps>;
+    customActions?: CustomAction[]
     search?: { markTerm?: string | RegExp, filterFn?: (value: any, key: any, paths: any[]) => boolean };
     enableMark?: boolean;
 };
@@ -43,7 +80,14 @@ export type ObjectViewProps = {
     style?: React.CSSProperties | ThemeColor;
     lineHeight?: number;
     className?: string;
+
+    /**
+     * @deprecated Use `customAction` instead. 
+     */
     actionRenders?: React.FC<ObjectViewRenderRowProps>,
+
+    customActions?: CustomAction[]
+
     iterateSize?: number;
     ref?: RefObject<ObjectViewHandle | undefined>
 };

@@ -17,10 +17,10 @@ import {
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
-import "./components/style.css"
 import { useHoverInteractions } from "./hooks/useHoverInteractions";
 import { HightlightWrapper } from "./hooks/useHighlight";
 import { NON_CIRCULAR_BIT } from "../object-tree/meta" with {type: "macro"};;
+import "./components/style.css"
 
 
 
@@ -41,6 +41,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     includeSymbols = false,
     stickyPathHeaders = true,
     actionRenders,
+    customActions,
     iterateSize,
     ref,
 }) => {
@@ -104,13 +105,14 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             onMouseEnter,
             onMouseLeave,
             actionRenders,
+            customActions,
             nonEnumerable,
             search,
         }) as RenderOptions,
         [
             enablePreview, resolver,
             highlightUpdate, includeSymbols, showLineNumbers,
-            actionRenders, nonEnumerable,
+            actionRenders, nonEnumerable, customActions,
             search,
         ]
     )
