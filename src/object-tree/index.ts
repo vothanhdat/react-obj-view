@@ -3,6 +3,7 @@
 
 export * from "./custom-class"
 export * from "./resolver"
+export * as RESOLVER from "./resolver"
 
 export {
     parseWalkingMeta,

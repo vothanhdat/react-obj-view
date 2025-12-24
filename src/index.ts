@@ -1,6 +1,4 @@
-export {
-    type ResolverFn
-} from "./object-tree"
+
 
 export {
     walkingFactory,
@@ -11,11 +9,14 @@ export {
 export {
     parseWalkingMeta,
     objectTreeWalkingFactory as objectTreeWalking,
+    RESOLVER,
+    type ResolverFn,
 } from "./object-tree"
 
 export {
     ObjectView,
     SearchComponent,
+    DEFAULT_ACTION,
     type ObjectViewProps,
     type ObjectViewHandle,
     type ObjectViewRenderRowProps,
