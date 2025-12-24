@@ -80,7 +80,9 @@ export type ObjectViewProps = {
   style?: React.CSSProperties;
   lineHeight?: number;
   className?: string;
+  /** @deprecated Use customActions instead */
   actionRenders?: React.FC<ObjectViewRenderRowProps>;
+  customActions?: CustomAction[];
   iterateSize?: number;
 };
 ```
@@ -105,7 +107,57 @@ export type ObjectViewProps = {
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 | `lineHeight` | `14` | Height, in pixels, of each rendered row. **Must reflect the real CSS height**—if your theme overrides fonts, padding, or `--bigobjview` variables, update this prop (or the corresponding CSS variable) so virtualization remains accurate. |
 | `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
-| `actionRenders` | `DefaultActions` | Component to render custom actions (like copy, expand/collapse) for each row. Receives `ObjectViewRenderRowProps`. |
+| `customActions` | `DefaultActions` | Array of custom action definitions. See [Custom Actions](#custom-actions) for details. |
+| `actionRenders` | `undefined` | **Deprecated**. Use `customActions` instead. |
+
+## Custom Actions
+
+You can define custom actions (buttons) that appear when hovering over a row.
+
+```ts
+export interface CustomAction<T = any> {
+    /** Unique name for the action */
+    name: string;
+    /** 
+     * Function to prepare data for the action. 
+     * Return undefined to hide the action for this node.
+     * The returned object will be passed to actionRender/performAction.
+     */
+    prepareAction: (data: ObjectViewRenderRowProps['nodeData']) => T | undefined;
+    /**
+     * Function to execute when the action is clicked.
+     * Can return a promise for async actions.
+     */
+    performAction: (data: T, nodeData: ObjectViewRenderRowProps['nodeData']) => void | Promise<void>;
+    /** Content to render for the button */
+    actionRender: React.ReactNode | React.FC<T>;
+    /** Content to render while the action is executing (async) */
+    actionRunRender?: React.ReactNode | React.FC<T>;
+    /** Content to render after successful execution */
+    actionSuccessRender?: React.ReactNode | React.FC<T>;
+    /** Content to render if execution fails */
+    actionErrorRender?: React.ReactNode | React.FC<T>;
+    /** Dependencies for useMemo when preparing action */
+    dependency?: (data: ObjectViewRenderRowProps['nodeData']) => any[];
+    /** Time in ms to reset the button state after success/error */
+    resetTimeout?: number;
+}
+```
+
+### Example
+
+```tsx
+const myActions: CustomAction[] = [
+  {
+    name: "log",
+    prepareAction: (nodeData) => ({ key: nodeData.key }),
+    performAction: ({ key }) => console.log("Clicked:", key),
+    actionRender: "Log Key",
+  }
+];
+
+<ObjectView customActions={myActions} ... />
+```
 
 ## Resolver System
 
@@ -315,30 +367,54 @@ Each row includes action buttons powered by [`DefaultActions`](src/react-obj-vie
 
 The copy functionality uses the browser's Clipboard API and defers execution through `requestIdleCallback` to avoid blocking the main thread.
 
-## Custom Action Renders
+## Custom Actions
 
-You can customize the actions rendered for each row (like the copy button) by providing the `actionRenders` prop. This component receives `ObjectViewRenderRowProps` and can render any custom UI.
+You can add custom actions to each row (appearing alongside the default Copy buttons) using the `customActions` prop. This is the recommended way to extend row interactivity.
 
 ```tsx
-import { ObjectView, type ObjectViewRenderRowProps } from 'react-obj-view';
+import { ObjectView, type CustomAction } from 'react-obj-view';
 
-const MyCustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
-  const { nodeDataWrapper, valueWrapper } = props;
-  const nodeData = nodeDataWrapper();
-  const value = valueWrapper();
-
-  return (
-    <button onClick={() => console.log('Clicked:', nodeData.key, value)}>
-      Log
-    </button>
-  );
+const logAction: CustomAction = {
+  name: 'log',
+  // Decide if this action should appear for the current node
+  prepareAction: (nodeData) => {
+    if (typeof nodeData.value === 'function') {
+      return { label: 'Log Function' }; // Return props for the renderer
+    }
+    return undefined; // Hide action
+  },
+  // Execute the action
+  performAction: async (preparedProps, nodeData) => {
+    console.log('Function:', nodeData.value);
+  },
+  // Render the button content
+  actionRender: ({ label }) => <span>{label}</span>,
+  // Optional: Render loading/success/error states
+  actionRunRender: 'Logging...',
+  actionSuccessRender: 'Logged!',
 };
 
 <ObjectView
   valueGetter={() => myData}
-  actionRenders={MyCustomActions}
+  customActions={[logAction]}
 />
 ```
+
+### `CustomAction` Interface
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Unique identifier for the action. |
+| `prepareAction` | `(nodeData) => T \| undefined` | Called for each row. Return an object (props) to enable the action, or `undefined`/`false` to hide it. |
+| `dependency` | `(nodeData) => any[]` | Optional dependency array for memoizing `prepareAction`. |
+| `performAction` | `(props, nodeData) => Promise<void>` | Async function executed when the action is clicked. |
+| `actionRender` | `React.FC<T> \| ReactNode` | Renders the button content (idle state). |
+| `actionRunRender` | `React.FC<T> \| ReactNode` | Renders while `performAction` is pending. |
+| `actionSuccessRender` | `React.FC<T> \| ReactNode` | Renders after success (defaults to "✓ SUCCESS"). |
+| `actionErrorRender` | `React.FC<T> \| ReactNode` | Renders after error (defaults to "❗ ERROR"). |
+| `resetTimeout` | `number` | Time in ms before resetting to idle state (default 5000). |
+
+> **Note:** The `actionRenders` prop is deprecated in favor of `customActions`.
 
 ## Search API
 

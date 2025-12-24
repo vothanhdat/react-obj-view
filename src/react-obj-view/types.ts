@@ -28,10 +28,10 @@ export type CustomAction<T = {}> = {
         nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>,
     ): Promise<void>
 
-    actionRender: string | React.FC<T>,
-    actionRunRender: string | React.FC<T>,
-    actionErrorRender?: string | React.FC<T & { error: any }>,
-    actionSuccessRender?: string | React.FC<T>,
+    actionRender: React.ReactNode | React.FC<T>,
+    actionRunRender: React.ReactNode | React.FC<T>,
+    actionErrorRender?: React.ReactNode | React.FC<T & { error: any }>,
+    actionSuccessRender?: React.ReactNode | React.FC<T>,
     resetTimeout?: number
 }
 
