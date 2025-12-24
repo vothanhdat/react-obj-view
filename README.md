@@ -235,16 +235,16 @@ const resolver = new Map([
 Each row includes built-in action buttons:
 
 ```tsx
-// Primitives get a "Copy" button
+// Primitives get a "Copy Text" button
 const config = { apiKey: "sk-abc123", timeout: 5000 };
 <ObjectView valueGetter={() => config} />
-// Hover over any row to see Copy / Copy JSON buttons
+// Hover over any row to see Copy Text / Copy JSON buttons
 
 // Copy actions show success/error feedback
 // Automatically resets after 5 seconds
 ```
 
-- **Copy** button for strings, numbers, bigints – copies the raw value
+- **Copy Text** button for strings, numbers, bigints – copies the raw value
 - **Copy JSON** button for objects, arrays, dates – serializes via `JSON.stringify()`
 
 #### Custom Actions

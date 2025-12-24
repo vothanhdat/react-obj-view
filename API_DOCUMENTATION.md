@@ -362,7 +362,7 @@ No configuration is needed—hover effects are enabled by default and automatica
 
 Each row includes action buttons powered by [`DefaultActions`](src/react-obj-view/value-renders/Actions.tsx) and the [`useCopy`](src/react-obj-view/hooks/useCopy.tsx) hook:
 
-- **Copy** button – appears for primitives (strings, numbers, bigints) and copies the raw value to clipboard
+- **Copy Text** button – appears for primitives (strings, numbers, bigints) and copies the raw value to clipboard
 - **Copy JSON** button – appears for plain objects, arrays, and dates; serializes the value via `JSON.stringify()` before copying
 - Buttons show loading, success (✓), and error states with automatic reset after 5 seconds
 
@@ -416,6 +416,22 @@ const logAction: CustomAction = {
 | `resetTimeout` | `number` | Time in ms before resetting to idle state (default 5000). |
 
 > **Note:** The `actionRenders` prop is deprecated in favor of `customActions`.
+
+### Extending Default Actions
+
+The `customActions` prop replaces the default actions. To keep the default "Copy" buttons while adding your own, import `DEFAULT_ACTION` and spread it into your array. **Always memoize the array to avoid performance issues.**
+
+```tsx
+import { useMemo } from 'react';
+import { ObjectView, DEFAULT_ACTION } from 'react-obj-view';
+
+const actions = useMemo(() => [...DEFAULT_ACTION, myCustomAction], []);
+
+<ObjectView
+  valueGetter={() => data}
+  customActions={actions}
+/>
+```
 
 ## Search API
 

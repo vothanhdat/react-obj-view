@@ -448,10 +448,10 @@ The implementation uses CSS custom properties (`--active-index` and `--active-pa
 Each row includes built-in action buttons for copying values:
 
 ```tsx
-// Primitives get a "Copy" button
+// Primitives get a "Copy Text" button
 const greeting = "Hello World";
 <ObjectView valueGetter={() => greeting} />
-// Click the Copy button to copy "Hello World"
+// Click the Copy Text button to copy "Hello World"
 
 // Objects get a "Copy JSON" button
 const user = { name: "Ada", roles: ["admin"] };
