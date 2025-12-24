@@ -130,13 +130,13 @@ export interface CustomAction<T = any> {
      */
     performAction: (data: T, nodeData: ObjectViewRenderRowProps['nodeData']) => void | Promise<void>;
     /** Content to render for the button */
-    actionRender: React.ReactNode | React.FC<T>;
+    actionRender: string | React.FC<T>;
     /** Content to render while the action is executing (async) */
-    actionRunRender?: React.ReactNode | React.FC<T>;
+    actionRunRender: string | React.FC<T>;
     /** Content to render after successful execution */
-    actionSuccessRender?: React.ReactNode | React.FC<T>;
+    actionSuccessRender?: string | React.FC<T>;
     /** Content to render if execution fails */
-    actionErrorRender?: React.ReactNode | React.FC<T>;
+    actionErrorRender?: string | React.FC<T>;
     /** Dependencies for useMemo when preparing action */
     dependency?: (data: ObjectViewRenderRowProps['nodeData']) => any[];
     /** Time in ms to reset the button state after success/error */
@@ -153,6 +153,7 @@ const myActions: CustomAction[] = [
     prepareAction: (nodeData) => ({ key: nodeData.key }),
     performAction: ({ key }) => console.log("Clicked:", key),
     actionRender: "Log Key",
+    actionRunRender: "Logging...",
   }
 ];
 

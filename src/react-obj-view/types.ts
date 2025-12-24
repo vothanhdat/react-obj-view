@@ -28,10 +28,10 @@ export type CustomAction<T = {}> = {
         nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>,
     ): Promise<void>
 
-    actionRender: React.ReactNode | React.FC<T>,
-    actionRunRender: React.ReactNode | React.FC<T>,
-    actionErrorRender?: React.ReactNode | React.FC<T & { error: any }>,
-    actionSuccessRender?: React.ReactNode | React.FC<T>,
+    actionRender: string | React.FC<T>,
+    actionRunRender: string | React.FC<T>,
+    actionErrorRender?: string | React.FC<T & { error: any }>,
+    actionSuccessRender?: string | React.FC<T>,
     resetTimeout?: number
 }
 
@@ -86,10 +86,10 @@ export type ObjectViewProps = {
      */
     actionRenders?: React.FC<ObjectViewRenderRowProps>,
 
-    customActions?: CustomAction[]
+    customActions?: CustomAction<any>[]
 
     iterateSize?: number;
-    ref?: RefObject<ObjectViewHandle | undefined>
+    ref?: RefObject<ObjectViewHandle | null>
 };
 
 export interface SearchOptionBase {
@@ -104,12 +104,13 @@ export interface SearchOptions extends SearchOptionBase {
 }
 
 export interface ObjectViewHandle {
-    search: ((
+    search(
         filterFn: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean) | undefined,
         markTerm: string | RegExp | undefined,
         onResult: (results: PropertyKey[][]) => void,
         options?: SearchOptionBase
-    ) => Promise<void>) | (() => Promise<void>);
+    ): Promise<void>;
+    search(): Promise<void>;
     scrollToPaths: (paths: PropertyKey[], options?: ScrollOptions, offsetTop?: number, offsetBottom?: number) => Promise<void>;
 }
 

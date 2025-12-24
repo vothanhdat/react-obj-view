@@ -58,7 +58,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
             options.onMouseEnter(renderIndex)
             clearTimeout(actionActiveTimeoutRef.current);
             actionActiveTimeoutRef.current = setTimeout(() => setActionActive(true), 40)
-            console.log("Enter", renderIndex)
+            // console.log("Enter", renderIndex)
         },
         [options.onMouseEnter, renderIndex]
     )
@@ -68,7 +68,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
             options.onMouseLeave(renderIndex)
             clearTimeout(actionActiveTimeoutRef.current);
             setActionActive(false);
-            console.log("Leave", renderIndex)
+            // console.log("Leave", renderIndex)
 
         },
         [options.onMouseLeave, renderIndex]

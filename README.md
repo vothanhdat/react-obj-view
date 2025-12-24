@@ -258,6 +258,7 @@ const myActions = [
     prepareAction: (nodeData) => ({ key: nodeData.key }),
     performAction: ({ key }) => console.log("Clicked:", key),
     actionRender: "Log Key",
+    actionRunRender: "Logging...",
   }
 ];
 

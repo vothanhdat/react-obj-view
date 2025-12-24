@@ -10,66 +10,34 @@ import {
   themeOneDark,
   themeSepia,
 } from './react-obj-view-themes'
-import { ObjectView, ObjectViewRenderRowProps } from './react-obj-view'
+import { ObjectView, ObjectViewRenderRowProps, CustomAction } from './react-obj-view'
 import { ENUMERABLE_BIT } from './object-tree/meta' with {type: 'marco'}
 import { SearchComponent, SearchComponentHandler, SearchComponentProps } from './react-obj-view/search/SearchComponent'
 import { ObjectViewHandle, SearchOptions } from './react-obj-view/types'
 
 const packageVersion = '1.1.3'
 
-const CustomActions: React.FC<ObjectViewRenderRowProps> = (props) => {
-  const { nodeDataWrapper, valueWrapper, actions } = props
-  const nodeData = nodeDataWrapper()
-  const value = valueWrapper()
-  // Using 'as any' because objectHasChild expects ObjectWalkingContext with circularChecking,
-  // but we only need it for the hasChild check which doesn't require that property
-  const hasChild = objectHasChild(value, nodeData.meta!, { config: { nonEnumerable: false, resolver: false } } as any)
+const customActions: CustomAction<{ key: PropertyKey, value: any }>[] = [
+  {
+    name: 'log',
+    prepareAction: (nodeData) => ({ key: nodeData.key ?? "ROOT", value: nodeData.value }),
+    performAction: async ({ key, value }) => {
+      console.log('Clicked:', key, value)
+      alert(`Clicked: ${String(key)}`)
+    },
+    actionRender: () => <span
+      style={{
+        color: '#4caf50',
+        fontSize: '10px',
+        fontWeight: 'bold'
+      }}
+    >
+      LOG
+    </span>,
+    actionRunRender: () => <span style={{ fontSize: '10px', color: '#888' }}>...</span>
+  }
+];
 
-  return (
-    <div style={{ display: 'flex', gap: '4px', marginLeft: '8px', alignItems: 'center' }}>
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          console.log('Clicked:', nodeData.key, value)
-          alert(`Clicked: ${String(nodeData.key)}`)
-        }}
-        style={{
-          background: '#4caf50',
-          border: 'none',
-          borderRadius: '4px',
-          color: 'white',
-          cursor: 'pointer',
-          fontSize: '10px',
-          padding: '2px 6px',
-          height: '18px',
-          lineHeight: '14px',
-        }}
-      >
-        Log
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          actions.toggleChildExpand()
-        }}
-        disabled={!hasChild}
-        style={{
-          background: hasChild ? '#2196f3' : '#ccc',
-          border: 'none',
-          borderRadius: '4px',
-          color: 'white',
-          cursor: hasChild ? 'pointer' : 'not-allowed',
-          fontSize: '10px',
-          padding: '2px 6px',
-          height: '18px',
-          lineHeight: '14px',
-        }}
-      >
-        {nodeData.expanded ? 'Collapse' : 'Expand'}
-      </button>
-    </div>
-  )
-}
 
 class User {
   constructor(public name: string, public email: string, public role: string = 'user') { }
@@ -431,7 +399,7 @@ export const Test = () => {
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
 
-  const objViewRef = useRef<ObjectViewHandle>(undefined)
+  const objViewRef = useRef<ObjectViewHandle>(null)
   const searchRef = useRef<SearchComponentHandler>(undefined)
 
   const searchOptions = useMemo(
@@ -746,7 +714,7 @@ export const Test = () => {
                 includeSymbols={showSymbols}
                 style={selectedTheme}
                 stickyPathHeaders={stickyHeaders}
-                actionRenders={enableCustomActions ? CustomActions : undefined}
+                customActions={enableCustomActions ? customActions : undefined}
                 ref={objViewRef}
               />
             </div>
@@ -755,7 +723,7 @@ export const Test = () => {
               active={searchActive}
               options={searchOptions}
               onClose={() => setSearchActive(false)}
-              handleSearch={async (...args: any[]) => objViewRef?.current?.search(...args)}
+              handleSearch={async (...args: any[]) => (objViewRef?.current?.search as any)?.(...args)}
               scrollToPaths={async (paths, options) => objViewRef?.current?.scrollToPaths(paths, options, 100 + paths.length * 14, 50)}
               ref={searchRef}
             />
