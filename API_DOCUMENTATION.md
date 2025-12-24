@@ -152,6 +152,34 @@ const resolver = new Map([
 
 Resolvers participate in both preview and expanded phases, so make sure to call `next` to keep default behaviour when you are done injecting custom entries.
 
+#### Using `stableRef` for Memoization
+
+The `stableRef` argument is a persistent object unique to the current node (internally, it is the `WalkingResult` state). Use it to cache expensive computations.
+
+**Best Practice:** Use a `Symbol` or `WeakMap` to store your data to avoid colliding with internal fields of the `WalkingResult` object.
+
+```tsx
+const sortedEntries = Symbol('sortedEntries');
+
+const sortedMapResolver = new Map([
+  [Map, (map, cb, next, isPreview, config, stableRef: any) => {
+    // Delegate preview generation to the default resolver
+    if (isPreview) return next(map);
+
+    // Compute and cache the sorted entries only once
+    if (!stableRef[sortedEntries]) {
+      stableRef[sortedEntries] = Array.from(map.entries())
+        .sort(([keyA], [keyB]) => String(keyA).localeCompare(String(keyB)));
+    }
+
+    // Emit the cached entries
+    stableRef[sortedEntries].forEach(([key, value]) => {
+      cb(key, value, true);
+    });
+  }],
+]);
+```
+
 ## Rendering Pipeline
 
 `ObjectView` composes the new tree stack described in [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md):
