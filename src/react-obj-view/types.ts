@@ -1,39 +1,10 @@
 import { RefObject } from "react";
-import type { FlattenNodeData, ReactTreeRowRenderProps } from "../libs/react-tree-view";
-import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser, parseWalkingMeta } from "../object-tree";
+import type { ReactTreeRowRenderProps } from "../libs/react-tree-view";
+import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser } from "../object-tree";
 import { ThemeColor } from "../react-obj-view-themes";
-import { WalkingMeta } from "../object-tree/types";
+import { CustomAction } from "./actions/types";
 
 
-
-
-export type CustomAction<T = {}> = {
-
-    name: string,
-    /**
-     * 
-     * @param nodeData 
-     * @returns <T> null/false/undefined incase action not available and row will skip render this action
-     */
-    prepareAction(
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
-    ): T | null | false | undefined,
-
-    dependency?(
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
-    ): any[],
-
-    performAction(
-        preparedAction: T,
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>,
-    ): Promise<void>
-
-    actionRender: string | React.FC<T>,
-    actionRunRender: string | React.FC<T>,
-    actionErrorRender?: string | React.FC<T & { error: any }>,
-    actionSuccessRender?: string | React.FC<T>,
-    resetTimeout?: number
-}
 
 
 export type RenderOptions = {

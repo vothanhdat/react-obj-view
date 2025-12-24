@@ -4,8 +4,8 @@ import { RenderValue } from "./RenderValue";
 import { useChangeFlashClasses } from "../hooks/useChangeFlashClasses";
 import { useInternalPromise } from "../hooks/useInternalPromiseResolve";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../../object-tree";
-import { DefaultActions } from "../value-renders/Actions";
 import { ObjectViewRenderRowProps } from "../types";
+import { ActionRenders as DefaultActionsRender } from "../actions/Actions";
 
 
 export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
@@ -22,7 +22,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
 
     const isCircular = nodeData.isCircular;
 
-    const ActionRenders = actionRenders ?? DefaultActions
+    const ActionRenders = actionRenders ?? DefaultActionsRender
 
     // Using 'as any' because objectHasChild expects ObjectWalkingContext with circularChecking,
     // but we only need it for the hasChild check which doesn't require that property

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ObjectView } from '../ObjectView';
+import { CustomAction } from "./types";
 import React from 'react';
-import { ObjectView } from './ObjectView';
-import { CustomAction } from './types';
 
 describe('ObjectView customActions', () => {
     it('should render custom action button on hover', async () => {
