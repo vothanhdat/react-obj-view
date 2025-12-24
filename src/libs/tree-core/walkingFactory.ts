@@ -630,7 +630,7 @@ export const walkingFactory = <Value, Key, Meta, Config, Context extends Walking
         iterateSize = 100000,
         maxDepth = 10,
         fullSearch = false,
-        fullsearchShouldIterate?: (value: Value, key: Key, meta: Meta, ctx: Context) => Boolean
+        fullsearchShouldIterate?: (value: Value, key: Key, meta: Meta, ctx: Context) => boolean
     ) {
 
         const findContext = {
