@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { RenderNode } from "./components/RenderNode";
-import { ObjectViewHandle, RenderOptions } from "./types";
+import { ObjectViewHandle, RenderOptions, SearchOptionBase } from "./types";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
@@ -136,7 +136,12 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
             let currentFilterFn = undefined
 
             return {
-                async search(filterFn, markTerm, onResult = () => { }, options = ({} as never)) {
+                async search(
+                    filterFn?: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean),
+                    markTerm?: string | RegExp,
+                    onResult: (results: PropertyKey[][]) => void = () => { },
+                    options: SearchOptionBase = {}
+                ) {
 
                     currentFilterFn = filterFn;
 
