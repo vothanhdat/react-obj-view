@@ -11,8 +11,8 @@ export type SearchComponentHandler = {
 }
 
 export type SearchComponentProps = {
-    handleSearch: ObjectViewHandle['search']
-    scrollToPaths: ObjectViewHandle['scrollToPaths']
+    handleSearch?: ObjectViewHandle['search']
+    scrollToPaths?: ObjectViewHandle['scrollToPaths']
     active: boolean;
     onClose: () => void;
     options?: SearchOptions,
@@ -178,7 +178,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         if (currentPositionPaths) {
             scrollToPaths?.(currentPositionPaths)
         }
-    }, [currentPositionPaths])
+    }, [scrollToPaths, currentPositionPaths])
 
     useEffect(() => {
         if (active) {

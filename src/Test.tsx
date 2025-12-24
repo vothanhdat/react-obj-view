@@ -399,7 +399,7 @@ export const Test = () => {
 
   const pageModeClass = themeMode === 'dark' ? 'dark-mode' : themeMode === 'light' ? 'light-mode' : ''
 
-  const objViewRef = useRef<ObjectViewHandle>(null)
+  const objViewRef = useRef<ObjectViewHandle>(undefined)
   const searchRef = useRef<SearchComponentHandler>(undefined)
 
   const searchOptions = useMemo(

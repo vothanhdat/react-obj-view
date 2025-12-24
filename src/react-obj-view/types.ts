@@ -60,7 +60,7 @@ export type ObjectViewProps = {
     customActions?: CustomAction<any>[]
 
     iterateSize?: number;
-    ref?: RefObject<ObjectViewHandle | null>
+    ref?: RefObject<ObjectViewHandle | undefined>
 };
 
 export interface SearchOptionBase {
