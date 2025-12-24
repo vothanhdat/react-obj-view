@@ -222,7 +222,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     }
                 }
             }
-        }, [reactTreeViewRef, expandAndGetIndex, travelAndSearch]
+        }, [reactTreeViewRef, expandAndGetIndex, travelAndSearch, lineHeight]
     )
 
     useImperativeHandle(ref, () => searchObj, [searchObj])
