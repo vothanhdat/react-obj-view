@@ -35,7 +35,6 @@ React Object View relies on React's standard change detection. This means it **c
 
 - **Reference Equality**: The component only re-renders and re-walks the data tree when the identity (reference) of the value returned by `valueGetter` changes.
 - **Best Practice**: Always produce new object/array references when data changes (e.g., using the spread operator `...`).
-- **Manual Refresh**: If you must mutate data in place, you must also update the `valueGetter` dependency (e.g., by incrementing a version counter) to force a refresh.
 
 ```tsx
 // ❌ Won't trigger a re-render
