@@ -77,6 +77,9 @@ const valueGetter = useCallback(() => user, [user]);
 
 Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks when the underlying value actually changes.
 
+> [!IMPORTANT]
+> **Immutability is required.** React Object View uses reference equality to detect changes. If you mutate an object in-place (e.g., `obj.a = 1`), the component will not detect the change and will not re-render. Always provide a new object reference to trigger an update.
+
 ---
 
 ## ⚙️ Props

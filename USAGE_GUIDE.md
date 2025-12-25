@@ -31,9 +31,24 @@ const stateGetter = useMemo(() => () => state, [state]);
 
 ### Immutability & Updates
 
-- Produce new object/array references when data changes so the viewer can diff nodes efficiently.
-- Avoid mutating nested properties in place; create a new copy and update the getter dependencies.
-- Development builds detect direct mutations and refresh the affected subtree automatically.
+React Object View relies on React's standard change detection. This means it **cannot detect in-place mutations** of objects or arrays.
+
+- **Reference Equality**: The component only re-renders and re-walks the data tree when the identity (reference) of the value returned by `valueGetter` changes.
+- **Best Practice**: Always produce new object/array references when data changes (e.g., using the spread operator `...`).
+- **Manual Refresh**: If you must mutate data in place, you must also update the `valueGetter` dependency (e.g., by incrementing a version counter) to force a refresh.
+
+```tsx
+// ❌ Won't trigger a re-render
+data.nested.value = 'new value';
+
+// ✅ Will trigger a re-render
+setData({
+  ...data,
+  nested: { ...data.nested, value: 'new value' }
+});
+```
+
+> **Note**: While development builds might occasionally refresh subtrees during interactions, you should never rely on this for production data updates. Always treat your data as immutable.
 
 ## Common Use Cases
 
