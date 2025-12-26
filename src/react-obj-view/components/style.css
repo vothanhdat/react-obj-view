@@ -88,6 +88,17 @@
             --compare: calc(clamp(0, abs(var(--indent-index, -1) - var(--active-parent, -1)), 1));
             opacity: clamp(0.07, calc(1 - var(--compare)), 0.4);
             transition: opacity 0.3s;
+            position: relative;
+            display: inline-block;
+            &:after {
+                content: "";
+                position: absolute;
+                background-color: currentColor;
+                left: 0.25em;
+                width: 0.1em;
+                top: -0em;
+                bottom: -0em;
+            }
         }
 
     }
