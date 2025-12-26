@@ -75,7 +75,7 @@
     .expand-symbol {
         width: 1em;
         opacity: 0.5;
-        line-height: 1;
+        line-height: unset;
         vertical-align: top;
         user-select: none;
     }
