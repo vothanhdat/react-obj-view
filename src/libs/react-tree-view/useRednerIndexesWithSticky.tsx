@@ -24,12 +24,10 @@ export const useRednerIndexesWithSticky = ({
     stickyHeader: boolean;
     getNodeByIndex: (index: number) => FlattenNodeWrapper<any, any> | undefined;
 }) => {
-    start = Math.max(0, start - overscan)
-    end = Math.min(lineHeight * childCount, end + overscan);
 
     let startIndexRaw = start / lineHeight;
-    let startIndex = Math.floor(start / lineHeight);
-    let endIndex = Math.min(childCount, Math.ceil(end / lineHeight));
+    let startIndex = Math.floor(Math.max(0, start - overscan) / lineHeight);
+    let endIndex = Math.min(childCount, Math.ceil( Math.min(lineHeight * childCount, end + overscan) / lineHeight));
     let renderSize = Math.min(Math.max(0, endIndex - startIndex), 500);
 
     const computeStickyInfo = useCallback(
