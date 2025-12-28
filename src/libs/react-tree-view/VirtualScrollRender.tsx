@@ -27,12 +27,13 @@ export const VirtualScrollRender: <
         toggleChildExpand,
         stickyPathHeaders = true,
         showLineNumbers = true,
+        overscan,
         ...rest
     } = props;
 
 
     const renderIndexes = useRednerIndexesWithSticky({
-        start, end,
+        start, end, overscan,
         lineHeight, childCount,
         getNodeByIndex,
         stickyHeader: stickyPathHeaders,

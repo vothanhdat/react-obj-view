@@ -46,6 +46,7 @@ export type ReactTreeViewProps<
     rowDivProps?: React.HTMLAttributes<HTMLDivElement>;
     stickyPathHeaders?: boolean,
     showLineNumbers?: boolean,
+    overscan?:number,
     ref:  RefObject<VirtualScrollerHandler>,
 };
 

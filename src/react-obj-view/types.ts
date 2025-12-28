@@ -50,6 +50,7 @@ export type ObjectViewProps = {
 
     style?: React.CSSProperties | ThemeColor;
     lineHeight?: number;
+    overscan?:number;
     className?: string;
 
     /**

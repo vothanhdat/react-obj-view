@@ -15,14 +15,17 @@ export type StickyInfo = {
 
 
 export const useRednerIndexesWithSticky = ({
-    start, end, childCount, lineHeight, getNodeByIndex, stickyHeader
+    start, end, overscan = 100, childCount, lineHeight, getNodeByIndex, stickyHeader
 }: {
     start: number; end: number;
+    overscan?: number;
     childCount: number;
     lineHeight: number;
     stickyHeader: boolean;
     getNodeByIndex: (index: number) => FlattenNodeWrapper<any, any> | undefined;
 }) => {
+    start = Math.max(0, start - overscan)
+    end = Math.min(lineHeight * childCount, end + overscan);
 
     let startIndexRaw = start / lineHeight;
     let startIndex = Math.floor(start / lineHeight);

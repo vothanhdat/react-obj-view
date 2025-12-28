@@ -44,6 +44,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     customActions,
     iterateSize,
     ref,
+    overscan = 100,
 }) => {
 
     const value = useMemo(() => valueGetter?.(), [valueGetter])
@@ -239,6 +240,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                 showLineNumbers={showLineNumbers}
                 rowDivProps={rowDivProps}
                 ref={reactTreeViewRef}
+                overscan={overscan}
             />
         </HightlightWrapper>
     </div>
