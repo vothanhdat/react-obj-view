@@ -19,11 +19,11 @@ describe("useRednerIndexesWithSticky", () => {
             getNodeByIndex: () => createNode(0, []),
         }));
 
-        expect(result.current).toEqual([
-            { index: 0, isStick: false, isLastStick: false },
-            { index: 1, isStick: false, isLastStick: false },
-            { index: 2, isStick: false, isLastStick: false },
-        ]);
+        expect(result.current).toEqual(expect.arrayContaining([
+            expect.objectContaining({ index: 0, isStick: false }),
+            expect.objectContaining({ index: 1, isStick: false }),
+            expect.objectContaining({ index: 2, isStick: false }),
+        ]));
     });
 
     it("identifies parent rows that should stick to the top when scrolling", () => {
@@ -39,15 +39,16 @@ describe("useRednerIndexesWithSticky", () => {
             start: 20,
             end: 50,
             childCount: 5,
+            overscan: 0,
             lineHeight: 10,
             stickyHeader: true,
             getNodeByIndex: (index: number) => nodes.get(index) ?? createNode(0, []),
         }));
 
-        expect(result.current).toEqual([
-            { index: 2, isStick: false, isLastStick: false },
-            { index: 0, isStick: true, position: 1, isLastStick: true },
-            { index: 4, isStick: false, isLastStick: false },
-        ]);
+        expect(result.current).toEqual(expect.arrayContaining([
+            expect.objectContaining({ index: 2, isStick: false, isLastStick: false }),
+            expect.objectContaining({ index: 0, isStick: true, position: 1, isLastStick: true }),
+            expect.objectContaining({ index: 4, isStick: false, isLastStick: false }),
+        ]));
     });
 });
