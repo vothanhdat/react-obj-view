@@ -50,15 +50,21 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
         [_options, isSearchMatch]
     )
 
-    const actionActiveTimeoutRef = useRef<any>(undefined)
     const [actionActive, setActionActive] = useState(false)
-
+    const actionActiveRef = useRef({ timeout: undefined as any, active: actionActive })
+    actionActiveRef.current.active = actionActive;
+    
     const onMouseEnter = useCallback(
         () => {
             options.onMouseEnter(renderIndex)
-            clearTimeout(actionActiveTimeoutRef.current);
-            actionActiveTimeoutRef.current = setTimeout(() => setActionActive(true), 40)
-            // console.log("Enter", renderIndex)
+            clearTimeout(actionActiveRef.current.timeout);
+            actionActiveRef.current.timeout = setTimeout(
+                () => {
+                    setActionActive(true)
+
+                },
+                50
+            )
         },
         [options.onMouseEnter, renderIndex]
     )
@@ -66,10 +72,11 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
     const onMouseLeave = useCallback(
         () => {
             options.onMouseLeave(renderIndex)
-            clearTimeout(actionActiveTimeoutRef.current);
-            setActionActive(false);
-            // console.log("Leave", renderIndex)
-
+            clearTimeout(actionActiveRef.current.timeout);
+            actionActiveRef.current.timeout = setTimeout(
+                () => actionActiveRef.current.active && setActionActive(false),
+                50
+            )
         },
         [options.onMouseLeave, renderIndex]
     )

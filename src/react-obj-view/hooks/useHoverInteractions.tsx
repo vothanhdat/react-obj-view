@@ -16,26 +16,31 @@ export function useHoverInteractions(
 
     const onMouseEnter = useCallback(
         (index: number) => {
-            const { getNodeByIndex, childCount } = ref.current
-            let containerStyles = containerRef?.current?.style;
-            if (index < childCount && containerStyles) {
-                let node = getNodeByIndex(index)
-                if (!node) return;
-                let parentIndex = node.childCount > 1
-                    ? node.parentIndex.at(-1)
-                    : node.parentIndex.at(-2)
-                    ?? 0
-                // console.log({ parentIndex })
-                containerStyles.setProperty('--active-index', String(index));
-                containerStyles.setProperty('--active-parent', String(parentIndex));
-            }
+
+            clearTimeout(ref.current.timeout);
+
+            ref.current.timeout = setTimeout(() => {
+
+                const { getNodeByIndex, childCount } = ref.current
+                let containerStyles = containerRef?.current?.style;
+                if (index < childCount && containerStyles) {
+                    let node = getNodeByIndex(index)
+                    if (!node) return;
+                    let parentIndex = node.childCount > 1
+                        ? node.parentIndex.at(-1)
+                        : node.parentIndex.at(-2)
+                        ?? 0
+                    containerStyles.setProperty('--active-index', String(index));
+                    containerStyles.setProperty('--active-parent', String(parentIndex));
+                }
+            }, 50);
+
         },
         [containerRef, ref]
     );
 
     const onMouseLeave = useCallback(
         (index: number) => {
-            
             clearTimeout(ref.current.timeout);
 
             ref.current.timeout = setTimeout(() => {
@@ -51,7 +56,7 @@ export function useHoverInteractions(
                     }
 
                 }
-            }, 25);
+            }, 100);
         },
         [containerRef, ref]
     );
