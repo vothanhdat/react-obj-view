@@ -48,6 +48,10 @@ describe('useHoverInteractions', () => {
             result.current.onMouseEnter(5);
         });
 
+        act(() => {
+            vi.advanceTimersByTime(50);
+        });
+
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-index', '5');
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-parent', '1');
     });
@@ -70,6 +74,10 @@ describe('useHoverInteractions', () => {
             result.current.onMouseEnter(3);
         });
 
+        act(() => {
+            vi.advanceTimersByTime(50);
+        });
+
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-index', '3');
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-parent', '2');
     });
@@ -90,6 +98,10 @@ describe('useHoverInteractions', () => {
 
         act(() => {
             result.current.onMouseEnter(3);
+        });
+
+        act(() => {
+            vi.advanceTimersByTime(50);
         });
 
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-index', '3');
@@ -115,8 +127,8 @@ describe('useHoverInteractions', () => {
         expect(mockContainer.style.setProperty).not.toHaveBeenCalled();
 
         // Fast-forward past the debounce delay
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(25);
+        act(() => {
+            vi.advanceTimersByTime(100);
         });
 
         expect(mockContainer.style.setProperty).toHaveBeenCalledWith('--active-index', '-1');
@@ -138,8 +150,8 @@ describe('useHoverInteractions', () => {
             result.current.onMouseLeave(5);
         });
 
-        await act(async () => {
-            await vi.advanceTimersByTimeAsync(25);
+        act(() => {
+            vi.advanceTimersByTime(100);
         });
 
         // Should not clear because current index (3) doesn't match leave index (5)
@@ -189,6 +201,10 @@ describe('useHoverInteractions', () => {
 
         act(() => {
             result.current.onMouseEnter(8);
+        });
+
+        act(() => {
+            vi.advanceTimersByTime(50);
         });
 
         expect(newGetNodeByIndex).toHaveBeenCalledWith(8);
