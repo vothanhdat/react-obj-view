@@ -90,6 +90,7 @@
             transition: opacity 0.3s;
             position: relative;
             display: inline-block;
+
             &:after {
                 content: "";
                 position: absolute;
@@ -277,6 +278,9 @@
             font-weight: bold;
             overflow: hidden;
             text-overflow: ellipsis;
+            height: min-content;
+            margin: 0;
+
             &:hover {
                 opacity: 1;
             }
