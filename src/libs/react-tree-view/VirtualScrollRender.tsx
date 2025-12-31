@@ -44,7 +44,7 @@ export const VirtualScrollRender: <
     return <>
         {renderIndexes.map(({ isStick, index, isLastStick, position }) => <div
             {...rowDivProps}
-            key={computeItemKey(index)}
+            key={computeItemKey(index) + (isStick ? "-stick" : "")}
             style={isStick ? {
                 position: "sticky",
                 top: `${position * lineHeight - offset}px`,

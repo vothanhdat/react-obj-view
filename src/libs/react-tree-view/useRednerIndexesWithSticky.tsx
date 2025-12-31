@@ -6,11 +6,13 @@ export type StickyInfo = {
     isStick: false;
     position?: number;
     isLastStick?: boolean;
+    originalIndex: number;
 } | {
     index: number;
     isStick: true;
     position: number;
     isLastStick?: boolean;
+    originalIndex: number;
 };
 
 
@@ -26,15 +28,15 @@ export const useRednerIndexesWithSticky = ({
 }) => {
 
     let startIndexRaw = start / lineHeight;
-    let startIndex = Math.floor(start / lineHeight);
-    // let startIndex = Math.floor(Math.max(0, start - overscan) / lineHeight);
+    // let startIndex = Math.floor(start / lineHeight);
+    let startIndex = Math.floor(Math.max(0, start - overscan) / lineHeight);
     let endIndex = Math.min(childCount, Math.ceil(Math.min(lineHeight * childCount, end + overscan) / lineHeight));
     let renderSize = Math.min(Math.max(0, endIndex - startIndex), 500);
 
     const computeStickyInfo = useCallback(
         (index: number, startIndexRaw: number): StickyInfo => {
             if (!stickyHeader)
-                return { isStick: false, index: index };
+                return { isStick: false, index: index, originalIndex: index };
 
             let starIndex = Math.floor(startIndexRaw);
             let delta = Math.floor(index - starIndex);
@@ -47,9 +49,9 @@ export const useRednerIndexesWithSticky = ({
                 let minPos = rIndex + parentNode.childCount - startIndexRaw - 1;
                 let pos = Math.min(delta, minPos);
                 if (parentNode.childCount > 1 && startIndexRaw > 0)
-                    return { isStick: true, index: rIndex, position: pos };
+                    return { isStick: true, index: rIndex, position: pos, originalIndex: index };
             }
-            return { isStick: false, index: index };
+            return { isStick: false, index: index, originalIndex: index };
         },
         [getNodeByIndex, stickyHeader, childCount]
     );
@@ -65,7 +67,12 @@ export const useRednerIndexesWithSticky = ({
             .map((info, index, arr) => ({
                 ...info,
                 isLastStick: info.isStick && arr[index + 1] && !arr[index + 1].isStick
-            } as StickyInfo)),
+            } as StickyInfo))
+            .map(e => e.isStick ? [
+                e,
+                { ...e, isStick: false, index: e.originalIndex, isLastStick: false }
+            ] : [e])
+            .flat(),
         [renderSize, startIndex, childCount, Math.round(startIndexRaw * 10), computeStickyInfo]
     );
 };
