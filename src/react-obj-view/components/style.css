@@ -31,7 +31,7 @@
     --opacity: 100%;
     background-color: var(--bg-color);
     color: var(--color);
-
+    box-sizing: content-box;
     .row {
         display: flex;
         flex-direction: row;
