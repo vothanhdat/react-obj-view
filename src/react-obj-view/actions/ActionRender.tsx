@@ -1,14 +1,43 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { ObjectViewRenderRowProps } from "../types";
-import { CustomAction } from "./types";
+import { ActionWrapperProps, CustomAction } from "./types";
+import { joinClasses } from "../../utils/joinClasses";
 
 type ActionState = [
     copying: boolean,
     success: boolean,
     error: any
 ];
+
+
+const BuntonWrapper: React.FC<ActionWrapperProps<any>> = ({
+    isError, isLoading, isSuccess,
+    handleAction, children
+}) => {
+
+    const className = joinClasses(
+        isLoading && "loading",
+        isSuccess && "success",
+        isError && "error",
+    )
+    return <button type="button" onClick={handleAction} className={className}>
+        {children}
+    </button>
+}
+
+
+const normalize = (e: string | React.FC<any>): React.FC<{}> => typeof e === 'function' ? e : (f: any) => e
+
 export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>> = ({
-    nodeDataWrapper, prepareAction, dependency = (e) => [e], performAction, actionRender: ActionRender, actionRunRender: ActionRunRender, actionErrorRender: ActionErrorRender = "❗ ERROR", actionSuccessRender: ActionSuccessRender = "✓ SUCCESS", resetTimeout = 5000
+    nodeDataWrapper,
+    prepareAction,
+    dependency = (e) => [e],
+    performAction,
+    actionRender: ActionRender,
+    actionRunRender: ActionRunRender,
+    actionErrorRender: ActionErrorRender = "❗ ERROR",
+    actionSuccessRender: ActionSuccessRender = "✓ SUCCESS",
+    resetTimeout = 5000
 }) => {
     const nodeData = nodeDataWrapper?.();
 
@@ -18,7 +47,8 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
     );
 
     const [
-        [performing, performSuccess, performError], setPerformState
+        [isLoading, isSuccess, isError],
+        setPerformState
     ] = useState<ActionState>([false, false, undefined]);
 
     const handleAction = useCallback(
@@ -33,7 +63,7 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
                         () => setPerformState([false, true, undefined]),
                         (error) => setPerformState([false, false, error])
                     )
-                    .then(() => setTimeout(
+                    .finally(() => setTimeout(
                         () => setPerformState([false, false, undefined]),
                         resetTimeout
                     ));
@@ -45,29 +75,22 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
     );
 
     const canPerformAction = !!preparedAction &&
-        !performing && !performSuccess && !performError;
+        !isLoading && !isSuccess && !isError;
+
+    const RenderComponent = canPerformAction ? normalize(ActionRender)
+        : isLoading ? normalize(ActionRunRender)
+            : isSuccess ? normalize(ActionSuccessRender)
+                : isError ? normalize(ActionErrorRender)
+                    : normalize("")
 
     return !!prepareAction ? <>
-        {canPerformAction && <button onClick={handleAction}>
-            {typeof ActionRender === 'function'
-                ? <ActionRender {...preparedAction} />
-                : ActionRender}
-        </button>}
-        {performing && <button className="loading">
-            {typeof ActionRunRender === 'function'
-                ? <ActionRunRender {...preparedAction} />
-                : ActionRunRender}
-        </button>}
-        {performSuccess && <button className="success">
-            {typeof ActionSuccessRender === 'function'
-                ? <ActionSuccessRender {...preparedAction} />
-                : ActionSuccessRender}
-        </button>}
-        {performError && <button className="error">
-            {typeof ActionErrorRender === 'function'
-                ? <ActionErrorRender {...preparedAction} />
-                : ActionErrorRender}
-        </button>}
+        <BuntonWrapper {...{
+            isError, isLoading, isSuccess,
+            handleAction: canPerformAction ? handleAction : undefined,
+            state: preparedAction,
+        }}>
+            <RenderComponent {...preparedAction} />
+        </BuntonWrapper>
 
     </> : <></>;
 

@@ -4,6 +4,12 @@ import { type ObjectWalkingAdater, parseWalkingMeta } from "../../object-tree";
 
 
 
+export type ActionWrapperProps<T = {}> = {
+    state: T,
+    isLoading: boolean, isSuccess: boolean, isError: boolean,
+    children: any,
+    handleAction?: () => void
+}
 
 export type CustomAction<T = {}> = {
 
@@ -26,6 +32,7 @@ export type CustomAction<T = {}> = {
         nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
     ): Promise<void>;
 
+    buttonWrapper?: React.FC<ActionWrapperProps<T>>;
     actionRender: string | React.FC<T>;
     actionRunRender: string | React.FC<T>;
     actionErrorRender?: string | React.FC<T & { error: any; }>;
