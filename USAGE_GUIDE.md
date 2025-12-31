@@ -259,6 +259,21 @@ return (
 
 > **Tip:** If your design system overrides fonts/padding via CSS, expose a shared variable (e.g. `--rov-row-height`) and drive both the CSS row height and the `lineHeight` prop from that value. When those drift apart the virtual canvas height stays wrong, which causes rows to overlap or leave gaps while scrolling.
 
+### Virtualization Buffer (`overscan`)
+
+For very large trees, fast scrolling can briefly expose blank space if rendering can't keep up. Use `overscan` to render an extra buffer **in pixels** above and below the viewport.
+
+```tsx
+<ObjectView
+  valueGetter={getter}
+  lineHeight={18}
+  overscan={200}
+/>
+```
+
+- Increase `overscan` to reduce blank gaps during fast scroll.
+- Decrease `overscan` to reduce render work if rows are expensive.
+
 ### Resolver Overrides
 
 ```tsx
@@ -372,6 +387,8 @@ const ref = useRef<ObjectViewHandle | null>(null);
 
 - Typing builds a tokenised filter; matches stream back in batches via `requestIdleCallback` so the UI stays responsive.
 - Tune `maxResult`, `maxDepth`, `iterateSize`, or `fullSearch` to cap work for large payloads; pass `offsetTop` / `offsetBottom` to `scrollToPaths` when sticky UI could obscure the target row.
+
+If you want to build a bespoke search bar (but keep the same behaviour as `SearchComponent`), you can use the exported `useObjectViewSearch` hook.
 
 ## Styling Tips
 

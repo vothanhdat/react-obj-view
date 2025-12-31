@@ -79,11 +79,13 @@ export type ObjectViewProps = {
   showLineNumbers?: boolean;
   style?: React.CSSProperties;
   lineHeight?: number;
+  overscan?: number;
   className?: string;
   /** @deprecated Use customActions instead */
   actionRenders?: React.FC<ObjectViewRenderRowProps>;
   customActions?: CustomAction[];
   iterateSize?: number;
+  ref?: React.RefObject<ObjectViewHandle | undefined>;
 };
 ```
 
@@ -106,7 +108,9 @@ export type ObjectViewProps = {
 | `showLineNumbers` | `false` | Renders a gutter with 0-based line numbers next to each row. |
 | `style` | `undefined` | Inline styles applied to the `.big-objview-root` container. |
 | `lineHeight` | `14` | Height, in pixels, of each rendered row. **Must reflect the real CSS height**—if your theme overrides fonts, padding, or `--bigobjview` variables, update this prop (or the corresponding CSS variable) so virtualization remains accurate. |
+| `overscan` | `100` | Virtualization buffer size in **pixels** rendered above/below the viewport. Increase it to reduce blank gaps during fast scrolling; reduce it to lower render work for very heavy rows. |
 | `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
+| `ref` | `undefined` | Exposes the imperative [Search API](#search-api) handle (`search`, `scrollToPaths`). Keep the ref stable. |
 | `customActions` | `DefaultActions` | Array of custom action definitions. See [Custom Actions](#custom-actions) for details. |
 | `actionRenders` | `undefined` | **Deprecated**. Use `customActions` instead. |
 
@@ -115,6 +119,15 @@ export type ObjectViewProps = {
 You can define custom actions (buttons) that appear when hovering over a row.
 
 ```ts
+export type ActionWrapperProps<T = {}> = {
+  state: T;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  children: any;
+  handleAction?: () => void;
+}
+
 export interface CustomAction<T = any> {
     /** Unique name for the action */
     name: string;
@@ -137,6 +150,8 @@ export interface CustomAction<T = any> {
     actionSuccessRender?: string | React.FC<T>;
     /** Content to render if execution fails. Must be a string or a React Component. */
     actionErrorRender?: string | React.FC<T & { error: any }>;
+    /** Optional wrapper for the action button. Defaults to an internal <button> wrapper. */
+    buttonWrapper?: React.FC<ActionWrapperProps<T>>;
     /** Dependencies for useMemo when preparing action */
     dependency?: (data: ObjectViewRenderRowProps['nodeData']) => any[];
     /** Time in ms to reset the button state after success/error */
@@ -413,6 +428,7 @@ const logAction: CustomAction = {
 | `actionRunRender` | `string \| React.FC<T>` | Renders while `performAction` is pending. |
 | `actionSuccessRender` | `string \| React.FC<T>` | Renders after success (defaults to "✓ SUCCESS"). |
 | `actionErrorRender` | `string \| React.FC<T & { error: any }>` | Renders after error (defaults to "❗ ERROR"). |
+| `buttonWrapper` | `React.FC<ActionWrapperProps<T>>` | Optional wrapper component controlling the action button element and state classes. |
 | `resetTimeout` | `number` | Time in ms before resetting to idle state (default 5000). |
 
 > **Note:** The `actionRenders` prop is deprecated in favor of `customActions`.
@@ -511,6 +527,24 @@ function DebugPanel({data}) {
 
 - Search options: `normalizeSymbol` (available on `SearchComponent` only), `iterateSize`, `maxDepth`, `fullSearch`, and `maxResult` (defaults mirror `ObjectViewHandle.search`). Memoize `options` (e.g., via `useMemo`) so the handlers stay stable.
 - The component shows a spinner while batches stream in and automatically applies highlights via the provided `markTerm` regex.
+
+### Composing your own search UI with `useObjectViewSearch`
+
+If you want a custom search bar but don't want to re-implement debouncing, tokenisation, match highlighting, and prev/next navigation, use the exported `useObjectViewSearch` hook (the same hook `SearchComponent` uses internally):
+
+```tsx
+import { useRef } from "react";
+import { ObjectView, type ObjectViewHandle, useObjectViewSearch } from "react-obj-view";
+
+const ref = useRef<ObjectViewHandle | null>(null);
+const search = useObjectViewSearch({
+  active: true,
+  handleSearch: ref.current?.search,
+  scrollToPaths: ref.current?.scrollToPaths,
+});
+
+<ObjectView valueGetter={() => data} ref={ref} />
+```
 
 ### Rolling your own search bar
 

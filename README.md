@@ -99,6 +99,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `includeSymbols` | `boolean` | `false` | Include symbol keys when enumerating or previewing objects. |
 | `showLineNumbers` | `boolean` | `false` | Display a gutter with zero-based line numbers. |
 | `lineHeight` | `number` | `14` | Row height (in px) used by the virtual scroller. **Keep this in sync with your CSS/fonts; mismatches cause rows to drift/overlap because virtualization still uses the old size.** |
+| `overscan` | `number` | `100` | Virtualization buffer size in **pixels** rendered above/below the viewport for smoother fast scrolling. Increase it to reduce blank gaps; decrease it to reduce render work. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
 | `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn?, markTerm?, onResult?, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` for jump-to-match navigation. Call `search()` with no arguments to clear highlights/results. `scrollToPaths` forwards `ScrollToOptions` and lets you add viewport padding to keep sticky headers or toolbars from covering the target (defaults: `offsetTop=200`, `offsetBottom=100`). Keep the ref stable and memoize search options. |
@@ -335,6 +336,8 @@ Search options supported by `ObjectViewHandle.search` and the built-in `SearchCo
 - `fullSearch`: force traversal of already-collapsed branches.
 - `maxResult`: limit streamed matches (default `99999`).
 - `normalizeSymbol`: SearchComponent-only hook to normalize characters (e.g., strip diacritics) before matching.
+
+If you want to build a custom search UI without re-implementing debouncing/tokenization and prev/next navigation, use the exported `useObjectViewSearch` hook (it’s the same hook `SearchComponent` uses internally).
 
 `scrollToPaths` accepts `ScrollToOptions` plus optional `offsetTop` / `offsetBottom` to keep the match visible beneath sticky UI.
 
