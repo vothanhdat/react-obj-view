@@ -37,7 +37,8 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
     actionRunRender: ActionRunRender,
     actionErrorRender: ActionErrorRender = "❗ ERROR",
     actionSuccessRender: ActionSuccessRender = "✓ SUCCESS",
-    resetTimeout = 5000
+    resetTimeout = 5000,
+    buttonWrapper,
 }) => {
     const nodeData = nodeDataWrapper?.();
 
@@ -83,14 +84,16 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
                 : isError ? normalize(ActionErrorRender)
                     : normalize("")
 
+    const ButtonWrapper = buttonWrapper ?? BuntonWrapper;
+
     return !!prepareAction ? <>
-        <BuntonWrapper {...{
+        <ButtonWrapper {...{
             isError, isLoading, isSuccess,
             handleAction: canPerformAction ? handleAction : undefined,
             state: preparedAction,
         }}>
             <RenderComponent {...preparedAction} />
-        </BuntonWrapper>
+        </ButtonWrapper>
 
     </> : <></>;
 
