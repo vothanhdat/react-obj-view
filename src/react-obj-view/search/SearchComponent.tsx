@@ -32,21 +32,17 @@ export const useDebounceValue = <T,>(value: T, debounce = 100): T => {
     return debounceValue
 }
 
-export const SearchComponent: React.FC<SearchComponentProps> = ({
-    handleSearch, scrollToPaths,
-    className,
-    containerDivProps,
+export const useObjectViewSearch = ({
+    handleSearch,
+    scrollToPaths,
     options,
     active = true,
-    onClose,
-    ref
-}) => {
+}: Pick<SearchComponentProps, 'handleSearch' | 'scrollToPaths' | 'options' | 'active'>) => {
 
-
-    const [searchTermRaw, setSearchTerm] = useState("")
-    const searchTerm = useDebounceValue(searchTermRaw)
-    const deferSearchTerm = useDeferredValue(active ? searchTerm : "")
-    const [loading, setLoading] = useState(0)
+    const [searchTerm, setSearchTerm] = useState("")
+    const deboucedSearchTerm = useDebounceValue(searchTerm)
+    const deferSearchTerm = useDeferredValue(active ? deboucedSearchTerm : "")
+    const [searchTaskCounter, setSearching] = useState(0)
     const [results, setSearchResults] = useState({
         filterFn: undefined as any,
         results: [] as any[][],
@@ -132,7 +128,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         setSearchResults({ filterFn, currentIndex: 0, results: [] });
 
         (async () => {
-            setLoading((l) => l + 1);
+            setSearching((l) => l + 1);
 
             await handleSearch?.(
                 filterFn,
@@ -147,7 +143,7 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                 options,
             );
 
-            setLoading((l) => Math.max(l - 1, 0));
+            setSearching((l) => Math.max(l - 1, 0));
         })();
 
 
@@ -180,6 +176,31 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
         }
     }, [scrollToPaths, currentPositionPaths])
 
+
+    return {
+        inputRef,
+        setSearchTerm,
+        searchTerm,
+        results,
+        prev, next,
+        searching: searchTaskCounter > 0
+    }
+
+}
+
+export const SearchComponent: React.FC<SearchComponentProps> = (props) => {
+
+    const { active, onClose, containerDivProps, ref, className } = props
+
+    const {
+        inputRef,
+        searching,
+        next, prev,
+        results,
+        searchTerm,
+        setSearchTerm
+    } = useObjectViewSearch(props)
+
     useEffect(() => {
         if (active) {
             inputRef?.current?.focus()
@@ -208,13 +229,13 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
                     inputRef?.current?.select();
                 }
             }}>
-            <small className="loading-indicator" style={{ opacity: loading > 0 ? 0.7 : 0, }}  >
-                <LoadingSimple active={loading > 0} />
+            <small className="loading-indicator" style={{ opacity: searching ? 0.7 : 0, }}  >
+                <LoadingSimple active={searching} />
             </small>
             <input
                 ref={inputRef}
                 className="input"
-                value={searchTermRaw}
+                value={searchTerm}
                 placeholder="Type to search ..."
                 onChange={e => setSearchTerm(e.target.value)}
             />

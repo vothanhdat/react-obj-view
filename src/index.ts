@@ -16,6 +16,7 @@ export {
 export {
     ObjectView,
     SearchComponent,
+    useObjectViewSearch,
     DEFAULT_ACTION,
     type ObjectViewProps,
     type ObjectViewHandle,
