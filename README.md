@@ -91,7 +91,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `expandLevel` | `number \| boolean` | `false` | Depth of initial expansion; `true` expands everything (up to depth 20). |
 | `objectGroupSize` | `number` | `0` | Enable grouping for objects when they exceed this many keys. Groups are collapsed by default for performance. **Objects must be fully enumerated to detect size, so only enable this when you need grouped previews and can afford the enumeration cost.** |
 | `arrayGroupSize` | `number` | `0` | Splits very large arrays into range buckets (`[0…999]`) for faster navigation. Groups are collapsed by default for performance. |
-| `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. |
+| `resolver` | `Map<any, ResolverFn>` | `undefined` | Merge in custom resolvers keyed by constructor. See [Resolver System](./API_DOCUMENTATION.md#resolver-system). |
 | `highlightUpdate` | `boolean` | `true` | Flash updated values via `useChangeFlashClasses`; set to `false` to disable. |
 | `stickyPathHeaders` | `boolean` | `true` | Pins the current node's ancestor label while you scroll through its children; disable to revert to free-scrolling rows. |
 | `preview` | `boolean` | `true` | Show inline previews (`Array(5)`, `'abc…'`) on collapsed rows. |
@@ -102,7 +102,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `overscan` | `number` | `100` | Virtualization buffer size in **pixels** rendered above/below the viewport for smoother fast scrolling. Increase it to reduce blank gaps; decrease it to reduce render work. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
-| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn?, markTerm?, onResult?, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` for jump-to-match navigation. Call `search()` with no arguments to clear highlights/results. `scrollToPaths` forwards `ScrollToOptions` and lets you add viewport padding to keep sticky headers or toolbars from covering the target (defaults: `offsetTop=200`, `offsetBottom=100`). Keep the ref stable and memoize search options. |
+| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes imperative methods for search and navigation. See [Search API](./API_DOCUMENTATION.md#search-api) for details. |
 | `customActions` | `CustomAction[]` | `DEFAULT_ACTION` | Array of custom action definitions. [See example](./API_DOCUMENTATION.md#custom-actions). |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `undefined` | **Deprecated**. Use `customActions` instead. |
 | `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
