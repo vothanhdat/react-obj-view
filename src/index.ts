@@ -25,6 +25,7 @@ export {
     type SearchComponentHandler,
     type SearchOptions,
     type CustomAction,
+    type ActionWrapperProps,
 } from "./react-obj-view"
 
 

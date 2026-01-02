@@ -3,6 +3,6 @@ export { SearchComponent, type SearchComponentProps, type SearchComponentHandler
 export { useObjectViewSearch } from "./search/useObjectViewSearch"
 export type { ObjectViewProps, ObjectViewRenderRowProps, ObjectViewHandle, SearchOptions } from "./types"
 export type { ResolverFn, WalkingConfig } from "../object-tree"
-export { type CustomAction, DEFAULT_ACTION } from "./actions"
+export { type CustomAction, type ActionWrapperProps, DEFAULT_ACTION } from "./actions"
 
 
