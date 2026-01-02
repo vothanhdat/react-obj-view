@@ -86,7 +86,7 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
 
     const ButtonWrapper = buttonWrapper ?? BuntonWrapper;
 
-    return !!prepareAction ? <>
+    return !!preparedAction ? <>
         <ButtonWrapper {...{
             isError, isLoading, isSuccess,
             handleAction: canPerformAction ? handleAction : undefined,
@@ -94,8 +94,7 @@ export const ActionRender: React.FC<ObjectViewRenderRowProps & CustomAction<any>
         }}>
             <RenderComponent {...preparedAction} />
         </ButtonWrapper>
-
-    </> : <></>;
+    </> : <></>
 
 
 };
