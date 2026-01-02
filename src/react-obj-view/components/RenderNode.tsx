@@ -100,7 +100,7 @@ export const RenderNode: React.FC<ObjectViewRenderRowProps> = (props) => {
             <span
                 className="tree-indents">
                 {nodeData.parents.slice(0, -1)
-                    .map(index => <span style={{ ['--indent-index' as any]: String(index) }}>
+                    .map(index => <span key={index} style={{ ['--indent-index' as any]: String(index) }}>
                         {"  "}
                     </span>)
                 }
