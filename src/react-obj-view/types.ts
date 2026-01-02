@@ -1,6 +1,6 @@
 import { RefObject } from "react";
 import type { ReactTreeRowRenderProps } from "../libs/react-tree-view";
-import { type ResolverFn, type ObjectWalkingAdater, type ObjectWalkingMetaParser } from "../object-tree";
+import { type ResolverFn, type ObjectWalkingAdapter, type ObjectWalkingMetaParser } from "../object-tree";
 import { ThemeColor } from "../react-obj-view-themes";
 import { CustomAction } from "./actions/types";
 
@@ -27,7 +27,7 @@ export type RenderOptions = {
 };
 
 export type ObjectViewRenderRowProps = ReactTreeRowRenderProps<
-    ObjectWalkingAdater,
+    ObjectWalkingAdapter,
     ObjectWalkingMetaParser,
     RenderOptions
 >

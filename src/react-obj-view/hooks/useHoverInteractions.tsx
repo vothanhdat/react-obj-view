@@ -1,11 +1,11 @@
 import { useRef, useCallback } from "react";
 import { FlattenNodeWrapper } from "../../libs/react-tree-view";
-import { ObjectWalkingAdater } from "../../object-tree";
+import { ObjectWalkingAdapter } from "../../object-tree";
 import { ObjectWalkingMetaParser } from "../../object-tree/types";
 
 export function useHoverInteractions(
     childCount: number,
-    getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser> | undefined
+    getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser> | undefined
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
     // const timeoutRef = useRef({ timeout: undefined as any });

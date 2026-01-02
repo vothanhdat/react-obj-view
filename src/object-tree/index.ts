@@ -21,7 +21,7 @@ export {
 export {
     type ResolverFn,
     type WalkingConfig,
-    type ObjectWalkingAdater,
+    type ObjectWalkingAdapter,
     type ObjectWalkingConfig,
     type ObjectWalkingContext,
     type ObjectWalkingInstance,

@@ -1,5 +1,5 @@
 import type { FlattenNodeData } from "../../libs/react-tree-view";
-import { type ObjectWalkingAdater, parseWalkingMeta } from "../../object-tree";
+import { type ObjectWalkingAdapter, parseWalkingMeta } from "../../object-tree";
 
 
 
@@ -20,16 +20,16 @@ export type CustomAction<T = {}> = {
      * @returns <T> null/false/undefined incase action not available and row will skip render this action
      */
     prepareAction(
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
+        nodeData: FlattenNodeData<ObjectWalkingAdapter, typeof parseWalkingMeta>
     ): T | null | false | undefined;
 
     dependency?(
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
+        nodeData: FlattenNodeData<ObjectWalkingAdapter, typeof parseWalkingMeta>
     ): any[];
 
     performAction(
         preparedAction: T,
-        nodeData: FlattenNodeData<ObjectWalkingAdater, typeof parseWalkingMeta>
+        nodeData: FlattenNodeData<ObjectWalkingAdapter, typeof parseWalkingMeta>
     ): Promise<void>;
 
     buttonWrapper?: React.FC<ActionWrapperProps<T>>;

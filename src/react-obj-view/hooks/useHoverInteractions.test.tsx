@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useHoverInteractions } from './useHoverInteractions';
 import type { FlattenNodeWrapper } from '../../libs/react-tree-view';
-import type { ObjectWalkingAdater } from '../../object-tree';
+import type { ObjectWalkingAdapter } from '../../object-tree';
 import type { ObjectWalkingMetaParser } from '../../object-tree/types';
 
 describe('useHoverInteractions', () => {
@@ -18,7 +18,7 @@ describe('useHoverInteractions', () => {
         mockGetNodeByIndex = vi.fn((index: number) => ({
             childCount: 3,
             parentIndex: [0, 1],
-        } as unknown as FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser>));
+        } as unknown as FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser>));
     });
 
     afterEach(() => {
@@ -60,7 +60,7 @@ describe('useHoverInteractions', () => {
         mockGetNodeByIndex.mockReturnValue({
             childCount: 5,
             parentIndex: [0, 1, 2],
-        } as unknown as FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser>);
+        } as unknown as FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser>);
 
         const { result } = renderHook(() => useHoverInteractions(10, mockGetNodeByIndex));
 
@@ -86,7 +86,7 @@ describe('useHoverInteractions', () => {
         mockGetNodeByIndex.mockReturnValue({
             childCount: 1,
             parentIndex: [0, 1, 2],
-        } as unknown as FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser>);
+        } as unknown as FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser>);
 
         const { result } = renderHook(() => useHoverInteractions(10, mockGetNodeByIndex));
 
@@ -189,7 +189,7 @@ describe('useHoverInteractions', () => {
         const newGetNodeByIndex = vi.fn((index: number) => ({
             childCount: 2,
             parentIndex: [0, 5],
-        } as unknown as FlattenNodeWrapper<ObjectWalkingAdater, ObjectWalkingMetaParser>));
+        } as unknown as FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser>));
 
         rerender({ childCount: 15, getNodeByIndex: newGetNodeByIndex });
 

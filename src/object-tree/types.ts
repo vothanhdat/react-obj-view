@@ -32,15 +32,15 @@ export type ObjectWalkingContext = WalkingContext<ObjectWalkingConfig> & {
     circularChecking: CircularChecking;
 };
 
-export type ObjectWalkingAdater = WalkingAdapter<
+export type ObjectWalkingAdapter = WalkingAdapter<
     unknown, PropertyKey, WalkingMeta, ObjectWalkingConfig, ObjectWalkingContext
 >;
 
-export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdater>;
+export type ObjectWalkingResult = InferWalkingResult<ObjectWalkingAdapter>;
 
-export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdater>;
+export type ObjectWalkingNode = InferNodeResult<ObjectWalkingAdapter>;
 
-export type ObjectWalkingInstance = InferWalkingInstance<ObjectWalkingAdater>;
+export type ObjectWalkingInstance = InferWalkingInstance<ObjectWalkingAdapter>;
 
 export type ObjectWalkingMetaParser = typeof parseWalkingMeta;
 

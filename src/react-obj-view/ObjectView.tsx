@@ -6,7 +6,7 @@ import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
     objectTreeWalkingFactory,
     parseWalkingMeta,
-    ObjectWalkingAdater,
+    ObjectWalkingAdapter,
     DEFAULT_RESOLVER,
     GROUP_ARRAY_RESOLVER,
     GROUP_OBJECT_RESOLVER,
@@ -64,7 +64,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         [customResolver, arrayGroupSize, objectGroupSize, DEFAULT_RESOLVER]
     );
 
-    const config: InferWalkingType<ObjectWalkingAdater>['Config'] = useMemo(
+    const config: InferWalkingType<ObjectWalkingAdapter>['Config'] = useMemo(
         () => ({
             nonEnumerable,
             resolver,
@@ -77,7 +77,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
         ? expandLevel ? 100 : 0
         : Number(expandLevel)
 
-    let objectTree = useReactTree<ObjectWalkingAdater, typeof parseWalkingMeta>({
+    let objectTree = useReactTree<ObjectWalkingAdapter, typeof parseWalkingMeta>({
         factory: objectTreeWalkingFactory,
         config,
         expandDepth,
@@ -158,7 +158,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
                     if (!filterFn) { return; }
 
-                    let searchResults: InferWalkingType<ObjectWalkingAdater>['Key'][][] = []
+                    let searchResults: InferWalkingType<ObjectWalkingAdapter>['Key'][][] = []
                     let searchResultCouter = 0
                     let MAX_RESULT = options?.maxResult ?? 99999
 
@@ -198,7 +198,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
                     searchResults = []
                 },
                 async scrollToPaths(
-                    paths: InferWalkingType<ObjectWalkingAdater>['Key'][],
+                    paths: InferWalkingType<ObjectWalkingAdapter>['Key'][],
                     options?: ScrollToOptions,
                     ...args
                 ) {
@@ -230,7 +230,7 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
 
     return <div ref={containerRef} className="big-objview-container" >
         <HightlightWrapper highlight={search?.markTerm}>
-            <ReactTreeView<ObjectWalkingAdater, typeof parseWalkingMeta, RenderOptions>
+            <ReactTreeView<ObjectWalkingAdapter, typeof parseWalkingMeta, RenderOptions>
                 {...objectTree}
                 lineHeight={lineHeight}
                 options={options}

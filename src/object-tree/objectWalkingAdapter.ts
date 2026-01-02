@@ -1,7 +1,7 @@
 import { walkingFactory } from "../libs/tree-core";
 import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
 import { getEntriesCb } from "./getEntries";
-import { ObjectWalkingAdater, WalkingMeta, ObjectWalkingContext } from "./types";
+import { ObjectWalkingAdapter, WalkingMeta, ObjectWalkingContext } from "./types";
 import { CircularChecking } from "./utils/CircularChecking";
 import { getObjectUniqueId } from "./utils/getObjectUniqueId";
 import { isRef } from "./utils/isRef";
@@ -23,7 +23,7 @@ export const parseWalkingMeta = (e: WalkingMeta) => {
     };
 };
 
-export const objectWalkingAdapter: ObjectWalkingAdater = {
+export const objectWalkingAdapter: ObjectWalkingAdapter = {
     transformValue(value, ref) {
         return value instanceof LazyValue && value.inited
             ? value.value ?? value.error
