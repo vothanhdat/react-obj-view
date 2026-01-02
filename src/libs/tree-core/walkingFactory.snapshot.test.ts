@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { walkingFactory } from "./walkingFactory"
-import type { WalkingAdaper, WalkingContext, NodeResult } from "./types"
+import type { WalkingAdapter, WalkingContext, NodeResult } from "./types"
 
 // --- Setup Types & Adapter ---
 
@@ -14,7 +14,7 @@ type TestMeta = { id: string }
 type TestConfig = { token: number; expandAll?: boolean }
 type TestContext = WalkingContext<TestConfig>
 
-type TestAdapter = WalkingAdaper<TestNode, string, TestMeta, TestConfig, TestContext>
+type TestAdapter = WalkingAdapter<TestNode, string, TestMeta, TestConfig, TestContext>
 
 const createTestAdapter = () => {
     const onVisit = vi.fn();

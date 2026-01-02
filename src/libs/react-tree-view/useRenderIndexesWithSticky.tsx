@@ -16,7 +16,7 @@ export type StickyInfo = {
 };
 
 
-export const useRednerIndexesWithSticky = ({
+export const useRenderIndexesWithSticky = ({
     start, end, overscan = 100, childCount, lineHeight, getNodeByIndex, stickyHeader
 }: {
     start: number; end: number;

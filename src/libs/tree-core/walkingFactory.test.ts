@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { walkingFactory } from "./walkingFactory"
-import type { WalkingAdaper, WalkingContext } from "./types"
+import type { WalkingAdapter, WalkingContext } from "./types"
 
 type TreeNode = {
     id: string
@@ -11,7 +11,7 @@ type TreeMeta = { id: string }
 type TreeConfig = { token: number }
 type TreeContext = WalkingContext<TreeConfig>
 
-type TreeAdapter = WalkingAdaper<TreeNode, string, TreeMeta, TreeConfig, TreeContext>
+type TreeAdapter = WalkingAdapter<TreeNode, string, TreeMeta, TreeConfig, TreeContext>
 
 type ComplexNode = {
     label: string
@@ -22,7 +22,7 @@ type ComplexNode = {
 type ComplexMeta = { key: string; hidden: boolean }
 type ComplexConfig = { version: number; log?: string[]; expandAll?: boolean }
 type ComplexContext = WalkingContext<ComplexConfig> & { log: string[] }
-type ComplexAdapter = WalkingAdaper<ComplexNode, string, ComplexMeta, ComplexConfig, ComplexContext>
+type ComplexAdapter = WalkingAdapter<ComplexNode, string, ComplexMeta, ComplexConfig, ComplexContext>
 
 const createTree = (): TreeNode => ({
     id: "root",

@@ -3,7 +3,8 @@
 export {
     walkingFactory,
     type InferWalkingResult,
-    type InferNodeResult
+    type InferNodeResult,
+    type WalkingAdapter,
 } from "./libs/tree-core"
 
 export {

@@ -3,8 +3,8 @@
 export { walkingFactory } from "./walkingFactory"
 
 export type {
-    WalkingAdaperBase,
-    WalkingAdaper,
+    WalkingAdapterBase,
+    WalkingAdapter,
     
     InferWalkingResult,
     InferNodeResult,

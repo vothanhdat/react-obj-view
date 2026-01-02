@@ -52,7 +52,7 @@ The UI glue in [`src/libs/react-tree-view`](../src/libs/react-tree-view) connect
 
 - [`useReactTree`](../src/libs/react-tree-view/useReactTree.tsx) memoises a walker instance, exposes `getNodeByIndex`, `refreshPath`, `toggleChildExpand`, and `setChildExpand`, and keeps traversal output in sync with the current `value`, `config`, and `expandDepth`.
 - [`FlattenNodeWrapper`](../src/libs/react-tree-view/FlattenNodeWrapper.tsx) converts raw walker nodes into serialisable metadata (`path`, `depth`, parsed meta fields, etc.). Provide a `metaParser` so UI components can consume metadata without knowing about bitmasks or adapter specifics.
-- [`ReactTreeView`](../src/libs/react-tree-view/ReactTreeView.tsx) renders rows via the shared [`VirtualScroller`](../src/libs/virtual-scroller/VirtualScroller.tsx) and wires sticky path headers through [`useRenderIndexesWithSticky`](../src/libs/react-tree-view/useRednerIndexesWithSticky.tsx).
+- [`ReactTreeView`](../src/libs/react-tree-view/ReactTreeView.tsx) renders rows via the shared [`VirtualScroller`](../src/libs/virtual-scroller/VirtualScroller.tsx) and wires sticky path headers through [`useRenderIndexesWithSticky`](../src/libs/react-tree-view/useRenderIndexesWithSticky.tsx).
 
 ## 3. Virtualisation layer
 
@@ -81,7 +81,7 @@ export type FileNode = {
 export type FileMeta = { label: string; isFolder: boolean };
 export type FileConfig = { hideEmptyFolders: boolean };
 
-const fileAdapter: TreeCore.WalkingAdaper<
+const fileAdapter: TreeCore.WalkingAdapter<
   FileNode,
   string,
   FileMeta,

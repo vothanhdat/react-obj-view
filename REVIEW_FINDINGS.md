@@ -428,7 +428,7 @@ The library is production-ready with the compatibility fix applied. The suggeste
 ### Core Algorithms
 - `src/libs/tree-core/walkingFactory.ts` - Tree walking implementation
 - `src/libs/tree-core/utils/StateFactory.ts` - State management
-- `src/object-tree/objectWalkingAdaper.ts` - Object traversal adapter
+- `src/object-tree/objectWalkingAdapter.ts` - Object traversal adapter
 
 ### React Integration
 - `src/libs/react-tree-view/useReactTree.tsx` - Main React hook

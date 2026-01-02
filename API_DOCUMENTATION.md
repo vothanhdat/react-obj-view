@@ -111,7 +111,7 @@ export type ObjectViewProps = {
 | `overscan` | `100` | Virtualization buffer size in **pixels** rendered above/below the viewport. Increase it to reduce blank gaps during fast scrolling; reduce it to lower render work for very heavy rows. |
 | `className` | `undefined` | Extra class names merged onto `.big-objview-root` for custom styling. |
 | `ref` | `undefined` | Exposes the imperative [Search API](#search-api) handle (`search`, `scrollToPaths`). Keep the ref stable. |
-| `customActions` | `DefaultActions` | Array of custom action definitions. See [Custom Actions](#custom-actions) for details. |
+| `customActions` | `DEFAULT_ACTION` | Array of custom action definitions. See [Custom Actions](#custom-actions) for details. |
 | `actionRenders` | `undefined` | **Deprecated**. Use `customActions` instead. |
 
 ## Custom Actions
@@ -252,11 +252,11 @@ const sortedMapResolver = new Map([
 
 `ObjectView` composes the new tree stack described in [Generic Tree Stack](./docs/GENERIC_TREE_VIEW.md):
 
-1. **Flattening** – [`useReactTree`](src/libs/react-tree-view/useReactTree.tsx) memoises `objectTreeWalkingFactory` and runs the adapter-defined traversal from [`src/object-tree/objectWalkingAdaper.ts`](src/object-tree/objectWalkingAdaper.ts). Circular references are handled via [`CircularChecking`](src/object-tree/utils/CircularChecking.ts).
+1. **Flattening** – [`useReactTree`](src/libs/react-tree-view/useReactTree.tsx) memoises `objectTreeWalkingFactory` and runs the adapter-defined traversal from [src/object-tree/objectWalkingAdapter.ts](src/object-tree/objectWalkingAdapter.ts). Circular references are handled via [src/object-tree/utils/CircularChecking.ts](src/object-tree/utils/CircularChecking.ts).
 2. **Virtualisation** – [`ReactTreeView`](src/libs/react-tree-view/ReactTreeView.tsx) pipes walker output into [`VirtualScroller`](src/libs/virtual-scroller/VirtualScroller.tsx). [`VirtualScrollRender`](src/libs/react-tree-view/VirtualScrollRender.tsx) renders only the visible slice of rows while keeping sticky path headers in sync.
-3. **Node Rendering** – [`RenderNode`](src/react-obj-view/components/RenderNode.tsx) composes [`RenderName`](src/react-obj-view/components/RenderName.tsx) and [`RenderValue`](src/react-obj-view/components/RenderValue.tsx). It controls expand/collapse state, circular badges, previews, and click handling.
-4. **Value Rendering** – [`RenderValue`](src/react-obj-view/components/RenderValue.tsx) decides between preview and raw modes before delegating to [`RenderRawValue`](src/react-obj-view/components/RenderRawValue.tsx) or [`RenderPreview`](src/react-obj-view/components/RenderPreview.tsx).
-5. **Hooks & helpers** – [`useWrapper`](src/libs/react-tree-view/useWrapper.tsx) memoises getter functions, change-highlighting lives inside [`RenderName`](src/react-obj-view/components/RenderName.tsx), and resolver metadata flows through [`parseWalkingMeta`](src/object-tree/objectWalkingAdaper.ts#L6-L15).
+3. **Node Rendering** – [`RenderNode`](src/react-obj-view/components/RenderNode.tsx) composes [src/react-obj-view/components/RenderName.tsx](src/react-obj-view/components/RenderName.tsx) and [src/react-obj-view/components/RenderValue.tsx](src/react-obj-view/components/RenderValue.tsx). It controls expand/collapse state, circular badges, previews, and click handling.
+4. **Value Rendering** – [src/react-obj-view/components/RenderValue.tsx](src/react-obj-view/components/RenderValue.tsx) decides between preview and raw modes before delegating to [src/react-obj-view/components/RenderRawValue.tsx](src/react-obj-view/components/RenderRawValue.tsx) or [src/react-obj-view/components/RenderPreview.tsx](src/react-obj-view/components/RenderPreview.tsx).
+5. **Hooks & helpers** – [`useWrapper`](src/libs/react-tree-view/useWrapper.tsx) memoises getter functions, change-highlighting lives inside [src/react-obj-view/components/RenderName.tsx](src/react-obj-view/components/RenderName.tsx), and resolver metadata flows through [src/object-tree/objectWalkingAdapter.ts](src/object-tree/objectWalkingAdapter.ts#L6-L15).
 
 
 ## Styling Reference
@@ -375,13 +375,13 @@ No configuration is needed—hover effects are enabled by default and automatica
 
 ### Copy Actions
 
-Each row includes action buttons powered by [`DefaultActions`](src/react-obj-view/value-renders/Actions.tsx) and the [`useCopy`](src/react-obj-view/hooks/useCopy.tsx) hook:
+Each row includes action buttons powered by [`DEFAULT_ACTION`](src/react-obj-view/actions/defaultAction.tsx):
 
 - **Copy Text** button – appears for primitives (strings, numbers, bigints) and copies the raw value to clipboard
 - **Copy JSON** button – appears for plain objects, arrays, and dates; serializes the value via `JSON.stringify()` before copying
 - Buttons show loading, success (✓), and error states with automatic reset after 5 seconds
 
-The copy functionality uses the browser's Clipboard API and defers execution through `requestIdleCallback` to avoid blocking the main thread.
+The copy functionality uses the browser's Clipboard API and defers execution through `requestIdleCallback` to avoid blocking the main thread. This logic is implemented within the generic `ActionRender` component which handles the action lifecycle (loading, success, error, and reset).
 
 ## Custom Actions
 

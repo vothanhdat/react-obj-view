@@ -1,11 +1,11 @@
-import { type WalkingAdaperBase } from "../tree-core";
+import { type WalkingAdapterBase } from "../tree-core";
 import { MetaParserBase } from "./FlattenNodeWrapper";
 import { VirtualScroller } from "../virtual-scroller";
 import { ReactTreeViewProps } from "./types";
 import { VirtualScrollRender } from "./VirtualScrollRender";
 
 export const ReactTreeView = <
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions = {},
 >(

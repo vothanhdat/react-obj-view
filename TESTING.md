@@ -21,7 +21,7 @@ The react-obj-view library uses a comprehensive test suite with 221 tests coveri
 - Tree-core and react-tree-view modules
 - Virtual scroller
 - Object tree adapter and resolvers (Map, Set, Promise, Iterator, LazyValue, GroupedProxy)
-- React hooks (useCopy, useHoverInteractions, useReactTree)
+- React hooks (useHoverInteractions, useReactTree)
 - React components (Actions, RenderNode)
 - Circular reference detection
 - Edge cases
@@ -145,8 +145,8 @@ src/
 │   ├── react-tree-view/
 │   │   ├── useReactTree.tsx
 │   │   ├── useReactTree.test.tsx                # 3 tests
-│   │   ├── useRednerIndexesWithSticky.tsx
-│   │   ├── useRednerIndexesWithSticky.test.tsx  # 2 tests
+│   │   ├── useRenderIndexesWithSticky.tsx
+│   │   ├── useRenderIndexesWithSticky.test.tsx  # 2 tests
 │   │   ├── useWrapper.tsx
 │   │   └── useWrapper.test.tsx                  # 2 tests
 │   └── virtual-scroller/
@@ -170,17 +170,18 @@ src/
 │   │   ├── getObjectUniqueId.test.ts            # 30 tests
 │   │   ├── object.ts
 │   │   └── object.test.ts                       # 8 tests
-│   ├── objectWalkingAdaper.ts
+│   ├── objectWalkingAdapter.ts
 │   └── objectTreeWalkingFactory.test.ts         # 2 tests
 └── react-obj-view/
     ├── hooks/
-    │   ├── useCopy.tsx
-    │   ├── useCopy.test.tsx                     # 5 tests
     │   ├── useHoverInteractions.tsx
     │   └── useHoverInteractions.test.tsx        # 8 tests
-    └── value-renders/
+    └── actions/
+        ├── ActionRender.tsx
         ├── Actions.tsx
-        └── Actions.test.tsx                     # 10 tests
+        ├── Actions.test.tsx                     # 10 tests
+        ├── custom-actions.test.tsx              # 5 tests
+        └── defaultAction.tsx
 ```
 └── test/
     └── setup.ts                       # Test setup & globals
@@ -226,7 +227,7 @@ src/
   - Refresh path handling
   - Toggle child expansion
 
-- **useRednerIndexesWithSticky.test.tsx** (2 tests)
+- **useRenderIndexesWithSticky.test.tsx** (2 tests)
   - Sticky header calculation
   - Visible index computation
 
@@ -287,13 +288,7 @@ src/
   - Object tree walking integration
   - Adapter configuration
 
-#### 6. React Object View Components & Hooks (23 tests)
-- **useCopy.test.tsx** (5 tests)
-  - Clipboard copy operations
-  - Success and error states
-  - Manual reset functionality
-  - Async callback handling
-
+#### 6. React Object View Components & Hooks (18 tests)
 - **useHoverInteractions.test.tsx** (8 tests)
   - Mouse enter/leave events
   - CSS property updates

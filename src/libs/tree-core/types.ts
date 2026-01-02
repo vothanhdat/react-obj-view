@@ -39,7 +39,7 @@ export type WalkingContext<Config> = {
 };
 
 
-export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingContext<Config>> = {
+export type WalkingAdapter<Value, Key, Meta, Config, Context extends WalkingContext<Config>> = {
     valueHasChild: (value: Value, meta: Meta, ctx: Context) => boolean;
     iterateChilds: (
         value: Value, ctx: Context, stableRef: unknown,
@@ -56,25 +56,25 @@ export type WalkingAdaper<Value, Key, Meta, Config, Context extends WalkingConte
     onExitNode?: (value: Value, key: Key, meta: Meta, ctx: Context) => void;
 };
 
-export type WalkingAdaperBase = WalkingAdaper<any, any, any, any, any>
+export type WalkingAdapterBase = WalkingAdapter<any, any, any, any, any>
 
-export type InferWalkingResult<T extends WalkingAdaperBase>
-    = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+export type InferWalkingResult<T extends WalkingAdapterBase>
+    = T extends WalkingAdapter<infer Value, infer Key, infer Meta, any, any>
     ? WalkingResult<Value, Key, Meta>
     : WalkingResult<any, any, any>
 
-export type InferNodeResult<T extends WalkingAdaperBase>
-    = T extends WalkingAdaper<infer Value, infer Key, infer Meta, any, any>
+export type InferNodeResult<T extends WalkingAdapterBase>
+    = T extends WalkingAdapter<infer Value, infer Key, infer Meta, any, any>
     ? NodeResult<Value, Key, Meta>
     : NodeResult<any, any, any>
 
-export type InferWalkingInstance<T extends WalkingAdaperBase>
-    = T extends WalkingAdaper<infer Value, infer Key, infer Meta, infer Config, infer Context>
+export type InferWalkingInstance<T extends WalkingAdapterBase>
+    = T extends WalkingAdapter<infer Value, infer Key, infer Meta, infer Config, infer Context>
     ? ReturnType<typeof walkingFactory<Value, Key, Meta, Config, Context>>
     : ReturnType<typeof walkingFactory<any, any, any, any, any>>
 
-export type InferWalkingType<T extends WalkingAdaperBase>
-    = T extends WalkingAdaper<infer Value, infer Key, infer Meta, infer Config, infer Context>
+export type InferWalkingType<T extends WalkingAdapterBase>
+    = T extends WalkingAdapter<infer Value, infer Key, infer Meta, infer Config, infer Context>
     ? { Value: Value; Key: Key; Meta: Meta; Config: Config; Context: Context }
     : { Value: any; Key: any; Meta: any; Config: any; Context: any }
 

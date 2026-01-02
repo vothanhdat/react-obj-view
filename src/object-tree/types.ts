@@ -1,5 +1,5 @@
-import { parseWalkingMeta } from "./objectWalkingAdaper";
-import type { WalkingContext, WalkingAdaper, InferWalkingResult, InferNodeResult, InferWalkingInstance } from "../libs/tree-core";
+import { parseWalkingMeta } from "./objectWalkingAdapter";
+import type { WalkingContext, WalkingAdapter, InferWalkingResult, InferNodeResult, InferWalkingInstance } from "../libs/tree-core";
 import { CircularChecking } from "./utils/CircularChecking";
 
 type ResolverFnCb = (key: PropertyKey, value: unknown, meta: number) => boolean | void
@@ -32,7 +32,7 @@ export type ObjectWalkingContext = WalkingContext<ObjectWalkingConfig> & {
     circularChecking: CircularChecking;
 };
 
-export type ObjectWalkingAdater = WalkingAdaper<
+export type ObjectWalkingAdater = WalkingAdapter<
     unknown, PropertyKey, WalkingMeta, ObjectWalkingConfig, ObjectWalkingContext
 >;
 

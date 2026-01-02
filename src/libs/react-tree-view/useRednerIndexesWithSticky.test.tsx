@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useRednerIndexesWithSticky } from "./useRednerIndexesWithSticky";
+import { useRenderIndexesWithSticky } from "./useRenderIndexesWithSticky";
 import type { FlattenNodeWrapper } from "./FlattenNodeWrapper";
 
 const createNode = (childCount: number, parentIndex: number[]): FlattenNodeWrapper<any, any> => ({
@@ -8,9 +8,9 @@ const createNode = (childCount: number, parentIndex: number[]): FlattenNodeWrapp
     parentIndex,
 } as unknown as FlattenNodeWrapper<any, any>);
 
-describe("useRednerIndexesWithSticky", () => {
+describe("useRenderIndexesWithSticky", () => {
     it("returns contiguous indexes when sticky headers are disabled", () => {
-        const { result } = renderHook(() => useRednerIndexesWithSticky({
+        const { result } = renderHook(() => useRenderIndexesWithSticky({
             start: 0,
             end: 60,
             childCount: 4,
@@ -35,7 +35,7 @@ describe("useRednerIndexesWithSticky", () => {
             [4, createNode(1, [])],
         ]);
 
-        const { result } = renderHook(() => useRednerIndexesWithSticky({
+        const { result } = renderHook(() => useRenderIndexesWithSticky({
             start: 20,
             end: 50,
             childCount: 5,

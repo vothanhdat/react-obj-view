@@ -103,7 +103,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
 | `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes `search(filterFn?, markTerm?, onResult?, options)` (options: `iterateSize`, `maxDepth`, `fullSearch`, `maxResult` default `99999`) and `scrollToPaths(paths, scrollOpts, offsetTop?, offsetBottom?)` for jump-to-match navigation. Call `search()` with no arguments to clear highlights/results. `scrollToPaths` forwards `ScrollToOptions` and lets you add viewport padding to keep sticky headers or toolbars from covering the target (defaults: `offsetTop=200`, `offsetBottom=100`). Keep the ref stable and memoize search options. |
-| `customActions` | `CustomAction[]` | `DefaultActions` | Array of custom action definitions. [See example](./API_DOCUMENTATION.md#custom-actions). |
+| `customActions` | `CustomAction[]` | `DEFAULT_ACTION` | Array of custom action definitions. [See example](./API_DOCUMENTATION.md#custom-actions). |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `undefined` | **Deprecated**. Use `customActions` instead. |
 | `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
 

@@ -1,11 +1,11 @@
-import type { WalkingAdaperBase, InferWalkingType, InferWalkingResult } from "../tree-core";
+import type { WalkingAdapterBase, InferWalkingType, InferWalkingResult } from "../tree-core";
 
 
 
-export type MetaParserBase<T extends WalkingAdaperBase> = (e: InferWalkingType<T>['Meta']) => any
+export type MetaParserBase<T extends WalkingAdapterBase> = (e: InferWalkingType<T>['Meta']) => any
 
 export type FlattenNodeData<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>
 > = ReturnType<MetaParser> &
     InferWalkingResult<T> &
@@ -18,7 +18,7 @@ export type FlattenNodeData<
     };
 
 export class FlattenNodeWrapper<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>
 > {
 

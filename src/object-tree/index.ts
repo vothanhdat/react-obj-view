@@ -9,7 +9,7 @@ export {
     parseWalkingMeta,
     objectTreeWalkingFactory,
     valueHasChild as objectHasChild
-} from "./objectWalkingAdaper";
+} from "./objectWalkingAdapter";
 
 
 export {

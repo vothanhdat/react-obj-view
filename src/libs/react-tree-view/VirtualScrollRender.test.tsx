@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { VirtualScrollRender } from './VirtualScrollRender';
-import { useRednerIndexesWithSticky } from './useRednerIndexesWithSticky';
+import { useRenderIndexesWithSticky } from './useRenderIndexesWithSticky';
 
 // Mock dependencies
-vi.mock('./useRednerIndexesWithSticky');
+vi.mock('./useRenderIndexesWithSticky');
 vi.mock('./VirtualScrollRowRender', () => ({
     VirtualScrollRowRender: vi.fn(() => <div data-testid="row-render" />),
 }));
@@ -28,7 +28,7 @@ describe('VirtualScrollRender', () => {
     } as any;
 
     it('should render rows based on calculated indexes', () => {
-        (useRednerIndexesWithSticky as any).mockReturnValue([
+        (useRenderIndexesWithSticky as any).mockReturnValue([
             { isStick: false, index: 0, isLastStick: false, position: 0 },
             { isStick: false, index: 1, isLastStick: false, position: 1 },
         ]);
@@ -40,7 +40,7 @@ describe('VirtualScrollRender', () => {
     });
 
     it('should apply sticky styles correctly', () => {
-        (useRednerIndexesWithSticky as any).mockReturnValue([
+        (useRenderIndexesWithSticky as any).mockReturnValue([
             { isStick: true, index: 0, isLastStick: true, position: 0 },
         ]);
 
@@ -56,7 +56,7 @@ describe('VirtualScrollRender', () => {
     });
 
     it('should apply absolute styles for non-sticky rows', () => {
-        (useRednerIndexesWithSticky as any).mockReturnValue([
+        (useRenderIndexesWithSticky as any).mockReturnValue([
             { isStick: false, index: 5, isLastStick: false, position: 5 },
         ]);
 
@@ -71,7 +71,7 @@ describe('VirtualScrollRender', () => {
     });
 
     it('should render line numbers when enabled', () => {
-        (useRednerIndexesWithSticky as any).mockReturnValue([
+        (useRenderIndexesWithSticky as any).mockReturnValue([
             { isStick: false, index: 5, isLastStick: false, position: 5 },
         ]);
 
@@ -81,7 +81,7 @@ describe('VirtualScrollRender', () => {
     });
 
     it('should not render line numbers when disabled', () => {
-        (useRednerIndexesWithSticky as any).mockReturnValue([
+        (useRenderIndexesWithSticky as any).mockReturnValue([
             { isStick: false, index: 5, isLastStick: false, position: 5 },
         ]);
 

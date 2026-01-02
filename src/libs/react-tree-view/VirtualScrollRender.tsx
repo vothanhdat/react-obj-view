@@ -1,14 +1,14 @@
 import React, { ReactNode } from "react";
 import { VirtualScrollRowRender } from "./VirtualScrollRowRender";
-import { type WalkingAdaperBase } from "../tree-core";
+import { type WalkingAdapterBase } from "../tree-core";
 import { MetaParserBase } from "./FlattenNodeWrapper";
 import { ReactTreeViewVitualRenderProps } from "./types";
-import { useRednerIndexesWithSticky } from "./useRednerIndexesWithSticky";
+import { useRenderIndexesWithSticky } from "./useRenderIndexesWithSticky";
 
 
 
 export const VirtualScrollRender: <
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions
 >(
@@ -32,7 +32,7 @@ export const VirtualScrollRender: <
     } = props;
 
 
-    const renderIndexes = useRednerIndexesWithSticky({
+    const renderIndexes = useRenderIndexesWithSticky({
         start, end, overscan,
         lineHeight, childCount,
         getNodeByIndex,

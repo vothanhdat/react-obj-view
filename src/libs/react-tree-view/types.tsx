@@ -1,13 +1,13 @@
 import React, { RefObject } from "react";
 import type { useReactTree } from "./useReactTree";
-import type { WalkingAdaperBase, InferWalkingInstance, InferWalkingType } from "../tree-core";
+import type { WalkingAdapterBase, InferWalkingInstance, InferWalkingType } from "../tree-core";
 import type { VirtualScrollerHandler, VirtualScrollerRenderProps } from "../virtual-scroller/types";
 import type { MetaParserBase, FlattenNodeData } from "./FlattenNodeWrapper";
 
 
 
 export type ReactTreeHookParams<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>
 > = {
     factory: () => InferWalkingInstance<T>;
@@ -20,7 +20,7 @@ export type ReactTreeHookParams<
 };
 
 export type ReactTreeRowRenderProps<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions = {}
 > = {
@@ -35,7 +35,7 @@ export type ReactTreeRowRenderProps<
 };
 
 export type ReactTreeViewProps<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions
 > = ReturnType<typeof useReactTree<T, MetaParser>> & {
@@ -51,7 +51,7 @@ export type ReactTreeViewProps<
 };
 
 export type ReactTreeViewVitualRenderProps<
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions
 > = VirtualScrollerRenderProps<Omit<

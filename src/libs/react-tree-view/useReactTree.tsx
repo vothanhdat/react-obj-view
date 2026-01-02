@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import { WalkingAdaperBase, InferWalkingInstance, InferWalkingType, InferNodeResult, InferWalkingResult } from "../tree-core";
+import { WalkingAdapterBase, InferWalkingInstance, InferWalkingType, InferNodeResult, InferWalkingResult } from "../tree-core";
 import { MetaParserBase, FlattenNodeWrapper } from "./FlattenNodeWrapper";
 import { ReactTreeHookParams } from "./types";
 import { WalkingResult } from "../tree-core/types";
@@ -16,7 +16,7 @@ enum IterateEvent {
 }
 
 export const useReactTree = <
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>
 >({
     factory, config, expandDepth, metaParser, value, name, iterateSize,

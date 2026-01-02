@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { objectTreeWalkingFactory, parseWalkingMeta } from "./objectWalkingAdaper";
+import { objectTreeWalkingFactory, parseWalkingMeta } from "./objectWalkingAdapter";
 import type { ObjectWalkingConfig } from "./types";
 
 describe("objectTreeWalkingFactory", () => {

@@ -1,9 +1,9 @@
 import { StateFactory, StateReadonyWrap, StateWrap } from "./utils/StateFactory"
-import { WalkingContext, WalkingAdaper, WalkingResult, NodeResult } from "./types"
+import { WalkingContext, WalkingAdapter, WalkingResult, NodeResult } from "./types"
 
 
 const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
-    iterateChilds: WalkingAdaper<Value, Key, Meta, Config, Context>['iterateChilds'],
+    iterateChilds: WalkingAdapter<Value, Key, Meta, Config, Context>['iterateChilds'],
     walkingInternal: any,
     value: Value,
     ctx: Context,
@@ -55,7 +55,7 @@ const iterateChildWrap = <Value, Key, Meta, Config, Context extends WalkingConte
 }
 
 const iterateChildWrapContinues = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
-    iterateChilds: WalkingAdaper<Value, Key, Meta, Config, Context>['iterateChilds'],
+    iterateChilds: WalkingAdapter<Value, Key, Meta, Config, Context>['iterateChilds'],
     walkingInternal: any,
     value: Value,
     ctx: Context,
@@ -157,7 +157,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
         valueDefaultExpaned,
         isValueChange,
         transformValue,
-    }: WalkingAdaper<Value, Key, Meta, Config, Context>
+    }: WalkingAdapter<Value, Key, Meta, Config, Context>
 ) {
 
     return function walkingInternal(
@@ -300,7 +300,7 @@ const stateFactoryFn: () => WalkingResult<any, any, any> = () => ({
 })
 
 export const walkingFactory = <Value, Key, Meta, Config, Context extends WalkingContext<Config>>(
-    adapter: WalkingAdaper<Value, Key, Meta, Config, Context>
+    adapter: WalkingAdapter<Value, Key, Meta, Config, Context>
 ) => {
     const { defaultMeta, defaultContext, getConfigTokenId } = adapter;
 

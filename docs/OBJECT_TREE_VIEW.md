@@ -4,9 +4,9 @@ This guide focuses on the object-specific pieces that sit on top of the generic 
 
 ## 1. Adapter & walker
 
-- [`objectWalkingAdaper`](../src/object-tree/objectWalkingAdaper.ts) implements the `WalkingAdapter` contract for plain objects, arrays, Maps/Sets, lazy wrappers, and any other resolver-supported reference.
-- [`objectTreeWalkingFactory`](../src/object-tree/objectWalkingAdaper.ts#L40) simply calls `walkingFactory(objectWalkingAdaper)` and returns a ready-to-use instance factory for the React hook.
-- [`parseWalkingMeta`](../src/object-tree/objectWalkingAdaper.ts#L6-L15) decodes two bit flags injected during traversal:
+- [`objectWalkingAdapter`](../src/object-tree/objectWalkingAdapter.ts) implements the `WalkingAdapter` contract for plain objects, arrays, Maps/Sets, lazy wrappers, and any other resolver-supported reference.
+- [`objectTreeWalkingFactory`](../src/object-tree/objectWalkingAdapter.ts#L40) simply calls `walkingFactory(objectWalkingAdapter)` and returns a ready-to-use instance factory for the React hook.
+- [`parseWalkingMeta`](../src/object-tree/objectWalkingAdapter.ts#L6-L15) decodes two bit flags injected during traversal:
   - `enumerable` – whether a property should render dimmed styles.
   - `isCircular` – whether the node reuses a previously-visited reference.
 

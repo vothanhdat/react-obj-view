@@ -1,13 +1,13 @@
 import React, { ReactNode, useMemo } from "react";
 import { useWrapper } from "./useWrapper";
-import type { WalkingAdaperBase } from "../tree-core";
+import type { WalkingAdapterBase } from "../tree-core";
 import type { MetaParserBase, FlattenNodeWrapper, FlattenNodeData } from "./FlattenNodeWrapper";
 import type { ReactTreeRowRenderProps } from "./types";
 
 
 
 export const VirtualScrollRowRender: <
-    T extends WalkingAdaperBase,
+    T extends WalkingAdapterBase,
     MetaParser extends MetaParserBase<T>,
     RenderOptions
 >(props: {

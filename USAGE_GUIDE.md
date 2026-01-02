@@ -490,7 +490,7 @@ const user = { name: "Ada", roles: ["admin"] };
 // Click Copy JSON to copy {"name":"Ada","roles":["admin"]}
 ```
 
-Copy actions show success/error feedback and automatically reset after 5 seconds. The functionality is powered by the [`useCopy`](src/react-obj-view/hooks/useCopy.tsx) hook and the browser Clipboard API.
+Copy actions show success/error feedback and automatically reset after 5 seconds. The functionality is powered by the [`DEFAULT_ACTION`](src/react-obj-view/actions/defaultAction.tsx) and the browser Clipboard API.
 
 ### Line Numbers
 

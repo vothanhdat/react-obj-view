@@ -1,4 +1,4 @@
-import { objectTreeWalkingFactory } from "./objectWalkingAdaper";
+import { objectTreeWalkingFactory } from "./objectWalkingAdapter";
 import { ObjectWalkingConfig } from "./types";
 import { allExamples } from "../exampleData";
 import { count } from "console";

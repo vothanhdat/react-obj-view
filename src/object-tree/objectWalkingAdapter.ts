@@ -23,7 +23,7 @@ export const parseWalkingMeta = (e: WalkingMeta) => {
     };
 };
 
-export const objectWalkingAdaper: ObjectWalkingAdater = {
+export const objectWalkingAdapter: ObjectWalkingAdater = {
     transformValue(value, ref) {
         return value instanceof LazyValue && value.inited
             ? value.value ?? value.error
@@ -65,6 +65,6 @@ export const objectWalkingAdaper: ObjectWalkingAdater = {
     },
 };
 
-export const objectTreeWalkingFactory = () => walkingFactory(objectWalkingAdaper);
+export const objectTreeWalkingFactory = () => walkingFactory(objectWalkingAdapter);
 
-export const valueHasChild = objectWalkingAdaper.valueHasChild
+export const valueHasChild = objectWalkingAdapter.valueHasChild
