@@ -263,9 +263,9 @@
         display: flex;
         height: 90%;
         user-select: none;
-        /* display: flex; */
         align-self: center;
         vertical-align: middle;
+        align-items: center;
         align-content: stretch;
         gap: 0.3em;
         padding-inline-start: 0.3em;
