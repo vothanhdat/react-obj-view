@@ -17,6 +17,7 @@ import { useObjectViewSearch } from "../react-obj-view/search/useObjectViewSearc
 import type { RenderOptions, SearchOptions, ObjectViewHandle } from "../react-obj-view/types";
 import { TerminalScroller, TerminalScrollerHandle, clampFirstVisible } from "./TerminalScroller";
 import { useKeyboardNav } from "./useKeyboardNav";
+import { useMouse } from "./useMouse";
 import { SearchInput } from "./SearchInput";
 import { InkTheme, themeDark, inkThemeKeys } from "../ink-obj-view-themes";
 
@@ -38,6 +39,7 @@ export type InkObjectViewProps = {
     searchOptions?: SearchOptions;
     onCopy?: (paths: PropertyKey[], value: unknown) => void | Promise<void>;
     onExit?: () => void;
+    enableMouse?: boolean;
     ref?: React.RefObject<ObjectViewHandle | undefined>;
 };
 
@@ -61,6 +63,7 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     searchOptions,
     onCopy,
     onExit,
+    enableMouse = false,
     ref,
 }) => {
     const value = useMemo(() => valueGetter(), [valueGetter]);
@@ -182,6 +185,24 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     useInput((_input: string, key: Key) => {
         if (key.escape) setSearchMode(false);
     }, { isActive: searchMode });
+
+    const headerRows = 1;
+    useMouse({
+        enabled: enableMouse && !searchMode,
+        onScroll: useCallback((delta: number) => {
+            setFocusedIndex(Math.max(0, Math.min(childCount - 1, focusedIndex + delta)));
+        }, [focusedIndex, childCount, setFocusedIndex]),
+        onClick: useCallback((e: { row: number; col: number }) => {
+            const targetIdx = firstVisibleIndex + Math.max(0, e.row - headerRows);
+            if (targetIdx >= 0 && targetIdx < childCount) setFocusedIndex(targetIdx);
+        }, [firstVisibleIndex, childCount, setFocusedIndex]),
+        onDoubleClick: useCallback((e: { row: number; col: number }) => {
+            const targetIdx = firstVisibleIndex + Math.max(0, e.row - headerRows);
+            if (targetIdx < 0 || targetIdx >= childCount) return;
+            const node = getNodeByIndex(targetIdx);
+            if (node?.hasChild) toggleChildExpand({ paths: node.paths });
+        }, [firstVisibleIndex, childCount, getNodeByIndex, toggleChildExpand]),
+    });
 
     const options = useMemo<RenderOptions>(() => ({
         enablePreview: preview,

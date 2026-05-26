@@ -18,6 +18,7 @@ const cli = meow(`
       --line-numbers        Show row indices on the left
       --include-symbols     Include symbol-keyed properties
       --non-enumerable      Show non-enumerable properties
+      --mouse               Enable mouse click + scroll wheel (disables native text selection)
 `, {
     importMeta: import.meta,
     flags: {
@@ -29,6 +30,7 @@ const cli = meow(`
         lineNumbers: { type: "boolean", default: false },
         includeSymbols: { type: "boolean", default: false },
         nonEnumerable: { type: "boolean", default: false },
+        mouse: { type: "boolean", default: false },
     },
 });
 
@@ -109,6 +111,7 @@ async function main() {
             showLineNumbers={cli.flags.lineNumbers as boolean}
             includeSymbols={cli.flags.includeSymbols as boolean}
             nonEnumerable={cli.flags.nonEnumerable as boolean}
+            enableMouse={cli.flags.mouse as boolean}
         />,
         { stdin: inkStdin, exitOnCtrlC: true },
     );

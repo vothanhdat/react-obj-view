@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, useMemo } from "react";
+import React, { useImperativeHandle, useMemo, memo } from "react";
 import { Box, Text } from "ink";
 import type { FlattenNodeWrapper, FlattenNodeData } from "../libs/react-tree-view/FlattenNodeWrapper";
 import { useRenderIndexesWithSticky } from "../libs/react-tree-view/useRenderIndexesWithSticky";
@@ -30,17 +30,43 @@ export type TerminalScrollerProps = {
     ref?: React.RefObject<TerminalScrollerHandle | undefined>;
 };
 
-const InkRow: React.FC<{
+type InkRowProps = {
     index: number;
     isSticky: boolean;
     isLastSticky: boolean;
+    isFocused: boolean;
+    isSearchCurrent: boolean;
     size: number;
     getNodeByIndex: TerminalScrollerProps["getNodeByIndex"];
     options: RenderOptions;
-    extras: InkRowExtras;
+    theme: InkTheme;
     showLineNumbers: boolean;
     lineNumberChars: number;
-}> = ({ index, isSticky, isLastSticky, size, getNodeByIndex, options, extras, showLineNumbers, lineNumberChars }) => {
+    onToggleExpand: TerminalScrollerProps["toggleChildExpand"];
+    onRefreshPath: TerminalScrollerProps["refreshPath"];
+};
+
+const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
+    a.index === b.index
+    && a.isSticky === b.isSticky
+    && a.isLastSticky === b.isLastSticky
+    && a.isFocused === b.isFocused
+    && a.isSearchCurrent === b.isSearchCurrent
+    && a.size === b.size
+    && a.getNodeByIndex === b.getNodeByIndex
+    && a.options === b.options
+    && a.theme === b.theme
+    && a.showLineNumbers === b.showLineNumbers
+    && a.lineNumberChars === b.lineNumberChars
+    && a.onToggleExpand === b.onToggleExpand
+    && a.onRefreshPath === b.onRefreshPath;
+
+const InkRow = memo<InkRowProps>(({
+    index, isSticky, isLastSticky, isFocused, isSearchCurrent,
+    size, getNodeByIndex, options, theme,
+    showLineNumbers, lineNumberChars,
+    onToggleExpand, onRefreshPath,
+}) => {
 
     const flattenNodeWrapper = useMemo(
         () => (index < size ? getNodeByIndex(index) : undefined),
@@ -56,18 +82,21 @@ const InkRow: React.FC<{
     const valueWrapper = useWrapper(flattenNodeData?.value);
 
     const actions = useMemo(() => ({
-        refreshPath: () => flattenNodeData && (extras as any)?.onRefreshPath?.(flattenNodeData),
-        toggleChildExpand: () => flattenNodeData && (extras as any)?.onToggleExpand?.(flattenNodeData),
-    }), [flattenNodeData, extras]);
+        refreshPath: () => flattenNodeData && onRefreshPath(flattenNodeData),
+        toggleChildExpand: () => flattenNodeData && onToggleExpand(flattenNodeData),
+    }), [flattenNodeData, onRefreshPath, onToggleExpand]);
+
+    const extras = useMemo<InkRowExtras>(
+        () => ({ theme, isFocused, isSearchCurrent, isSticky }),
+        [theme, isFocused, isSearchCurrent, isSticky],
+    );
 
     if (!flattenNodeData) return null;
 
-    const focused = !isSticky && extras.isFocused;
-
     return (
-        <Text wrap="truncate-end" inverse={focused}>
+        <Text wrap="truncate-end" inverse={isFocused}>
             {showLineNumbers && (
-                <Text {...extras.theme[inkThemeKeys.status]}>
+                <Text {...theme[inkThemeKeys.status]}>
                     {String(index).padStart(lineNumberChars, " ")}
                     {isSticky ? "·" : ":"}{" "}
                 </Text>
@@ -78,14 +107,15 @@ const InkRow: React.FC<{
                 options={options}
                 renderIndex={index}
                 actions={actions}
-                extras={{ ...extras, isFocused: focused, isSticky }}
+                extras={extras}
             />
             {isLastSticky && (
-                <Text {...extras.theme[inkThemeKeys.indent]}> ─</Text>
+                <Text {...theme[inkThemeKeys.indent]}> ─</Text>
             )}
         </Text>
     );
-};
+}, arePropsEqual);
+InkRow.displayName = "InkRow";
 
 export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
     totalRows,
@@ -127,32 +157,28 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
 
     const lineNumberChars = Math.max(2, String(renderIndexes.at(-1)?.index ?? 0).length);
 
-    const handlerExtras = useMemo(
-        () => ({ onToggleExpand: toggleChildExpand, onRefreshPath: refreshPath }),
-        [toggleChildExpand, refreshPath],
-    );
-
     return (
         <Box flexDirection="column">
-            {renderIndexes.map(({ isStick, index, isLastStick }, n) => {
-                const extras: InkRowExtras & { onToggleExpand?: any; onRefreshPath?: any } = {
-                    theme,
-                    isFocused: !isStick && index === focusedIndex,
-                    isSearchCurrent: !isStick && index === searchCurrentIndex,
-                    ...handlerExtras,
-                };
+            {renderIndexes.map(({ isStick, index, isLastStick }) => {
+                const stickyB = !!isStick;
+                const focused = !stickyB && index === focusedIndex;
+                const searchCurrent = !stickyB && index === searchCurrentIndex;
                 return (
                     <InkRow
-                        key={computeItemKey(index) + (isStick ? "-s" : "")}
+                        key={computeItemKey(index) + (stickyB ? "-s" : "")}
                         index={index}
-                        isSticky={!!isStick}
+                        isSticky={stickyB}
                         isLastSticky={!!isLastStick}
+                        isFocused={focused}
+                        isSearchCurrent={searchCurrent}
                         size={totalRows}
                         getNodeByIndex={getNodeByIndex}
                         options={options}
-                        extras={extras as InkRowExtras}
+                        theme={theme}
                         showLineNumbers={showLineNumbers}
                         lineNumberChars={lineNumberChars}
+                        onToggleExpand={toggleChildExpand}
+                        onRefreshPath={refreshPath}
                     />
                 );
             })}

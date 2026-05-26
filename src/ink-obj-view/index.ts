@@ -2,6 +2,7 @@ export { InkObjectView, type InkObjectViewProps } from "./InkObjectView";
 export { TerminalScroller, type TerminalScrollerHandle, type TerminalScrollerProps, clampFirstVisible } from "./TerminalScroller";
 export { RenderNodeInk, type InkRowProps, type InkRowExtras } from "./RenderNodeInk";
 export { useKeyboardNav, type KeyboardNavParams } from "./useKeyboardNav";
+export { useMouse, type MouseHandlerParams } from "./useMouse";
 export { SearchInput, type SearchInputProps } from "./SearchInput";
 export { formatValueRaw, formatValuePreview, segmentsText, type Segment } from "./formatValue";
 export { highlightSegments, buildMarkRegex } from "./highlightSegments";
