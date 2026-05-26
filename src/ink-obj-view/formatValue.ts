@@ -16,20 +16,21 @@ export type Segment = {
     entry?: InkThemeEntry;
 };
 
-const MAX_STRING_LEN = 200;
+const MAX_STRING_LEN_RAW = 200;
+const MAX_STRING_LEN_PREVIEW = 32;
 const MAX_PREVIEW_ENTRIES = 5;
 
 const themeFor = (theme: InkTheme, key: keyof typeof inkThemeKeys): InkThemeEntry =>
     theme[inkThemeKeys[key]] ?? {};
 
-const truncateString = (s: string, max = MAX_STRING_LEN): string =>
+const truncateString = (s: string, max: number): string =>
     s.length > max ? s.slice(0, max) + "…" : s;
 
 const escapeString = (s: string): string =>
     s.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
 
-const formatStringValue = (value: string, theme: InkTheme): Segment[] => [
-    { text: `"${escapeString(truncateString(value))}"`, entry: themeFor(theme, "string") },
+const formatStringValue = (value: string, theme: InkTheme, maxLen: number): Segment[] => [
+    { text: `"${escapeString(truncateString(value, maxLen))}"`, entry: themeFor(theme, "string") },
 ];
 
 const formatFunction = (value: Function, theme: InkTheme): Segment[] => {
@@ -55,7 +56,7 @@ const formatTypeLabel = (value: unknown, theme: InkTheme): Segment[] => {
     return [{ text: String(value), entry: themeFor(theme, "object") }];
 };
 
-const formatPrimitive = (value: unknown, theme: InkTheme): Segment[] | null => {
+const formatPrimitive = (value: unknown, theme: InkTheme, maxStringLen: number): Segment[] | null => {
     switch (typeof value) {
         case "boolean":
             return [{ text: String(value), entry: themeFor(theme, "bool") }];
@@ -64,7 +65,7 @@ const formatPrimitive = (value: unknown, theme: InkTheme): Segment[] | null => {
         case "bigint":
             return [{ text: String(value) + "n", entry: themeFor(theme, "bigint") }];
         case "string":
-            return formatStringValue(value, theme);
+            return formatStringValue(value, theme, maxStringLen);
         case "symbol":
             return [{ text: value.toString(), entry: themeFor(theme, "symbol") }];
         case "undefined":
@@ -81,8 +82,17 @@ export type FormatValueOpts = {
     includeSymbols?: boolean;
 };
 
-export const formatValueRaw = (value: unknown, theme: InkTheme): Segment[] => {
-    const prim = formatPrimitive(value, theme);
+export type FormatValueRawOpts = {
+    maxStringLen?: number;
+};
+
+export const formatValueRaw = (
+    value: unknown,
+    theme: InkTheme,
+    opts: FormatValueRawOpts = {},
+): Segment[] => {
+    const maxStringLen = opts.maxStringLen ?? MAX_STRING_LEN_RAW;
+    const prim = formatPrimitive(value, theme, maxStringLen);
     if (prim) return prim;
     if (value === null) return [{ text: "null", entry: themeFor(theme, "nullish") }];
     if (value instanceof LazyValueError) return [{ text: `LazyValueError: ${value.message ?? "?"}`, entry: themeFor(theme, "error") }];
@@ -95,16 +105,17 @@ export const formatValueRaw = (value: unknown, theme: InkTheme): Segment[] => {
 };
 
 export const formatValuePreview = (value: unknown, { theme, resolver, includeSymbols }: FormatValueOpts): Segment[] => {
-    if (value === null || value === undefined) return formatValueRaw(value, theme);
-    const prim = formatPrimitive(value, theme);
+    const previewOpts: FormatValueRawOpts = { maxStringLen: MAX_STRING_LEN_PREVIEW };
+    if (value === null || value === undefined) return formatValueRaw(value, theme, previewOpts);
+    const prim = formatPrimitive(value, theme, MAX_STRING_LEN_PREVIEW);
     if (prim) return prim;
     if (value instanceof Date || value instanceof RegExp || value instanceof Error
         || value instanceof LazyValue || value instanceof LazyValueError
         || value instanceof InternalPromise || value instanceof GroupedProxy
         || value instanceof ItemViewBase || value instanceof CustomEntry) {
-        return formatValueRaw(value, theme);
+        return formatValueRaw(value, theme, previewOpts);
     }
-    if (typeof value !== "object") return formatValueRaw(value, theme);
+    if (typeof value !== "object") return formatValueRaw(value, theme, previewOpts);
 
     const isArray = Array.isArray(value);
     const hideKey = isArray
@@ -150,7 +161,7 @@ export const formatValuePreview = (value: unknown, { theme, resolver, includeSym
             segments.push({ text: String(entry.key), entry: themeFor(theme, "key") });
             segments.push({ text: ": ", entry: themeFor(theme, "object") });
         }
-        segments.push(...formatValueRaw(entry.value, theme));
+        segments.push(...formatValueRaw(entry.value, theme, { maxStringLen: MAX_STRING_LEN_PREVIEW }));
     });
 
     if (entries.length > MAX_PREVIEW_ENTRIES) {
