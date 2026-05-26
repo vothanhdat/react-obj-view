@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { RenderNode } from "./components/RenderNode";
-import { ObjectViewHandle, RenderOptions, SearchOptionBase } from "./types";
+import { ObjectViewHandle, RenderOptions } from "./types";
 import { ObjectViewProps } from "./types";
 import { ReactTreeView, useReactTree } from "../libs/react-tree-view";
 import {
@@ -11,15 +11,12 @@ import {
     GROUP_ARRAY_RESOLVER,
     GROUP_OBJECT_RESOLVER,
     TYPED_ARRAY_RESOLVERS,
-    ItemViewBase,
-    LazyValue,
-    InternalPromise,
 } from "../object-tree";
 import { InferWalkingType } from "../libs/tree-core";
 import { joinClasses } from "../utils/joinClasses";
 import { useHoverInteractions } from "./hooks/useHoverInteractions";
 import { HightlightWrapper } from "./hooks/useHighlight";
-import { NON_CIRCULAR_BIT } from "../object-tree/meta" with {type: "macro"};;
+import { createSearchHandler } from "./search/searchHandler";
 import "./components/style.css"
 
 
@@ -134,78 +131,21 @@ export const ObjectView: React.FC<ObjectViewProps> = ({
     const searchObj: ObjectViewHandle = useMemo(
         () => {
 
-            let currentFilterFn = undefined
+            const { search } = createSearchHandler({
+                travelAndSearch: objectTree.travelAndSearch,
+                setSearch,
+                onResetMark: () => containerRef.current?.style.setProperty("--mark-index", String(-1)),
+            });
 
             return {
-                async search(
-                    filterFn?: ((value: unknown, key: PropertyKey, paths: PropertyKey[]) => boolean),
-                    markTerm?: string | RegExp,
-                    onResult: (results: PropertyKey[][]) => void = () => { },
-                    options: SearchOptionBase = {}
-                ) {
-
-                    currentFilterFn = filterFn;
-
-                    const nextSearch = filterFn
-                        ? { markTerm, filterFn }
-                        : { markTerm: undefined, filterFn: undefined }
-
-                    setSearch(nextSearch);
-
-                    containerRef.current?.style.setProperty(
-                        "--mark-index", String(-1)
-                    )
-
-                    if (!filterFn) { return; }
-
-                    let searchResults: InferWalkingType<ObjectWalkingAdapter>['Key'][][] = []
-                    let searchResultCouter = 0
-                    let MAX_RESULT = options?.maxResult ?? 99999
-
-                    for (let _ of objectTree.travelAndSearch(
-                        (value, key, path) => {
-                            if (filterFn(value, key, path)) {
-                                searchResults.push([...path])
-                                searchResultCouter++;
-                                return searchResultCouter >= MAX_RESULT
-                            }
-                        },
-                        options?.iterateSize,
-                        options?.maxDepth,
-                        options?.fullSearch,
-                        (value, key, meta, ctx) => {
-                            // console.log(value);
-                            return typeof value === 'object'
-                                && (meta & NON_CIRCULAR_BIT) === NON_CIRCULAR_BIT
-                                && key !== "[[Prototype]]"
-                                && key !== "[[buffer]]"
-                                && key !== "[[data]]"
-                                && !(value instanceof LazyValue)
-                                && !(value instanceof InternalPromise)
-                        }
-                    )) {
-
-                        onResult(searchResults);
-                        searchResults = []
-
-                        await new Promise(r => (window.requestIdleCallback || window.requestAnimationFrame)(r));
-
-                        if (currentFilterFn !== filterFn) { searchResults = []; return; }
-                        if (searchResultCouter >= MAX_RESULT) { break }
-                    }
-
-                    onResult(searchResults);
-                    searchResults = []
-                },
+                search,
                 async scrollToPaths(
                     paths: InferWalkingType<ObjectWalkingAdapter>['Key'][],
                     options?: ScrollToOptions,
                     ...args
                 ) {
 
-                    // console.log(paths)
                     let pathIndex = await expandAndGetIndex(paths);
-                    // console.log({ pathIndex })
                     if (pathIndex > -1) {
 
                         containerRef.current?.style.setProperty(

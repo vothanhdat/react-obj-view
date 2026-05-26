@@ -5,6 +5,7 @@ import { ReactTreeHookParams } from "./types";
 import { WalkingResult } from "../tree-core/types";
 import { PromiseEvent, promiseEvent } from "./promiseEvent";
 import { isDev } from "../../utils/isDev";
+import { scheduleIdle } from "../../utils/scheduleIdle";
 
 
 
@@ -59,7 +60,7 @@ export const useReactTree = <
 
                     runningRef.current.event.emit(IterateEvent.ROUND)
 
-                    await new Promise(r => (window.requestIdleCallback ?? window.requestAnimationFrame)(r))
+                    await new Promise<void>(r => scheduleIdle(r))
 
                     if (!isRunning) {
                         break;
