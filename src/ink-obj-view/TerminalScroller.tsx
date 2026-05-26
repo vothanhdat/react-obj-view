@@ -62,8 +62,10 @@ const InkRow: React.FC<{
 
     if (!flattenNodeData) return null;
 
+    const focused = !isSticky && extras.isFocused;
+
     return (
-        <Box flexDirection="row">
+        <Text wrap="truncate-end" inverse={focused}>
             {showLineNumbers && (
                 <Text {...extras.theme[inkThemeKeys.status]}>
                     {String(index).padStart(lineNumberChars, " ")}
@@ -76,12 +78,12 @@ const InkRow: React.FC<{
                 options={options}
                 renderIndex={index}
                 actions={actions}
-                extras={{ ...extras, isFocused: !isSticky && extras.isFocused }}
+                extras={{ ...extras, isFocused: focused, isSticky }}
             />
             {isLastSticky && (
                 <Text {...extras.theme[inkThemeKeys.indent]}> ─</Text>
             )}
-        </Box>
+        </Text>
     );
 };
 

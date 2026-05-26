@@ -61,6 +61,9 @@ async function loadJSON(): Promise<unknown> {
     }
 }
 
+const ALT_SCREEN_ENTER = "\x1b[?1049h\x1b[2J\x1b[H";
+const ALT_SCREEN_EXIT = "\x1b[?1049l";
+
 async function main() {
     const data = await loadJSON();
 
@@ -82,6 +85,20 @@ async function main() {
         }
     }
 
+    const useAltScreen = process.stdout.isTTY && !process.env.REACT_OBJ_VIEW_NO_ALT;
+
+    let restored = false;
+    const restore = () => {
+        if (restored) return;
+        restored = true;
+        if (useAltScreen) process.stdout.write(ALT_SCREEN_EXIT);
+    };
+
+    if (useAltScreen) process.stdout.write(ALT_SCREEN_ENTER);
+    process.on("exit", restore);
+    process.on("SIGINT", () => { restore(); process.exit(130); });
+    process.on("SIGTERM", () => { restore(); process.exit(143); });
+
     const { waitUntilExit } = render(
         <InkObjectView
             valueGetter={() => data}
@@ -96,7 +113,11 @@ async function main() {
         { stdin: inkStdin, exitOnCtrlC: true },
     );
 
-    await waitUntilExit();
+    try {
+        await waitUntilExit();
+    } finally {
+        restore();
+    }
 }
 
 main().catch((err) => {
