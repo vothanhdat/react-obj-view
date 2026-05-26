@@ -1,33 +1,27 @@
-import React, { useImperativeHandle, useMemo, memo } from "react";
+import React, { useMemo, memo } from "react";
 import { Box, Text } from "ink";
 import type { FlattenNodeWrapper, FlattenNodeData } from "../libs/react-tree-view/FlattenNodeWrapper";
 import { useRenderIndexesWithSticky } from "../libs/react-tree-view/useRenderIndexesWithSticky";
 import type { ObjectWalkingAdapter, ObjectWalkingMetaParser } from "../object-tree";
 import type { RenderOptions } from "../react-obj-view/types";
 import { useWrapper } from "../libs/react-tree-view/useWrapper";
-import { RenderNodeInk, InkRowExtras } from "./RenderNodeInk";
+import { RenderNodeInk } from "./RenderNodeInk";
 import { InkTheme, inkThemeKeys } from "../ink-obj-view-themes";
-
-export type TerminalScrollerHandle = {
-    scrollToIndex: (index: number) => void;
-};
 
 export type TerminalScrollerProps = {
     totalRows: number;
     visibleRows: number;
     focusedIndex: number;
     firstVisibleIndex: number;
-    setFirstVisibleIndex: (next: number) => void;
     getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser> | undefined;
     toggleChildExpand: (params: { paths: PropertyKey[] }) => void;
     refreshPath: (params: { paths: PropertyKey[] }) => void;
     computeItemKey: (index: number) => string;
-    options: RenderOptions;
-    theme: InkTheme;
+    optionsGetter: () => RenderOptions;
+    themeGetter: () => InkTheme;
     stickyPathHeaders?: boolean;
     showLineNumbers?: boolean;
     searchCurrentIndex?: number;
-    ref?: React.RefObject<TerminalScrollerHandle | undefined>;
 };
 
 type InkRowProps = {
@@ -38,14 +32,16 @@ type InkRowProps = {
     isSearchCurrent: boolean;
     size: number;
     getNodeByIndex: TerminalScrollerProps["getNodeByIndex"];
-    options: RenderOptions;
-    theme: InkTheme;
+    optionsGetter: () => RenderOptions;
+    themeGetter: () => InkTheme;
     showLineNumbers: boolean;
     lineNumberChars: number;
     onToggleExpand: TerminalScrollerProps["toggleChildExpand"];
     onRefreshPath: TerminalScrollerProps["refreshPath"];
 };
 
+// All props are primitives or stable refs (getter callbacks / function refs).
+// Shallow `Object.is` is sufficient to skip the vast majority of re-renders.
 const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
     a.index === b.index
     && a.isSticky === b.isSticky
@@ -54,8 +50,8 @@ const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
     && a.isSearchCurrent === b.isSearchCurrent
     && a.size === b.size
     && a.getNodeByIndex === b.getNodeByIndex
-    && a.options === b.options
-    && a.theme === b.theme
+    && a.optionsGetter === b.optionsGetter
+    && a.themeGetter === b.themeGetter
     && a.showLineNumbers === b.showLineNumbers
     && a.lineNumberChars === b.lineNumberChars
     && a.onToggleExpand === b.onToggleExpand
@@ -63,7 +59,7 @@ const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
 
 const InkRow = memo<InkRowProps>(({
     index, isSticky, isLastSticky, isFocused, isSearchCurrent,
-    size, getNodeByIndex, options, theme,
+    size, getNodeByIndex, optionsGetter, themeGetter,
     showLineNumbers, lineNumberChars,
     onToggleExpand, onRefreshPath,
 }) => {
@@ -81,17 +77,16 @@ const InkRow = memo<InkRowProps>(({
     const nodeDataWrapper = useWrapper(flattenNodeData!);
     const valueWrapper = useWrapper(flattenNodeData?.value);
 
-    const actions = useMemo(() => ({
-        refreshPath: () => flattenNodeData && onRefreshPath(flattenNodeData),
-        toggleChildExpand: () => flattenNodeData && onToggleExpand(flattenNodeData),
-    }), [flattenNodeData, onRefreshPath, onToggleExpand]);
-
-    const extras = useMemo<InkRowExtras>(
-        () => ({ theme, isFocused, isSearchCurrent, isSticky }),
-        [theme, isFocused, isSearchCurrent, isSticky],
+    const actionsGetter = useWrapper(
+        useMemo(() => ({
+            refreshPath: () => flattenNodeData && onRefreshPath(flattenNodeData),
+            toggleChildExpand: () => flattenNodeData && onToggleExpand(flattenNodeData),
+        }), [flattenNodeData, onRefreshPath, onToggleExpand]),
     );
 
     if (!flattenNodeData) return null;
+
+    const theme = themeGetter();
 
     return (
         <Text wrap="truncate-end" inverse={isFocused}>
@@ -104,10 +99,13 @@ const InkRow = memo<InkRowProps>(({
             <RenderNodeInk
                 nodeDataWrapper={nodeDataWrapper}
                 valueWrapper={valueWrapper}
-                options={options}
+                optionsGetter={optionsGetter}
+                themeGetter={themeGetter}
                 renderIndex={index}
-                actions={actions}
-                extras={extras}
+                actions={actionsGetter()}
+                isFocused={isFocused}
+                isSearchCurrent={isSearchCurrent}
+                isSticky={isSticky}
             />
             {isLastSticky && (
                 <Text {...theme[inkThemeKeys.indent]}> ─</Text>
@@ -122,28 +120,16 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
     visibleRows,
     focusedIndex,
     firstVisibleIndex,
-    setFirstVisibleIndex,
     getNodeByIndex,
     toggleChildExpand,
     refreshPath,
     computeItemKey,
-    options,
-    theme,
+    optionsGetter,
+    themeGetter,
     stickyPathHeaders = true,
     showLineNumbers = false,
     searchCurrentIndex,
-    ref,
 }) => {
-
-    useImperativeHandle(ref, () => ({
-        scrollToIndex: (index: number) => {
-            const margin = 2;
-            if (index < firstVisibleIndex) setFirstVisibleIndex(Math.max(0, index - margin));
-            else if (index >= firstVisibleIndex + Math.max(1, visibleRows - margin)) {
-                setFirstVisibleIndex(Math.max(0, index - visibleRows + margin + 1));
-            }
-        },
-    }), [firstVisibleIndex, visibleRows, setFirstVisibleIndex]);
 
     const renderIndexes = useRenderIndexesWithSticky({
         start: firstVisibleIndex,
@@ -173,8 +159,8 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
                         isSearchCurrent={searchCurrent}
                         size={totalRows}
                         getNodeByIndex={getNodeByIndex}
-                        options={options}
-                        theme={theme}
+                        optionsGetter={optionsGetter}
+                        themeGetter={themeGetter}
                         showLineNumbers={showLineNumbers}
                         lineNumberChars={lineNumberChars}
                         onToggleExpand={toggleChildExpand}

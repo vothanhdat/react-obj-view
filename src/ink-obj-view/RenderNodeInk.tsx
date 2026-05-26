@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
 import { Text } from "ink";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../object-tree";
-import { ObjectViewRenderRowProps } from "../react-obj-view/types";
+import type { FlattenNodeData } from "../libs/react-tree-view/FlattenNodeWrapper";
+import type { ObjectWalkingAdapter, ObjectWalkingMetaParser } from "../object-tree";
+import type { RenderOptions } from "../react-obj-view/types";
 import { InkTheme, InkThemeEntry, inkThemeKeys } from "../ink-obj-view-themes";
 import { formatValuePreview, formatValueRaw, Segment } from "./formatValue";
 import { buildMarkRegex, highlightSegments } from "./highlightSegments";
@@ -13,10 +15,19 @@ export type InkRowExtras = {
     isFocused: boolean;
     isSearchCurrent: boolean;
     isSticky?: boolean;
-    width?: number;
 };
 
-export type InkRowProps = ObjectViewRenderRowProps & { extras: InkRowExtras };
+export type RenderNodeInkProps = {
+    nodeDataWrapper: () => FlattenNodeData<ObjectWalkingAdapter, ObjectWalkingMetaParser>;
+    valueWrapper: () => unknown;
+    optionsGetter: () => RenderOptions;
+    themeGetter: () => InkTheme;
+    renderIndex: number;
+    actions: { refreshPath: () => void; toggleChildExpand: () => void };
+    isFocused: boolean;
+    isSearchCurrent: boolean;
+    isSticky?: boolean;
+};
 
 const Span: React.FC<{ entry?: InkThemeEntry; children: React.ReactNode }> = ({ entry, children }) => (
     <Text {...(entry ?? {})}>{children}</Text>
@@ -32,10 +43,13 @@ const SegmentSpans: React.FC<{ segments: Segment[] }> = ({ segments }) => (
     </>
 );
 
-export const RenderNodeInk: React.FC<InkRowProps> = (props) => {
-    const { nodeDataWrapper, valueWrapper, options, extras } = props;
+export const RenderNodeInk: React.FC<RenderNodeInkProps> = ({
+    nodeDataWrapper, valueWrapper, optionsGetter, themeGetter,
+    isFocused, isSearchCurrent, isSticky = false,
+}) => {
+    const options = optionsGetter();
+    const theme = themeGetter();
     const { resolver, nonEnumerable, includeSymbols, enablePreview, search } = options;
-    const { theme, isFocused, isSearchCurrent, isSticky = false } = extras;
 
     const nodeData = nodeDataWrapper();
     const value = valueWrapper();
@@ -102,7 +116,6 @@ export const RenderNodeInk: React.FC<InkRowProps> = (props) => {
 
     const indentStr = INDENT_UNIT.repeat(Math.max(0, depth));
     const focusMark = isFocused ? "›" : isSticky ? "·" : " ";
-    const rowSeparator = ": ";
 
     return (
         <>
@@ -112,7 +125,7 @@ export const RenderNodeInk: React.FC<InkRowProps> = (props) => {
             <Span entry={theme[inkThemeKeys.indent]}>{indentStr}</Span>
             <Span entry={theme[inkThemeKeys.expand]}>{expandGlyph}</Span>
             <SegmentSpans segments={keySegments} />
-            <Text>{rowSeparator}</Text>
+            <Text>: </Text>
             <SegmentSpans segments={valueSegments} />
         </>
     );

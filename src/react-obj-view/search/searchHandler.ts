@@ -19,6 +19,11 @@ export type CreateSearchHandlerParams = {
     onResetMark?: () => void;
 };
 
+const EMPTY_SEARCH: NonNullable<RenderOptions["search"]> = Object.freeze({
+    markTerm: undefined,
+    filterFn: undefined,
+}) as any;
+
 export const createSearchHandler = ({
     travelAndSearch,
     setSearch,
@@ -36,9 +41,7 @@ export const createSearchHandler = ({
 
         currentFilterFn = filterFn;
 
-        setSearch(filterFn
-            ? { markTerm, filterFn }
-            : { markTerm: undefined, filterFn: undefined });
+        setSearch(filterFn ? { markTerm, filterFn } : EMPTY_SEARCH);
 
         onResetMark?.();
 

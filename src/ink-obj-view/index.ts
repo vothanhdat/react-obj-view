@@ -1,6 +1,6 @@
 export { InkObjectView, type InkObjectViewProps } from "./InkObjectView";
-export { TerminalScroller, type TerminalScrollerHandle, type TerminalScrollerProps, clampFirstVisible } from "./TerminalScroller";
-export { RenderNodeInk, type InkRowProps, type InkRowExtras } from "./RenderNodeInk";
+export { TerminalScroller, type TerminalScrollerProps, clampFirstVisible } from "./TerminalScroller";
+export { RenderNodeInk, type RenderNodeInkProps, type InkRowExtras } from "./RenderNodeInk";
 export { useKeyboardNav, type KeyboardNavParams } from "./useKeyboardNav";
 export { useMouse, type MouseHandlerParams } from "./useMouse";
 export { SearchInput, type SearchInputProps } from "./SearchInput";

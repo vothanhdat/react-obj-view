@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, { useCallback, useImperativeHandle, useMemo, useState } from "react";
 import { Box, Text, useInput, useStdout, type Key } from "ink";
 import { useReactTree } from "../libs/react-tree-view";
+import { useWrapper } from "../libs/react-tree-view/useWrapper";
 import {
     objectTreeWalkingFactory,
     parseWalkingMeta,
@@ -15,7 +16,7 @@ import { InferWalkingType } from "../libs/tree-core";
 import { createSearchHandler } from "../react-obj-view/search/searchHandler";
 import { useObjectViewSearch } from "../react-obj-view/search/useObjectViewSearch";
 import type { RenderOptions, SearchOptions, ObjectViewHandle } from "../react-obj-view/types";
-import { TerminalScroller, TerminalScrollerHandle, clampFirstVisible } from "./TerminalScroller";
+import { TerminalScroller, clampFirstVisible } from "./TerminalScroller";
 import { useKeyboardNav } from "./useKeyboardNav";
 import { useMouse } from "./useMouse";
 import { SearchInput } from "./SearchInput";
@@ -109,23 +110,20 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     const [firstVisibleIndex, setFirstVisibleIndex] = useState(0);
     const [searchMode, setSearchMode] = useState(false);
 
-    const scrollerRef = useRef<TerminalScrollerHandle | undefined>(undefined);
-
-    const setFocusedIndex = useCallback((next: number) => {
-        setFocusedIndexRaw(prev => {
-            const clamped = Math.max(0, Math.min(next, Math.max(0, childCount - 1)));
-            return clamped === prev ? prev : clamped;
-        });
-    }, [childCount]);
-
     const { stdout } = useStdout();
     const totalTerminalRows = height ?? stdout?.rows ?? 24;
     // Reserve 1 row for header, 1 for search/help.
     const visibleRows = Math.max(3, totalTerminalRows - 2);
 
-    useEffect(() => {
-        setFirstVisibleIndex(prev => clampFirstVisible(focusedIndex, prev, visibleRows, childCount));
-    }, [focusedIndex, visibleRows, childCount]);
+    // Single batched update so a key press produces ONE render, not two.
+    const setFocusedIndex = useCallback((next: number) => {
+        const clamped = Math.max(0, Math.min(next, Math.max(0, childCount - 1)));
+        setFocusedIndexRaw(prev => (prev === clamped ? prev : clamped));
+        setFirstVisibleIndex(prev => {
+            const nextFirst = clampFirstVisible(clamped, prev, visibleRows, childCount);
+            return prev === nextFirst ? prev : nextFirst;
+        });
+    }, [childCount, visibleRows]);
 
     const { search: handleSearch } = useMemo(
         () => createSearchHandler({
@@ -137,11 +135,8 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
 
     const scrollToPaths = useCallback(async (paths: PropertyKey[]) => {
         const idx = await expandAndGetIndex(paths);
-        if (idx > -1) {
-            setFocusedIndexRaw(idx);
-            scrollerRef.current?.scrollToIndex(idx);
-        }
-    }, [expandAndGetIndex]);
+        if (idx > -1) setFocusedIndex(idx);
+    }, [expandAndGetIndex, setFocusedIndex]);
 
     const searchHook = useObjectViewSearch({
         handleSearch,
@@ -150,7 +145,7 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
         active: true,
     });
 
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(ref, (): ObjectViewHandle => ({
         search: handleSearch as any,
         scrollToPaths: scrollToPaths as any,
     }), [handleSearch, scrollToPaths]);
@@ -216,6 +211,11 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
         search,
     }), [preview, resolver, includeSymbols, showLineNumbers, nonEnumerable, search]);
 
+    // Pass big objects as getter callbacks so React's prop diff sees a stable
+    // function ref, not a fat object literal that gets walked on every render.
+    const optionsGetter = useWrapper(options);
+    const themeGetter = useWrapper(theme);
+
     const currentMatchIndex = focusedIndex;
     const matchCount = searchHook.results.results.length;
 
@@ -228,18 +228,16 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
                 </Text>
             </Box>
             <TerminalScroller
-                ref={scrollerRef}
                 totalRows={childCount}
                 visibleRows={visibleRows}
                 focusedIndex={focusedIndex}
                 firstVisibleIndex={firstVisibleIndex}
-                setFirstVisibleIndex={setFirstVisibleIndex}
                 getNodeByIndex={getNodeByIndex}
                 toggleChildExpand={toggleChildExpand}
                 refreshPath={refreshPath}
                 computeItemKey={computeItemKey}
-                options={options}
-                theme={theme}
+                optionsGetter={optionsGetter}
+                themeGetter={themeGetter}
                 stickyPathHeaders={stickyPathHeaders}
                 showLineNumbers={showLineNumbers}
                 searchCurrentIndex={currentMatchIndex}
