@@ -28,11 +28,12 @@ const external = [
     "react/jsx-runtime",
     "react/jsx-dev-runtime",
     "react-dom",
-    "ink",
-    "ink-text-input",
+    "react-reconciler",
+    "react-reconciler/constants",
+    "@opentui/core",
+    "@opentui/react",
     "meow",
     "clipboardy",
-    "chalk",
     ...nodeBuiltins,
 ];
 
@@ -45,22 +46,23 @@ export default defineConfig({
             },
         }),
         dts({
-            include: ["src/ink-obj-view", "src/ink-obj-view-themes"],
+            include: ["src/tui-obj-view", "src/tui-obj-view-themes"],
             exclude: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-            outDir: "dist-ink/ink",
+            outDir: "dist-tui/tui",
             entryRoot: "src",
         }),
-        chmodBin("dist-ink/cli/react-obj-view.js"),
+        chmodBin("dist-tui/cli/react-obj-view.js"),
     ],
     build: {
-        outDir: "dist-ink",
+        outDir: "dist-tui",
         emptyOutDir: true,
+        copyPublicDir: false,
         target: "node20",
         ssr: true,
         sourcemap: true,
         rollupOptions: {
             input: {
-                "ink/index": "src/ink-obj-view/index.ts",
+                "tui/index": "src/tui-obj-view/index.ts",
                 "cli/react-obj-view": "bin/react-obj-view.tsx",
             },
             external,
@@ -68,8 +70,12 @@ export default defineConfig({
                 format: "esm",
                 entryFileNames: "[name].js",
                 chunkFileNames: "chunks/[name].js",
+                // OpenTUI's core is backed by a native FFI library that runs under
+                // Bun (or Node started with --experimental-ffi). Plain `node` also
+                // can't resolve @opentui/react's extensionless `react-reconciler/constants`
+                // import, so the CLI targets Bun.
                 banner: (chunk) =>
-                    chunk.name === "cli/react-obj-view" ? "#!/usr/bin/env node" : "",
+                    chunk.name === "cli/react-obj-view" ? "#!/usr/bin/env bun" : "",
             },
             preserveEntrySignatures: "strict",
         },

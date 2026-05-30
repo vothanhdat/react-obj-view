@@ -1,5 +1,7 @@
-import React, { useCallback, useImperativeHandle, useMemo, useState } from "react";
-import { Box, Text, useInput, useStdout, type Key } from "ink";
+/** @jsxImportSource @opentui/react */
+import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { useKeyboard, useTerminalDimensions } from "@opentui/react";
+import type { KeyEvent } from "@opentui/core";
 import { useReactTree } from "../libs/react-tree-view";
 import { useWrapper } from "../libs/react-tree-view/useWrapper";
 import {
@@ -18,11 +20,10 @@ import { useObjectViewSearch } from "../react-obj-view/search/useObjectViewSearc
 import type { RenderOptions, SearchOptions, ObjectViewHandle } from "../react-obj-view/types";
 import { TerminalScroller, clampFirstVisible } from "./TerminalScroller";
 import { useKeyboardNav } from "./useKeyboardNav";
-import { useMouse } from "./useMouse";
 import { SearchInput } from "./SearchInput";
-import { InkTheme, themeDark, inkThemeKeys } from "../ink-obj-view-themes";
+import { TuiTheme, themeDark, tuiThemeKeys, themeEntryToTextProps, mergeThemeEntries } from "../tui-obj-view-themes";
 
-export type InkObjectViewProps = {
+export type TuiObjectViewProps = {
     valueGetter: () => unknown;
     name?: string;
     expandLevel?: number | boolean;
@@ -36,7 +37,8 @@ export type InkObjectViewProps = {
     stickyPathHeaders?: boolean;
     iterateSize?: number;
     height?: number;
-    theme?: InkTheme;
+    width?: number;
+    theme?: TuiTheme;
     searchOptions?: SearchOptions;
     onCopy?: (paths: PropertyKey[], value: unknown) => void | Promise<void>;
     onExit?: () => void;
@@ -45,8 +47,9 @@ export type InkObjectViewProps = {
 };
 
 const HELP_TEXT = " ↑/↓ move · enter/space expand · ← collapse · / search · n/N next/prev · y copy · q quit ";
+const DOUBLE_CLICK_MS = 350;
 
-export const InkObjectView: React.FC<InkObjectViewProps> = ({
+export const TuiObjectView = ({
     valueGetter,
     name,
     expandLevel = 1,
@@ -60,13 +63,14 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     stickyPathHeaders = true,
     iterateSize,
     height,
+    width,
     theme = themeDark,
     searchOptions,
     onCopy,
     onExit,
     enableMouse = false,
     ref,
-}) => {
+}: TuiObjectViewProps): React.ReactNode => {
     const value = useMemo(() => valueGetter(), [valueGetter]);
 
     const resolver = useMemo(
@@ -110,14 +114,22 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     const [firstVisibleIndex, setFirstVisibleIndex] = useState(0);
     const [searchMode, setSearchMode] = useState(false);
 
-    const { stdout } = useStdout();
-    const totalTerminalRows = height ?? stdout?.rows ?? 24;
+    const { width: termWidth, height: termHeight } = useTerminalDimensions();
+    const viewWidth = width ?? termWidth ?? 80;
+    const totalTerminalRows = height ?? termHeight ?? 24;
     // Reserve 1 row for header, 1 for search/help.
     const visibleRows = Math.max(3, totalTerminalRows - 2);
 
-    // Single batched update so a key press produces ONE render, not two.
-    const setFocusedIndex = useCallback((next: number) => {
-        const clamped = Math.max(0, Math.min(next, Math.max(0, childCount - 1)));
+    // Mirror the focused index in a ref so synchronous bursts of key events
+    // (key-repeat, or several events delivered before React commits a frame) each
+    // read the up-to-date value instead of a stale render closure. `next` may be a
+    // number or an updater so relative moves compose correctly within one batch.
+    const focusedRef = useRef(0);
+    const setFocusedIndex = useCallback((next: number | ((prev: number) => number)) => {
+        const raw = typeof next === "function" ? next(focusedRef.current) : next;
+        const clamped = Math.max(0, Math.min(raw, Math.max(0, childCount - 1)));
+        focusedRef.current = clamped;
+        // Single batched update so a key press produces ONE render, not two.
         setFocusedIndexRaw(prev => (prev === clamped ? prev : clamped));
         setFirstVisibleIndex(prev => {
             const nextFirst = clampFirstVisible(clamped, prev, visibleRows, childCount);
@@ -165,7 +177,7 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
         isActive: !searchMode,
         totalRows: childCount,
         visibleRows,
-        focusedIndex,
+        focusedIndexRef: focusedRef,
         setFocusedIndex,
         getNodeByIndex,
         toggleChildExpand,
@@ -177,27 +189,31 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
         onExit,
     });
 
-    useInput((_input: string, key: Key) => {
-        if (key.escape) setSearchMode(false);
-    }, { isActive: searchMode });
+    // Escape closes the search overlay. The global key handler still fires while
+    // the <input> is focused, so this works alongside it.
+    useKeyboard((key: KeyEvent) => {
+        if (searchMode && key.name === "escape") setSearchMode(false);
+    });
 
-    const headerRows = 1;
-    useMouse({
-        enabled: enableMouse && !searchMode,
-        onScroll: useCallback((delta: number) => {
-            setFocusedIndex(Math.max(0, Math.min(childCount - 1, focusedIndex + delta)));
-        }, [focusedIndex, childCount, setFocusedIndex]),
-        onClick: useCallback((e: { row: number; col: number }) => {
-            const targetIdx = firstVisibleIndex + Math.max(0, e.row - headerRows);
-            if (targetIdx >= 0 && targetIdx < childCount) setFocusedIndex(targetIdx);
-        }, [firstVisibleIndex, childCount, setFocusedIndex]),
-        onDoubleClick: useCallback((e: { row: number; col: number }) => {
-            const targetIdx = firstVisibleIndex + Math.max(0, e.row - headerRows);
-            if (targetIdx < 0 || targetIdx >= childCount) return;
+    // Mouse: focus on click, toggle expand on double-click of the same row.
+    const lastClickRef = useRef<{ index: number; t: number } | null>(null);
+    const handleRowMouseDown = useCallback((targetIdx: number) => {
+        if (targetIdx < 0 || targetIdx >= childCount) return;
+        const now = Date.now();
+        const last = lastClickRef.current;
+        if (last && last.index === targetIdx && now - last.t < DOUBLE_CLICK_MS) {
+            lastClickRef.current = null;
             const node = getNodeByIndex(targetIdx);
             if (node?.hasChild) toggleChildExpand({ paths: node.paths });
-        }, [firstVisibleIndex, childCount, getNodeByIndex, toggleChildExpand]),
-    });
+        } else {
+            lastClickRef.current = { index: targetIdx, t: now };
+            setFocusedIndex(targetIdx);
+        }
+    }, [childCount, getNodeByIndex, toggleChildExpand, setFocusedIndex]);
+
+    const handleScrollDelta = useCallback((delta: number) => {
+        setFocusedIndex(prev => prev + delta);
+    }, [setFocusedIndex]);
 
     const options = useMemo<RenderOptions>(() => ({
         enablePreview: preview,
@@ -219,14 +235,15 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
     const currentMatchIndex = focusedIndex;
     const matchCount = searchHook.results.results.length;
 
+    const statusProps = themeEntryToTextProps(theme[tuiThemeKeys.status]);
+    const titleProps = themeEntryToTextProps(mergeThemeEntries(theme[tuiThemeKeys.status], { bold: true }));
+
     return (
-        <Box flexDirection="column">
-            <Box flexDirection="row" justifyContent="space-between">
-                <Text {...theme[inkThemeKeys.status]} bold>
-                    {name ?? "ROOT"}{" "}
-                    <Text {...theme[inkThemeKeys.status]}>{focusedIndex + 1}/{childCount}</Text>
-                </Text>
-            </Box>
+        <box flexDirection="column" width={viewWidth} height={totalTerminalRows}>
+            <box flexDirection="row" flexShrink={0}>
+                <text wrapMode="none" {...titleProps}>{name ?? "ROOT"} </text>
+                <text wrapMode="none" {...statusProps}>{focusedIndex + 1}/{childCount}</text>
+            </box>
             <TerminalScroller
                 totalRows={childCount}
                 visibleRows={visibleRows}
@@ -241,6 +258,9 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
                 stickyPathHeaders={stickyPathHeaders}
                 showLineNumbers={showLineNumbers}
                 searchCurrentIndex={currentMatchIndex}
+                enableMouse={enableMouse && !searchMode}
+                onScrollDelta={handleScrollDelta}
+                onRowMouseDown={handleRowMouseDown}
             />
             {searchMode ? (
                 <SearchInput
@@ -254,8 +274,8 @@ export const InkObjectView: React.FC<InkObjectViewProps> = ({
                     searching={searchHook.searching}
                 />
             ) : (
-                <Text {...theme[inkThemeKeys.status]}>{HELP_TEXT}</Text>
+                <text wrapMode="none" {...statusProps}>{HELP_TEXT}</text>
             )}
-        </Box>
+        </box>
     );
 };

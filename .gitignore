@@ -11,7 +11,7 @@ node_modules
 .pnp.*
 .yarn/
 dist
-dist-ink
+dist-tui
 demo-dist
 dist-ssr
 *.local

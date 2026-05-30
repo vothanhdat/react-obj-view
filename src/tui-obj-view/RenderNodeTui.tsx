@@ -1,27 +1,32 @@
+/** @jsxImportSource @opentui/react */
 import React, { useMemo } from "react";
-import { Text } from "ink";
 import { objectHasChild, GroupedProxy, LazyValueError, LazyValue } from "../object-tree";
 import type { FlattenNodeData } from "../libs/react-tree-view/FlattenNodeWrapper";
 import type { ObjectWalkingAdapter, ObjectWalkingMetaParser } from "../object-tree";
 import type { RenderOptions } from "../react-obj-view/types";
-import { InkTheme, InkThemeEntry, inkThemeKeys } from "../ink-obj-view-themes";
+import {
+    TuiTheme,
+    tuiThemeKeys,
+    themeEntryToTextProps,
+    mergeThemeEntries,
+} from "../tui-obj-view-themes";
 import { formatValuePreview, formatValueRaw, Segment } from "./formatValue";
 import { buildMarkRegex, highlightSegments } from "./highlightSegments";
 
 const INDENT_UNIT = "  ";
 
-export type InkRowExtras = {
-    theme: InkTheme;
+export type TuiRowExtras = {
+    theme: TuiTheme;
     isFocused: boolean;
     isSearchCurrent: boolean;
     isSticky?: boolean;
 };
 
-export type RenderNodeInkProps = {
+export type RenderNodeTuiProps = {
     nodeDataWrapper: () => FlattenNodeData<ObjectWalkingAdapter, ObjectWalkingMetaParser>;
     valueWrapper: () => unknown;
     optionsGetter: () => RenderOptions;
-    themeGetter: () => InkTheme;
+    themeGetter: () => TuiTheme;
     renderIndex: number;
     actions: { refreshPath: () => void; toggleChildExpand: () => void };
     isFocused: boolean;
@@ -29,24 +34,27 @@ export type RenderNodeInkProps = {
     isSticky?: boolean;
 };
 
-const Span: React.FC<{ entry?: InkThemeEntry; children: React.ReactNode }> = ({ entry, children }) => (
-    <Text {...(entry ?? {})}>{children}</Text>
-);
+// Note: these are plain `(props) => React.ReactNode` functions rather than
+// `React.FC`. Under React 19, `React.FC`'s return type is `ReactNode | Promise<ReactNode>`
+// (to allow async components), but OpenTUI's `JSX.Element` is `React.ReactNode`,
+// which doesn't include `Promise<ReactNode>` — so `React.FC` components are
+// rejected as JSX under the OpenTUI jsx-runtime.
 
-const SegmentSpans: React.FC<{ segments: Segment[] }> = ({ segments }) => (
+/** Render a flat segment list as OpenTUI inline `<span>` nodes. */
+export const SegmentSpans = ({ segments }: { segments: Segment[] }): React.ReactNode => (
     <>
         {segments.map((seg, i) => (
-            <Span key={i} entry={seg.entry}>
+            <span key={i} {...themeEntryToTextProps(seg.entry)}>
                 {seg.text}
-            </Span>
+            </span>
         ))}
     </>
 );
 
-export const RenderNodeInk: React.FC<RenderNodeInkProps> = ({
+export const RenderNodeTui = ({
     nodeDataWrapper, valueWrapper, optionsGetter, themeGetter,
     isFocused, isSearchCurrent, isSticky = false,
-}) => {
+}: RenderNodeTuiProps): React.ReactNode => {
     const options = optionsGetter();
     const theme = themeGetter();
     const { resolver, nonEnumerable, includeSymbols, enablePreview, search } = options;
@@ -85,18 +93,18 @@ export const RenderNodeInk: React.FC<RenderNodeInkProps> = ({
             : "  ";
 
     const keyText = depth === 0 ? "ROOT" : String(nodeData.key ?? "");
-    const keyEntry = theme[inkThemeKeys.key];
-    let keySegments: Segment[] = [{ text: keyText, entry: keyEntry }];
+    const keyEntry = theme[tuiThemeKeys.key];
+    let keyEntryFinal = keyEntry;
     if (!nodeData.enumerable) {
-        keySegments = [{ text: keyText, entry: { ...keyEntry, ...theme[inkThemeKeys.nonEnumerable] } }];
+        keyEntryFinal = mergeThemeEntries(keyEntry, theme[tuiThemeKeys.nonEnumerable]);
     }
     if (isSearchMatch) {
-        keySegments = [{ text: keyText, entry: { ...keyEntry, ...theme[inkThemeKeys.mark] } }];
+        keyEntryFinal = mergeThemeEntries(keyEntry, theme[tuiThemeKeys.mark]);
     }
 
     let valueSegments: Segment[];
     if (isCircular) {
-        valueSegments = [{ text: "[Circular]", entry: theme[inkThemeKeys.circular] }];
+        valueSegments = [{ text: "[Circular]", entry: theme[tuiThemeKeys.circular] }];
     } else if (isPreview) {
         valueSegments = formatValuePreview(value, { theme, resolver, includeSymbols });
     } else {
@@ -106,27 +114,32 @@ export const RenderNodeInk: React.FC<RenderNodeInkProps> = ({
     if (isPreview) {
         valueSegments = valueSegments.map(s => ({
             ...s,
-            entry: { ...(s.entry ?? {}), dimColor: true },
+            entry: mergeThemeEntries(s.entry, { dim: true }),
         }));
     }
 
     if (markRegex) {
-        valueSegments = highlightSegments(valueSegments, markRegex, theme[inkThemeKeys.mark]);
+        valueSegments = highlightSegments(valueSegments, markRegex, theme[tuiThemeKeys.mark]);
     }
 
     const indentStr = INDENT_UNIT.repeat(Math.max(0, depth));
     const focusMark = isFocused ? "›" : isSticky ? "·" : " ";
 
-    return (
-        <>
-            <Span entry={isFocused ? { bold: true } : isSticky ? { dimColor: true } : undefined}>
-                {focusMark}
-            </Span>
-            <Span entry={theme[inkThemeKeys.indent]}>{indentStr}</Span>
-            <Span entry={theme[inkThemeKeys.expand]}>{expandGlyph}</Span>
-            <SegmentSpans segments={keySegments} />
-            <Text>: </Text>
-            <SegmentSpans segments={valueSegments} />
-        </>
-    );
+    let segments: Segment[] = [
+        { text: focusMark, entry: isFocused ? { bold: true } : isSticky ? { dim: true } : undefined },
+        { text: indentStr, entry: theme[tuiThemeKeys.indent] },
+        { text: expandGlyph, entry: theme[tuiThemeKeys.expand] },
+        { text: keyText, entry: keyEntryFinal },
+        { text: ": " },
+        ...valueSegments,
+    ];
+
+    // OpenTUI text attributes don't reliably cascade from a parent <text> to child
+    // <span>s that set their own fg, so mirror Ink's row-level `inverse` by merging
+    // it into every segment instead.
+    if (isFocused) {
+        segments = segments.map(s => ({ ...s, entry: mergeThemeEntries(s.entry, { inverse: true }) }));
+    }
+
+    return <SegmentSpans segments={segments} />;
 };

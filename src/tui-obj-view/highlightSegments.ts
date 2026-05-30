@@ -1,10 +1,10 @@
-import { InkThemeEntry } from "../ink-obj-view-themes";
+import { TuiThemeEntry } from "../tui-obj-view-themes";
 import { Segment } from "./formatValue";
 
 export const highlightSegments = (
     segments: Segment[],
     regex: RegExp | undefined,
-    markEntry: InkThemeEntry,
+    markEntry: TuiThemeEntry,
 ): Segment[] => {
     if (!regex) return segments;
 

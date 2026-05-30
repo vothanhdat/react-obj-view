@@ -1,12 +1,13 @@
-import React, { useMemo, memo } from "react";
-import { Box, Text } from "ink";
+/** @jsxImportSource @opentui/react */
+import React, { useMemo, memo, useCallback, useRef } from "react";
+import type { MouseEvent as TuiMouseEvent } from "@opentui/core";
 import type { FlattenNodeWrapper, FlattenNodeData } from "../libs/react-tree-view/FlattenNodeWrapper";
 import { useRenderIndexesWithSticky } from "../libs/react-tree-view/useRenderIndexesWithSticky";
 import type { ObjectWalkingAdapter, ObjectWalkingMetaParser } from "../object-tree";
 import type { RenderOptions } from "../react-obj-view/types";
 import { useWrapper } from "../libs/react-tree-view/useWrapper";
-import { RenderNodeInk } from "./RenderNodeInk";
-import { InkTheme, inkThemeKeys } from "../ink-obj-view-themes";
+import { RenderNodeTui } from "./RenderNodeTui";
+import { TuiTheme, tuiThemeKeys, themeEntryToTextProps, mergeThemeEntries } from "../tui-obj-view-themes";
 
 export type TerminalScrollerProps = {
     totalRows: number;
@@ -18,13 +19,16 @@ export type TerminalScrollerProps = {
     refreshPath: (params: { paths: PropertyKey[] }) => void;
     computeItemKey: (index: number) => string;
     optionsGetter: () => RenderOptions;
-    themeGetter: () => InkTheme;
+    themeGetter: () => TuiTheme;
     stickyPathHeaders?: boolean;
     showLineNumbers?: boolean;
     searchCurrentIndex?: number;
+    enableMouse?: boolean;
+    onScrollDelta?: (delta: number) => void;
+    onRowMouseDown?: (index: number) => void;
 };
 
-type InkRowProps = {
+type TuiRowProps = {
     index: number;
     isSticky: boolean;
     isLastSticky: boolean;
@@ -33,16 +37,17 @@ type InkRowProps = {
     size: number;
     getNodeByIndex: TerminalScrollerProps["getNodeByIndex"];
     optionsGetter: () => RenderOptions;
-    themeGetter: () => InkTheme;
+    themeGetter: () => TuiTheme;
     showLineNumbers: boolean;
     lineNumberChars: number;
     onToggleExpand: TerminalScrollerProps["toggleChildExpand"];
     onRefreshPath: TerminalScrollerProps["refreshPath"];
+    onRowMouseDown?: (index: number) => void;
 };
 
 // All props are primitives or stable refs (getter callbacks / function refs).
 // Shallow `Object.is` is sufficient to skip the vast majority of re-renders.
-const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
+const arePropsEqual = (a: TuiRowProps, b: TuiRowProps): boolean =>
     a.index === b.index
     && a.isSticky === b.isSticky
     && a.isLastSticky === b.isLastSticky
@@ -55,13 +60,14 @@ const arePropsEqual = (a: InkRowProps, b: InkRowProps): boolean =>
     && a.showLineNumbers === b.showLineNumbers
     && a.lineNumberChars === b.lineNumberChars
     && a.onToggleExpand === b.onToggleExpand
-    && a.onRefreshPath === b.onRefreshPath;
+    && a.onRefreshPath === b.onRefreshPath
+    && a.onRowMouseDown === b.onRowMouseDown;
 
-const InkRow = memo<InkRowProps>(({
+const TuiRow = memo<TuiRowProps>(({
     index, isSticky, isLastSticky, isFocused, isSearchCurrent,
     size, getNodeByIndex, optionsGetter, themeGetter,
     showLineNumbers, lineNumberChars,
-    onToggleExpand, onRefreshPath,
+    onToggleExpand, onRefreshPath, onRowMouseDown,
 }) => {
 
     const flattenNodeWrapper = useMemo(
@@ -88,15 +94,28 @@ const InkRow = memo<InkRowProps>(({
 
     const theme = themeGetter();
 
+    let lineNumberProps = themeEntryToTextProps(theme[tuiThemeKeys.status]);
+    let lastStickyProps = themeEntryToTextProps(theme[tuiThemeKeys.indent]);
+    if (isFocused) {
+        lineNumberProps = themeEntryToTextProps(mergeThemeEntries(theme[tuiThemeKeys.status], { inverse: true }));
+        lastStickyProps = themeEntryToTextProps(mergeThemeEntries(theme[tuiThemeKeys.indent], { inverse: true }));
+    }
+
+    // One row == one single-line <text>. `wrapMode="none"` keeps it to a single
+    // line; OpenTUI truncates at the container width instead of wrapping.
     return (
-        <Text wrap="truncate-end" inverse={isFocused}>
+        <text
+            wrapMode="none"
+            selectable={false}
+            onMouseDown={onRowMouseDown && !isSticky ? () => onRowMouseDown(index) : undefined}
+        >
             {showLineNumbers && (
-                <Text {...theme[inkThemeKeys.status]}>
+                <span {...lineNumberProps}>
                     {String(index).padStart(lineNumberChars, " ")}
                     {isSticky ? "·" : ":"}{" "}
-                </Text>
+                </span>
             )}
-            <RenderNodeInk
+            <RenderNodeTui
                 nodeDataWrapper={nodeDataWrapper}
                 valueWrapper={valueWrapper}
                 optionsGetter={optionsGetter}
@@ -108,14 +127,14 @@ const InkRow = memo<InkRowProps>(({
                 isSticky={isSticky}
             />
             {isLastSticky && (
-                <Text {...theme[inkThemeKeys.indent]}> ─</Text>
+                <span {...lastStickyProps}> ─</span>
             )}
-        </Text>
+        </text>
     );
 }, arePropsEqual);
-InkRow.displayName = "InkRow";
+TuiRow.displayName = "TuiRow";
 
-export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
+export const TerminalScroller = ({
     totalRows,
     visibleRows,
     focusedIndex,
@@ -129,7 +148,16 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
     stickyPathHeaders = true,
     showLineNumbers = false,
     searchCurrentIndex,
-}) => {
+    enableMouse = false,
+    onScrollDelta,
+    onRowMouseDown,
+}: TerminalScrollerProps): React.ReactNode => {
+
+    const handleScroll = useCallback((e: TuiMouseEvent) => {
+        if (!onScrollDelta || !e.scroll) return;
+        const step = Math.max(1, e.scroll.delta || 1);
+        onScrollDelta(e.scroll.direction === "up" ? -step : step);
+    }, [onScrollDelta]);
 
     const renderIndexes = useRenderIndexesWithSticky({
         start: firstVisibleIndex,
@@ -144,13 +172,17 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
     const lineNumberChars = Math.max(2, String(renderIndexes.at(-1)?.index ?? 0).length);
 
     return (
-        <Box flexDirection="column">
+        <box
+            flexDirection="column"
+            flexShrink={0}
+            onMouseScroll={enableMouse ? handleScroll : undefined}
+        >
             {renderIndexes.map(({ isStick, index, isLastStick }) => {
                 const stickyB = !!isStick;
                 const focused = !stickyB && index === focusedIndex;
                 const searchCurrent = !stickyB && index === searchCurrentIndex;
                 return (
-                    <InkRow
+                    <TuiRow
                         key={computeItemKey(index) + (stickyB ? "-s" : "")}
                         index={index}
                         isSticky={stickyB}
@@ -165,10 +197,11 @@ export const TerminalScroller: React.FC<TerminalScrollerProps> = ({
                         lineNumberChars={lineNumberChars}
                         onToggleExpand={toggleChildExpand}
                         onRefreshPath={refreshPath}
+                        onRowMouseDown={enableMouse ? onRowMouseDown : undefined}
                     />
                 );
             })}
-        </Box>
+        </box>
     );
 };
 

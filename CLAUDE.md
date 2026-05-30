@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Yarn 4 (via Corepack) is the package manager; Node `>=22` is required (`engines` in [package.json](package.json)). `npm` works because scripts are simple aliases, but CI uses Yarn.
 
 - `yarn dev` — demo playground served by Vite (`vite.config.dev.ts`, entry [src/dev.tsx](src/dev.tsx)).
-- `yarn build` — library bundle to `dist/` (ESM + UMD, with `.d.ts` via `vite-plugin-dts`). `ANALYZER=1 yarn build` opens the bundle analyzer.
+- `yarn build` — runs both the web library bundle to `dist/` (ESM + UMD, with `.d.ts`) **and** the terminal bundle to `dist-tui/`. `yarn build:web` / `yarn build:tui` build just one. `yarn build:analyzer` opens the bundle analyzer.
+- `yarn cli <file.json>` — run the built terminal viewer (`dist-tui/cli/react-obj-view.js`). The TUI/CLI runs under **Bun**, not Node (see the OpenTUI section under Architecture).
 - `yarn build:demo` — GitHub Pages demo to `demo-dist/` (base path `/react-obj-view/`).
 - `yarn test` / `yarn test:watch` / `yarn test:ui` / `yarn test:coverage` — Vitest with `happy-dom`.
 - Run a single test file: `npx vitest run src/libs/tree-core/walkingFactory.test.ts`. Filter by name: `npx vitest run -t "<pattern>"`.
@@ -50,6 +51,16 @@ value + adapter → tree-core (walkingFactory) → react-tree-view (useReactTree
 - `valueGetter` (not `value`) is the API — `value` is read once in a `useMemo([valueGetter])`. Change detection is **reference equality** on the resulting value; in-place mutation will not re-render.
 - Search is streaming: `objectViewRef.current.search(filterFn, markTerm, onResult, opts)` iterates via `travelAndSearch` and yields to `requestIdleCallback` between batches. The hook [useObjectViewSearch](src/react-obj-view/search/useObjectViewSearch.tsx) (also used by `SearchComponent`) handles debouncing and prev/next navigation.
 - Themes live in `src/react-obj-view-themes/` as plain CSS-variable maps; `createTheme`/`extendTheme` enforce the variable set.
+
+### 6. `src/tui-obj-view/` — the terminal port (OpenTUI)
+- A second renderer for the **same** engine, built on [OpenTUI](https://opentui.com) (`@opentui/core` + `@opentui/react`, a React reconciler for the terminal). Everything in layers 1–4 (`tree-core`, `object-tree`, `react-tree-view`, `useObjectViewSearch`, `searchHandler`) is reused unchanged — only the rendering shell is terminal-specific.
+- [TuiObjectView.tsx](src/tui-obj-view/TuiObjectView.tsx) mirrors `ObjectView`'s props (drops DOM-only ones, adds `height`/`width`/`enableMouse`/`onExit`). It owns the focused-row index, drives [TerminalScroller](src/tui-obj-view/TerminalScroller.tsx) (row-based virtual scroller reusing `useRenderIndexesWithSticky` with `lineHeight: 1`), and renders rows via [RenderNodeTui](src/tui-obj-view/RenderNodeTui.tsx).
+- Rows are a single OpenTUI `<text wrapMode="none">` of inline `<span>` segments; `formatValue.ts` emits `{ text, entry }` segments and `themeEntryToTextProps` maps a theme entry to OpenTUI `fg`/`bg`/`attributes`.
+- Themes live in `src/tui-obj-view-themes/` (same key set as the DOM themes, values are `{ fg, bg, bold, dim, … }`). `TextAttributes` bit flags are **inlined**, not imported from `@opentui/core`, because importing core eagerly loads its native FFI backend — keep the theme/formatter path free of `@opentui/*` runtime imports so it stays testable under plain Node/Vitest.
+- Focus is tracked in a **ref** (`focusedRef`) and read by [useKeyboardNav](src/tui-obj-view/useKeyboardNav.ts), so bursts of key events (key-repeat, or several events before React commits) compose correctly instead of collapsing on a stale render closure. Relative moves use the `setFocusedIndex(prev => …)` updater form.
+- Each TUI JSX file starts with `/** @jsxImportSource @opentui/react */` — that pulls OpenTUI's `<box>`/`<text>`/`<input>` intrinsic-element types **per file** without disturbing the DOM components (which use real `<div>`/`<span className>`). Components are typed `(props) => React.ReactNode`, **not** `React.FC`, because React 19's `FC` return type includes `Promise<ReactNode>` which OpenTUI's `JSX.Element` rejects.
+- Built by [vite.config.tui.ts](vite.config.tui.ts) to `dist-tui/` (lib at `./tui`, CLI at `bin/react-obj-view.tsx`). **Runtime is Bun**, not Node: OpenTUI's core needs FFI and `@opentui/react` imports `react-reconciler/constants` without an extension (unresolvable under Node ESM). The CLI shebang is `#!/usr/bin/env bun`.
+- Tests: pure-logic units (`formatValue`, `highlightSegments`, `clampFirstVisible`) run under Vitest. The full-render test ([TuiObjectView.test.tsx](src/tui-obj-view/TuiObjectView.test.tsx)) dynamic-imports `@opentui/react/test-utils` and **skips cleanly** when the native backend is unavailable (i.e. under plain Node CI); it exercises a real frame under Bun.
 
 ## Build & tooling notes
 

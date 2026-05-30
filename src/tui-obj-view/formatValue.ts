@@ -9,19 +9,19 @@ import {
     InternalPromise,
 } from "../object-tree";
 import { ENUMERABLE_BIT } from "../object-tree/meta" with { type: "macro" };
-import { InkTheme, InkThemeEntry, inkThemeKeys } from "../ink-obj-view-themes";
+import { TuiTheme, TuiThemeEntry, tuiThemeKeys } from "../tui-obj-view-themes";
 
 export type Segment = {
     text: string;
-    entry?: InkThemeEntry;
+    entry?: TuiThemeEntry;
 };
 
 const MAX_STRING_LEN_RAW = 200;
 const MAX_STRING_LEN_PREVIEW = 32;
 const MAX_PREVIEW_ENTRIES = 5;
 
-const themeFor = (theme: InkTheme, key: keyof typeof inkThemeKeys): InkThemeEntry =>
-    theme[inkThemeKeys[key]] ?? {};
+const themeFor = (theme: TuiTheme, key: keyof typeof tuiThemeKeys): TuiThemeEntry =>
+    theme[tuiThemeKeys[key]] ?? {};
 
 const truncateString = (s: string, max: number): string =>
     s.length > max ? s.slice(0, max) + "…" : s;
@@ -29,16 +29,16 @@ const truncateString = (s: string, max: number): string =>
 const escapeString = (s: string): string =>
     s.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
 
-const formatStringValue = (value: string, theme: InkTheme, maxLen: number): Segment[] => [
+const formatStringValue = (value: string, theme: TuiTheme, maxLen: number): Segment[] => [
     { text: `"${escapeString(truncateString(value, maxLen))}"`, entry: themeFor(theme, "string") },
 ];
 
-const formatFunction = (value: Function, theme: InkTheme): Segment[] => {
+const formatFunction = (value: Function, theme: TuiTheme): Segment[] => {
     const name = value.name || "anonymous";
     return [{ text: `ƒ ${name}()`, entry: themeFor(theme, "fn") }];
 };
 
-const formatTypeLabel = (value: unknown, theme: InkTheme): Segment[] => {
+const formatTypeLabel = (value: unknown, theme: TuiTheme): Segment[] => {
     if (value === null) return [{ text: "null", entry: themeFor(theme, "nullish") }];
     if (value === undefined) return [{ text: "undefined", entry: themeFor(theme, "nullish") }];
     if (Array.isArray(value)) return [{ text: `Array(${value.length})`, entry: themeFor(theme, "array") }];
@@ -56,7 +56,7 @@ const formatTypeLabel = (value: unknown, theme: InkTheme): Segment[] => {
     return [{ text: String(value), entry: themeFor(theme, "object") }];
 };
 
-const formatPrimitive = (value: unknown, theme: InkTheme, maxStringLen: number): Segment[] | null => {
+const formatPrimitive = (value: unknown, theme: TuiTheme, maxStringLen: number): Segment[] | null => {
     switch (typeof value) {
         case "boolean":
             return [{ text: String(value), entry: themeFor(theme, "bool") }];
@@ -77,7 +77,7 @@ const formatPrimitive = (value: unknown, theme: InkTheme, maxStringLen: number):
 };
 
 export type FormatValueOpts = {
-    theme: InkTheme;
+    theme: TuiTheme;
     resolver: Map<any, any>;
     includeSymbols?: boolean;
 };
@@ -88,7 +88,7 @@ export type FormatValueRawOpts = {
 
 export const formatValueRaw = (
     value: unknown,
-    theme: InkTheme,
+    theme: TuiTheme,
     opts: FormatValueRawOpts = {},
 ): Segment[] => {
     const maxStringLen = opts.maxStringLen ?? MAX_STRING_LEN_RAW;

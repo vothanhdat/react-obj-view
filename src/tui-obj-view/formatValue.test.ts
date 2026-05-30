@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatValueRaw, formatValuePreview, segmentsText } from "./formatValue";
-import { themeDark } from "../ink-obj-view-themes";
+import { themeDark } from "../tui-obj-view-themes";
 import { DEFAULT_RESOLVER, TYPED_ARRAY_RESOLVERS } from "../object-tree";
 
 const resolver = new Map([...DEFAULT_RESOLVER, ...TYPED_ARRAY_RESOLVERS]);

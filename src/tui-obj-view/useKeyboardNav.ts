@@ -1,4 +1,5 @@
-import { useInput, useApp, type Key } from "ink";
+import { useKeyboard, useRenderer } from "@opentui/react";
+import type { KeyEvent } from "@opentui/core";
 import type { FlattenNodeWrapper } from "../libs/react-tree-view/FlattenNodeWrapper";
 import type { ObjectWalkingAdapter, ObjectWalkingMetaParser } from "../object-tree";
 
@@ -6,8 +7,8 @@ export type KeyboardNavParams = {
     isActive: boolean;
     totalRows: number;
     visibleRows: number;
-    focusedIndex: number;
-    setFocusedIndex: (next: number) => void;
+    focusedIndexRef: { current: number };
+    setFocusedIndex: (next: number | ((prev: number) => number)) => void;
     getNodeByIndex: (index: number) => FlattenNodeWrapper<ObjectWalkingAdapter, ObjectWalkingMetaParser> | undefined;
     toggleChildExpand: (params: { paths: PropertyKey[] }) => void;
     setChildExpand: (params: { paths: PropertyKey[]; isExpanded: boolean }) => void;
@@ -18,13 +19,11 @@ export type KeyboardNavParams = {
     onExit?: () => void;
 };
 
-const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
-
 export const useKeyboardNav = ({
     isActive,
     totalRows,
     visibleRows,
-    focusedIndex,
+    focusedIndexRef,
     setFocusedIndex,
     getNodeByIndex,
     toggleChildExpand,
@@ -35,47 +34,54 @@ export const useKeyboardNav = ({
     onCopy,
     onExit,
 }: KeyboardNavParams) => {
-    const app = useApp();
+    const renderer = useRenderer();
 
-    useInput((input: string, key: Key) => {
+    useKeyboard((key: KeyEvent) => {
+        if (!isActive) return;
         if (totalRows === 0) return;
 
+        const input = key.name;
+        const seq = key.sequence;
+
+        // Read the live focus from the ref (not a render closure) so multiple key
+        // events delivered before the next commit each act on the updated value.
+        const focusedIndex = focusedIndexRef.current;
         const current = getNodeByIndex(focusedIndex);
 
-        if (key.upArrow || input === "k") {
-            setFocusedIndex(clamp(focusedIndex - 1, 0, totalRows - 1));
+        if (input === "up" || seq === "k") {
+            setFocusedIndex(prev => prev - 1);
             return;
         }
-        if (key.downArrow || input === "j") {
-            setFocusedIndex(clamp(focusedIndex + 1, 0, totalRows - 1));
+        if (input === "down" || seq === "j") {
+            setFocusedIndex(prev => prev + 1);
             return;
         }
-        if (key.pageUp) {
-            setFocusedIndex(clamp(focusedIndex - visibleRows, 0, totalRows - 1));
+        if (input === "pageup") {
+            setFocusedIndex(prev => prev - visibleRows);
             return;
         }
-        if (key.pageDown) {
-            setFocusedIndex(clamp(focusedIndex + visibleRows, 0, totalRows - 1));
+        if (input === "pagedown") {
+            setFocusedIndex(prev => prev + visibleRows);
             return;
         }
-        if (input === "g") {
+        if (input === "home" || seq === "g") {
             setFocusedIndex(0);
             return;
         }
-        if (input === "G") {
+        if (input === "end" || seq === "G") {
             setFocusedIndex(totalRows - 1);
             return;
         }
 
         if (!current) return;
 
-        if (key.return || input === " " || key.rightArrow) {
+        if (input === "return" || input === "space" || input === "right") {
             if (current.hasChild) {
                 toggleChildExpand({ paths: current.paths });
             }
             return;
         }
-        if (key.leftArrow) {
+        if (input === "left") {
             const data = current.getData();
             if (data.expanded && current.hasChild) {
                 setChildExpand({ paths: current.paths, isExpanded: false });
@@ -88,20 +94,20 @@ export const useKeyboardNav = ({
             return;
         }
 
-        if (input === "/" ) {
+        if (seq === "/") {
             openSearch();
             return;
         }
-        if (input === "n") {
+        if (seq === "n") {
             nextMatch();
             return;
         }
-        if (input === "N") {
+        if (seq === "N") {
             prevMatch();
             return;
         }
 
-        if (input === "y") {
+        if (seq === "y") {
             try {
                 const data = current.getData();
                 onCopy(current.paths, data.value);
@@ -111,10 +117,10 @@ export const useKeyboardNav = ({
             return;
         }
 
-        if (input === "q" || (key.ctrl && input === "c")) {
+        if (seq === "q" || (key.ctrl && input === "c")) {
             onExit?.();
-            app.exit();
+            renderer?.destroy();
             return;
         }
-    }, { isActive });
+    });
 };

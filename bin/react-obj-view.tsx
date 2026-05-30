@@ -1,8 +1,11 @@
+/** @jsxImportSource @opentui/react */
 import React from "react";
-import { render } from "ink";
+import { createCliRenderer, CliRenderEvents } from "@opentui/core";
+import { createRoot } from "@opentui/react";
 import meow from "meow";
 import { readFileSync, openSync } from "node:fs";
-import { InkObjectView, builtInInkThemes, BuiltInInkThemeName, themeMono } from "../src/ink-obj-view";
+import { TuiObjectView } from "../src/tui-obj-view/TuiObjectView";
+import { builtInTuiThemes, BuiltInTuiThemeName, themeMono } from "../src/tui-obj-view-themes";
 
 const cli = meow(`
     Usage
@@ -63,46 +66,43 @@ async function loadJSON(): Promise<unknown> {
     }
 }
 
-const ALT_SCREEN_ENTER = "\x1b[?1049h\x1b[2J\x1b[H";
-const ALT_SCREEN_EXIT = "\x1b[?1049l";
-
 async function main() {
     const data = await loadJSON();
 
-    const themeName = (cli.flags.theme as string).toLowerCase() as BuiltInInkThemeName;
+    const themeName = (cli.flags.theme as string).toLowerCase() as BuiltInTuiThemeName;
     const theme = cli.flags.color
-        ? (builtInInkThemes[themeName] ?? builtInInkThemes.dark)
+        ? (builtInTuiThemes[themeName] ?? builtInTuiThemes.dark)
         : themeMono;
 
     // If stdin was used to feed JSON, reopen /dev/tty for interactive input.
-    let inkStdin: NodeJS.ReadStream = process.stdin;
+    let inputStream: NodeJS.ReadStream = process.stdin;
     if (!process.stdin.isTTY) {
         try {
             const fd = openSync("/dev/tty", "r");
             const tty = await import("node:tty");
-            inkStdin = new tty.ReadStream(fd) as unknown as NodeJS.ReadStream;
+            inputStream = new tty.ReadStream(fd) as unknown as NodeJS.ReadStream;
         } catch {
             process.stderr.write("Interactive TTY unavailable; cannot run interactively.\n");
             process.exit(1);
         }
     }
 
-    const useAltScreen = process.stdout.isTTY && !process.env.REACT_OBJ_VIEW_NO_ALT;
+    // OpenTUI manages the alternate screen, raw mode, mouse tracking and
+    // signal/Ctrl+C handling itself — no manual ANSI bookkeeping needed.
+    const renderer = await createCliRenderer({
+        stdin: inputStream,
+        stdout: process.stdout,
+        exitOnCtrlC: true,
+        useMouse: cli.flags.mouse as boolean,
+    });
 
-    let restored = false;
-    const restore = () => {
-        if (restored) return;
-        restored = true;
-        if (useAltScreen) process.stdout.write(ALT_SCREEN_EXIT);
-    };
+    const exited = new Promise<void>((resolve) => {
+        renderer.once(CliRenderEvents.DESTROY, () => resolve());
+    });
 
-    if (useAltScreen) process.stdout.write(ALT_SCREEN_ENTER);
-    process.on("exit", restore);
-    process.on("SIGINT", () => { restore(); process.exit(130); });
-    process.on("SIGTERM", () => { restore(); process.exit(143); });
-
-    const { waitUntilExit } = render(
-        <InkObjectView
+    const root = createRoot(renderer);
+    root.render(
+        <TuiObjectView
             valueGetter={() => data}
             expandLevel={cli.flags.depth as number}
             theme={theme}
@@ -112,15 +112,12 @@ async function main() {
             includeSymbols={cli.flags.includeSymbols as boolean}
             nonEnumerable={cli.flags.nonEnumerable as boolean}
             enableMouse={cli.flags.mouse as boolean}
+            onExit={() => renderer.destroy()}
         />,
-        { stdin: inkStdin, exitOnCtrlC: true },
     );
 
-    try {
-        await waitUntilExit();
-    } finally {
-        restore();
-    }
+    await exited;
+    process.exit(0);
 }
 
 main().catch((err) => {
