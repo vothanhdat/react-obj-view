@@ -6,6 +6,7 @@ import {
   themeOneDark,
   ThemeColor,
 } from '../react-obj-view-themes'
+import { themeLandingDark } from './landingTheme'
 import { createHeroData } from './heroData'
 import { useFps } from './useFps'
 import './Landing.css'
@@ -102,6 +103,7 @@ const stats = [
 ]
 
 const heroThemes: { id: string; label: string; theme: ThemeColor }[] = [
+  { id: 'landing', label: 'Landing', theme: themeLandingDark },
   { id: 'oneDark', label: 'One Dark', theme: themeOneDark as ThemeColor },
   { id: 'dracula', label: 'Dracula', theme: themeDracula as ThemeColor },
   { id: 'default', label: 'Default', theme: themeDefault as ThemeColor },
@@ -114,7 +116,7 @@ export const Landing: React.FC<LandingProps> = ({ onLaunchPlayground }) => {
   const [renderMs, setRenderMs] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
   const [autoScroll, setAutoScroll] = useState(false)
-  const [themeId, setThemeId] = useState('oneDark')
+  const [themeId, setThemeId] = useState('landing')
 
   // Measure the very first commit too, not just dataset swaps.
   const t0Ref = useRef(performance.now())
@@ -124,7 +126,7 @@ export const Landing: React.FC<LandingProps> = ({ onLaunchPlayground }) => {
   const fps = useFps(true)
 
   const activeDataset = heroDatasets.find((d) => d.id === activeId) ?? heroDatasets[0]
-  const theme = heroThemes.find((t) => t.id === themeId)?.theme ?? (themeOneDark as ThemeColor)
+  const theme = heroThemes.find((t) => t.id === themeId)?.theme ?? themeLandingDark
 
   const dataGetter = useMemo(() => () => data, [data])
 
