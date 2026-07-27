@@ -318,6 +318,10 @@
   overflow: hidden;
   background: var(--surface-solid);
   border: 1px solid var(--border-strong);
+  /* The card is dark in both schemes, so pin UA-rendered chrome to dark too.
+     On a light-mode OS the tree's scrollbars and its hover action buttons were
+     falling back to light system colors inside the dark panel. */
+  color-scheme: dark;
   box-shadow: 0 40px 80px -20px rgba(3, 7, 18, 0.8), 0 0 0 1px rgba(129, 140, 248, 0.08);
   position: relative;
 }
@@ -418,6 +422,12 @@
 
 .viewer-scroll {
   height: 100%;
+  /* Without this the 8px vertical padding is added on top of the 100% height,
+     making the scroller 16px taller than the surface so its last row hid
+     behind the dataset bar. There is no global border-box reset here, and
+     adding one is not safe: the viewer's own stylesheet needs content-box
+     inside .big-objview-root. */
+  box-sizing: border-box;
   overflow: auto;
   padding: 0.5rem 0.25rem;
 }

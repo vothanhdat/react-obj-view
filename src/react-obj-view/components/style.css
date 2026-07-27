@@ -277,6 +277,12 @@
         button {
             opacity: 0.5;
             color: var(--color);
+            /* Themed fallback first. Browsers without relative color syntax
+               (Firefox < 128, Safari < 16.4) drop the oklch declaration and
+               would otherwise render light system button chrome inside a dark
+               tree. This also makes each theme's acBtn value take effect,
+               which until now only .tag consumed. */
+            background-color: var(--bigobjview-action-btn);
             background-color: oklch(from var(--color) clamp(0, 70 - l * 100, 1) 0 0);
             font-weight: bold;
             overflow: hidden;
