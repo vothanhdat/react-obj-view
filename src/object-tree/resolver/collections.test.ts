@@ -3,6 +3,37 @@ import { mapResolver, setResolver, iteraterResolver, CustomIterator, CustomEntry
 import { ENUMERABLE_BIT, ENUMERABLE_BUT_COLLAPSE } from '../meta'
 
 describe('collections resolvers', () => {
+  describe.each(['Map', 'Set'] as const)('%s preview limits', kind => {
+    it.each([1, 6])('stops reading entries after %i callback invocations', limit => {
+      const values = Array.from({ length: 1000 }, (_, index) => index)
+      const cb = vi.fn((index: number) => index + 1 >= limit)
+      const next = vi.fn()
+
+      if (kind === 'Map') {
+        const map = new Map(values.map(value => [value, value]))
+        const iterator = map.entries()
+        const advance = vi.spyOn(iterator, 'next')
+        vi.spyOn(map, 'entries').mockReturnValue(iterator)
+
+        mapResolver(map, cb, next, true, {} as any, map)
+
+        expect(advance).toHaveBeenCalledTimes(limit)
+      } else {
+        const set = new Set(values)
+        const iterator = set.values()
+        const advance = vi.spyOn(iterator, 'next')
+        vi.spyOn(set, 'values').mockReturnValue(iterator)
+
+        setResolver(set, cb, next, true, {} as any, set)
+
+        expect(advance).toHaveBeenCalledTimes(limit)
+      }
+
+      expect(cb).toHaveBeenCalledTimes(limit)
+      expect(next).not.toHaveBeenCalled()
+    })
+  })
+
   describe('CustomIterator', () => {
     it('should create iterator from Map', () => {
       const map = new Map([['a', 1], ['b', 2]])

@@ -1,9 +1,17 @@
-import { LazyValue } from "./custom-class/LazyValueWrapper";
+import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
 import { WalkingConfig } from "./types";
 import { propertyIsEnumerable } from "./utils/object";
 import { ENUMERABLE_BIT } from "./meta" with {type: "macro"};
 
 export const hidePrototype = Symbol()
+
+const readProperty = (value: any, key: PropertyKey): unknown => {
+    try {
+        return value[key];
+    } catch (error) {
+        return new LazyValueError(error);
+    }
+};
 
 export const getEntriesCbOriginal = (
     value: any,
@@ -18,7 +26,7 @@ export const getEntriesCbOriginal = (
     if (value instanceof Array) {
 
         for (let index = 0; index < value.length; index++) {
-            if (cb(index, value[index], ENUMERABLE_BIT))
+            if (cb(index, readProperty(value, index), ENUMERABLE_BIT))
                 return;
         }
 
@@ -37,7 +45,7 @@ export const getEntriesCbOriginal = (
             for (let key in value) {
                 if (cb(
                     key,
-                    (value as any)[key],
+                    readProperty(value, key),
                     ENUMERABLE_BIT,
                 )) return;
             }
@@ -50,7 +58,7 @@ export const getEntriesCbOriginal = (
 
             if (cb(
                 symbol,
-                value[symbol],
+                readProperty(value, symbol),
                 propertyIsEnumerable.call(value, symbol) ? ENUMERABLE_BIT : 0,
             )) return;
         }

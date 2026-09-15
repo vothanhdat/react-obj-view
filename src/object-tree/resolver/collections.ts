@@ -94,11 +94,11 @@ export const mapResolver: ResolverFn<Map<any, any>> = (
     if (isPreview) {
         let index = 0;
         for (let [key, value] of map.entries()) {
-            cb(
+            if (cb(
                 index++,
                 CustomEntry.getEntry(map, key, value),
                 ENUMERABLE_BIT
-            );
+            )) return;
         }
     } else {
         cb(
@@ -122,8 +122,9 @@ export const setResolver: ResolverFn<Set<any>> = (
 ) => {
     if (isPreview) {
         let index = 0;
-        for (let value of set.values())
-            cb(index++, value, ENUMERABLE_BIT);
+        for (let value of set.values()) {
+            if (cb(index++, value, ENUMERABLE_BIT)) return;
+        }
 
     } else {
         cb(
@@ -136,4 +137,3 @@ export const setResolver: ResolverFn<Set<any>> = (
         next(set);
     }
 };
-

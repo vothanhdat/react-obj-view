@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getEntriesCb, getEntriesCbOriginal } from './getEntries';
 import { WalkingConfig } from './types';
-import { LazyValue } from './custom-class/LazyValueWrapper';
+import { LazyValue, LazyValueError } from './custom-class/LazyValueWrapper';
 import { ENUMERABLE_BIT } from './meta';
 
 describe('getEntriesCbOriginal', () => {
@@ -78,6 +78,50 @@ describe('getEntriesCbOriginal', () => {
 
         expect(cb).toHaveBeenCalledTimes(1);
         expect(cb).toHaveBeenCalledWith(0, 1, ENUMERABLE_BIT);
+    });
+
+    it.each(['own', 'inherited', 'array', 'symbol'] as const)(
+        'should report a throwing %s getter and continue enumerating',
+        kind => {
+            const key = kind === 'symbol' ? Symbol('broken') : kind === 'array' ? 0 : 'broken';
+            const source = kind === 'array' ? [0, 'after'] : {};
+            const getter = vi.fn(() => { throw new Error('getter failed'); });
+            Object.defineProperty(source, key, { enumerable: true, get: getter });
+            const value = kind === 'inherited' ? Object.create(source) : source;
+            const cb = vi.fn();
+
+            getEntriesCbOriginal(value, { ...defaultConfig, symbol: true }, cb);
+
+            expect(getter).toHaveBeenCalledTimes(1);
+            expect(cb).toHaveBeenCalledWith(key, expect.any(LazyValueError), ENUMERABLE_BIT);
+            const failure = cb.mock.calls.find(([entryKey]) => entryKey === key)![1];
+            expect(String(failure)).toContain('getter failed');
+
+            // A failed read must not prevent later properties from being visited.
+            if (kind === 'array') {
+                expect(cb).toHaveBeenCalledWith(1, 'after', ENUMERABLE_BIT);
+            }
+        }
+    );
+
+    it('should continue after a throwing getter while preserving successful getter values', () => {
+        const value = {
+            get broken() { throw new Error('getter failed'); },
+            get valid() { return null; },
+            after: 42,
+        };
+        const cb = vi.fn();
+
+        getEntriesCbOriginal(value, defaultConfig, cb);
+
+        expect(cb).toHaveBeenCalledWith('valid', null, ENUMERABLE_BIT);
+        expect(cb).toHaveBeenCalledWith('after', 42, ENUMERABLE_BIT);
+    });
+
+    it('should propagate callback errors instead of treating them as getter failures', () => {
+        const error = new Error('callback failed');
+        expect(() => getEntriesCbOriginal({ a: 1 }, defaultConfig, () => { throw error; }))
+            .toThrow(error);
     });
 });
 
