@@ -116,9 +116,7 @@ describe('LazyValue', () => {
       lazy.init()
       
       expect(lazy.inited).toBe(true)
-      // Due to the implementation using ??, null is treated as falsy
-      // and descriptor.get?.call returns undefined
-      expect(lazy.value).toBeUndefined()
+      expect(lazy.value).toBeNull()
       expect(lazy.error).toBeUndefined()
     })
   })

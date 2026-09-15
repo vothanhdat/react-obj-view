@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { objectTreeWalkingFactory, parseWalkingMeta } from "./objectWalkingAdapter";
 import type { ObjectWalkingConfig } from "./types";
+import { LazyValue, LazyValueError } from "./custom-class/LazyValueWrapper";
 
 describe("objectTreeWalkingFactory", () => {
     const createWalker = (config: Partial<ObjectWalkingConfig> = {}) => {
@@ -69,5 +70,41 @@ describe("objectTreeWalkingFactory", () => {
             });
         expect(circularNode.state.childCount).toBe(1);
         expect(circularNode.state.childCanExpand).toBe(false);
+    });
+
+    it("updates the root name while preserving expanded children", () => {
+        const { walker, config } = createWalker({ nonEnumerable: false });
+        const value = { child: { answer: 42 } };
+        walker.walking(value, "old", config, 1);
+        walker.setExpand(["child"], () => true);
+        walker.walking(value, "old", config, 1);
+
+        walker.walking(value, "new", config, 1);
+
+        expect(walker.getNode(0).state.key).toBe("new");
+        expect(walker.getNode(1).state.expanded).toBe(true);
+        expect(walker.getNode(2).state.value).toBe(42);
+    });
+
+    it.each([null, undefined, false, 0, ""])("preserves resolved getter value %s", expected => {
+        const { walker, config } = createWalker();
+        const value = { get result() { return expected; } };
+        const lazy = LazyValue.getInstance(value, "result");
+        lazy.init();
+
+        walker.walking(lazy, "root", config, 0);
+
+        expect(walker.getNode(0).state.value).toBe(expected);
+    });
+
+    it("preserves errors from resolved getters", () => {
+        const { walker, config } = createWalker();
+        const value = { get result() { throw new Error("failed"); } };
+        const lazy = LazyValue.getInstance(value, "result");
+        lazy.init();
+
+        walker.walking(lazy, "root", config, 0);
+
+        expect(walker.getNode(0).state.value).toBeInstanceOf(LazyValueError);
     });
 });

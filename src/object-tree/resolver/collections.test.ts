@@ -6,7 +6,7 @@ describe('collections resolvers', () => {
   describe.each(['Map', 'Set'] as const)('%s preview limits', kind => {
     it.each([1, 6])('stops reading entries after %i callback invocations', limit => {
       const values = Array.from({ length: 1000 }, (_, index) => index)
-      const cb = vi.fn((index: number) => index + 1 >= limit)
+      const cb = vi.fn((index: PropertyKey) => Number(index) + 1 >= limit)
       const next = vi.fn()
 
       if (kind === 'Map') {

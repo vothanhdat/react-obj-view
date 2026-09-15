@@ -161,39 +161,29 @@ export const useReactTree = <
 
             setReload(e => e + 1);
 
-            let t = Date.now()
+            let timeoutId: ReturnType<typeof setTimeout>;
+            const timeout = new Promise<undefined>(resolve => {
+                timeoutId = setTimeout(() => resolve(undefined), 2000);
+            });
 
-            do {
+            try {
+                while (true) {
+                    const ev = await Promise.race([runningRef.current.event.wait(), timeout]);
 
-                let ev = await runningRef.current.event.wait()
-
-                const index = ref.current.instance.getIndexForPath(paths);
-
-                if (index > -1) { return index }
-
-                if (runningRef.current.expandingPaths != paths) {
-                    return -1;
-                }
-
-                if (ev == IterateEvent.ROUND) {
-                    // console.log("Wait Round")
-                    continue;
-                } else if (ev == IterateEvent.ABORT) {
-                    // console.log("Break")
-                    return -1;
-                } else {
-
-                    if (Date.now() - t >= 2000 || runningRef.current.expandingPaths != paths) {
-                        // console.log("Break")
+                    if (ev === undefined || runningRef.current.expandingPaths !== paths) {
                         return -1;
-                    } else {
-                        // console.log("Wait tree walking")
                     }
 
-                    await new Promise(r => setTimeout(r, 200))
-                }
+                    const index = ref.current.instance.getIndexForPath(paths);
+                    if (index > -1) { return index; }
 
-            } while (true)
+                    if (ev === IterateEvent.FINISH || ev === IterateEvent.ABORT) {
+                        return -1;
+                    }
+                }
+            } finally {
+                clearTimeout(timeoutId!);
+            }
 
         },
         [ref, value, name, config, expandDepth]

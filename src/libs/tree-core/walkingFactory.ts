@@ -189,6 +189,7 @@ function walkingRecursiveFactory<Value, Key, Meta, Config, Context extends Walki
 
         const shoudUpdate = (
             isChange
+            || state.key !== key
             || state.expanded !== isExpand
             || state.updateToken !== ctx.updateToken
             || (isExpand

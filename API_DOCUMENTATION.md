@@ -85,7 +85,7 @@ export type ObjectViewProps = {
   actionRenders?: React.FC<ObjectViewRenderRowProps>;
   customActions?: CustomAction[];
   iterateSize?: number;
-  ref?: React.RefObject<ObjectViewHandle | undefined>;
+  ref?: React.Ref<ObjectViewHandle | undefined>;
 };
 ```
 

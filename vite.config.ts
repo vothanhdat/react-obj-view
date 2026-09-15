@@ -30,7 +30,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'react-obj-view',
-      fileName: (format) => `index.${format}.js`,
+      fileName: (format) => `index.${format}.${format === 'umd' ? 'cjs' : 'js'}`,
       formats: ['es', 'umd'],
     },
     rollupOptions: {
