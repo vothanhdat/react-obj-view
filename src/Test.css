@@ -61,6 +61,24 @@
   gap: 1rem;
 }
 
+.demo-back {
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #f8fafc;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.demo-back:hover {
+  background: rgba(148, 163, 184, 0.34);
+  transform: translateX(-2px);
+}
+
 .demo-brand h1 {
   font-size: 1.4rem;
   margin: 0;

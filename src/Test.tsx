@@ -239,7 +239,7 @@ const createLiveSnapshot = (previous: any) => {
   }
 }
 
-export const Test = () => {
+export const Test = ({ onBack }: { onBack?: () => void } = {}) => {
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'auto'>('auto')
   const [selectedData, setSelectedData] = useState(testDataOptions[0])
   const [expandLevel, setExpandLevel] = useState<number | boolean>(true)
@@ -412,6 +412,11 @@ export const Test = () => {
     <div className={`demo-page ${pageModeClass}`}>
       <header className="demo-header">
         <div className="demo-brand">
+          {onBack && (
+            <button className="demo-back" onClick={onBack} title="Back to overview" aria-label="Back to overview">
+              ←
+            </button>
+          )}
           <span className="demo-logo" aria-hidden>
             🌳
           </span>
