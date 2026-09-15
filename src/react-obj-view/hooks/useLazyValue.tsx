@@ -17,7 +17,7 @@ export const useLazyValue = ({ value, refreshPath }: { value: LazyValue; refresh
         }
     }, [isLazyValue && value, isLazyValue && refreshPath]);
 
-    const renderValue = isLazyValue ? (value.value ?? value.error) : value;
+    const renderValue = isLazyValue ? (value.error ?? value.value) : value;
 
     return {
         isLazyValue,

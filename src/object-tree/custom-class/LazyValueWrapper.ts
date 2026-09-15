@@ -34,7 +34,7 @@ export class LazyValue {
         if (!this.inited) {
             let descriptor = Object.getOwnPropertyDescriptor(this.obj, this.key)!
             try {
-                this.value = descriptor?.value ?? descriptor.get?.call(this.obj);
+                this.value = descriptor?.get ? descriptor.get.call(this.obj) : descriptor?.value;
             } catch (error) {
                 this.error = new LazyValueError(error)
             }

@@ -24,21 +24,40 @@ type HeroDataset = {
   label: string
   nodes: string
   build: () => unknown | Promise<unknown>
+  expandLevel: number
+  /**
+   * 0 = no bucketing, so every visible row is a real entry. The 100K set runs
+   * ungrouped on purpose: scrolling it walks the line numbers from 1 to
+   * 100,000 through actual data, which is the whole proof. Only the 400K set
+   * keeps buckets, since eight million nodes need a table of contents.
+   */
+  groupSize: number
 }
 
 const heroDatasets: HeroDataset[] = [
-  { id: 'sample', label: 'App state', nodes: '~1.5K nodes', build: () => createHeroData(1) },
+  {
+    id: 'sample',
+    label: 'App state',
+    nodes: '~1.5K nodes',
+    build: () => createHeroData(1),
+    expandLevel: 2,
+    groupSize: 0,
+  },
   {
     id: 'rows100k',
     label: '100K rows',
     nodes: '~2M nodes',
     build: async () => (await import('../exampleData')).performanceTestData.suppersupperLarge,
+    expandLevel: 1,
+    groupSize: 0,
   },
   {
     id: 'rows400k',
     label: '400K rows',
     nodes: '~8M nodes',
     build: async () => (await import('../exampleData')).performanceTestData.massive,
+    expandLevel: 1,
+    groupSize: 100,
   },
 ]
 
@@ -167,7 +186,11 @@ export const Landing: React.FC<LandingProps> = ({ onLaunchPlayground }) => {
     const step = () => {
       const max = el.scrollHeight - el.clientHeight
       if (max > 0) {
-        el.scrollTop += dir * 6
+        // Scale the step to the content height. A fixed 6px/frame crawls on a
+        // 100K-row tree (which reads as sluggish, the opposite of the point),
+        // while a small tree needs to stay slow enough to actually read.
+        const px = Math.min(48, Math.max(8, max / 1200))
+        el.scrollTop += dir * px
         if (el.scrollTop >= max) dir = -1
         else if (el.scrollTop <= 0) dir = 1
       }
@@ -298,14 +321,14 @@ export const Landing: React.FC<LandingProps> = ({ onLaunchPlayground }) => {
                 <ObjectView
                   valueGetter={dataGetter}
                   name="state"
-                  expandLevel={activeId === 'sample' ? 2 : 1}
+                  expandLevel={activeDataset.expandLevel}
                   stickyPathHeaders
                   showLineNumbers
                   preview
                   highlightUpdate
                   lineHeight={16}
-                  objectGroupSize={activeId === 'sample' ? 0 : 100}
-                  arrayGroupSize={activeId === 'sample' ? 0 : 100}
+                  objectGroupSize={activeDataset.groupSize}
+                  arrayGroupSize={activeDataset.groupSize}
                   style={theme as React.CSSProperties}
                 />
               </div>
@@ -327,7 +350,8 @@ export const Landing: React.FC<LandingProps> = ({ onLaunchPlayground }) => {
             </div>
           </div>
           <p className="hero-hint">
-            Try switching to <strong>400K rows</strong> and hit <strong>Auto-scroll</strong> — watch the fps hold.
+            Load <strong>100K rows</strong> and hit <strong>Auto-scroll</strong> — every line is a real
+            row, and the fps holds all the way to 100,000.
           </p>
         </div>
       </section>

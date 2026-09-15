@@ -1,4 +1,4 @@
-import { RefObject } from "react";
+import { Ref } from "react";
 import type { ReactTreeRowRenderProps } from "../libs/react-tree-view";
 import { type ResolverFn, type ObjectWalkingAdapter, type ObjectWalkingMetaParser } from "../object-tree";
 import { ThemeColor } from "../react-obj-view-themes";
@@ -61,7 +61,7 @@ export type ObjectViewProps = {
     customActions?: CustomAction<any>[]
 
     iterateSize?: number;
-    ref?: RefObject<ObjectViewHandle | undefined>
+    ref?: Ref<ObjectViewHandle | undefined>
 };
 
 export interface SearchOptionBase {

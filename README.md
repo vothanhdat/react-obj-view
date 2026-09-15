@@ -102,7 +102,7 @@ Wrap dynamic data in `useMemo`/`useCallback` so the virtual tree only re-walks w
 | `overscan` | `number` | `100` | Virtualization buffer size in **pixels** rendered above/below the viewport for smoother fast scrolling. Increase it to reduce blank gaps; decrease it to reduce render work. |
 | `style` | `React.CSSProperties` | `undefined` | Inline styles applied to `.big-objview-root` (theme presets are plain objects). |
 | `className` | `string` | `undefined` | Extra class hooked onto `.big-objview-root`. |
-| `ref` | `RefObject<ObjectViewHandle>` | `undefined` | Exposes imperative methods for search and navigation. See [Search API](./API_DOCUMENTATION.md#search-api) for details. |
+| `ref` | `React.Ref<ObjectViewHandle \| undefined>` | `undefined` | Exposes imperative methods for search and navigation. See [Search API](./API_DOCUMENTATION.md#search-api) for details. |
 | `customActions` | `CustomAction[]` | `DEFAULT_ACTION` | Array of custom action definitions. [See example](./API_DOCUMENTATION.md#custom-actions). |
 | `actionRenders` | `React.FC<ObjectViewRenderRowProps>` | `undefined` | **Deprecated**. Use `customActions` instead. |
 | `iterateSize` | `number` | `100000` | Controls the number of steps the async walker performs before yielding to the main thread. Lower values improve responsiveness but may increase total render time. |
